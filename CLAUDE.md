@@ -7,6 +7,7 @@ project: meimei-tei
 type: web-app
 status: mvp-design
 created: 2026-02-05
+updated: 2026-02-06
 ```
 
 ---
@@ -28,73 +29,10 @@ created: 2026-02-05
 
 ---
 
-## 2. mvp-features
-
-### 2.1 business-hours
+## 2. tech-stack
 
 ```yaml
-open: "22:00 JST"
-close: "04:00 JST (next day)"
-check: server-side
-timezone: Asia/Tokyo
-```
-
-状態判定:
-
-```
-if (hour >= 22 || hour < 4):
-  return OPEN
-else:
-  return CLOSED
-```
-
-### 2.2 user-flow
-
-```
-CLOSED --> [営業時間内] --> 入店画面 --> [名前入力] --> 店内画面
-```
-
-入店時の入力:
-- 表示名: 必須, 1-20文字, トリム処理
-- 認証: なし（ゲストモード）
-
-### 2.3 seat-system
-
-```yaml
-type: counter-only  # MVPはカウンターのみ
-limit: none         # 席数無制限
-interaction: click  # クリックで着席/離席
-display:
-  - user-name
-  - default-avatar
-```
-
-### 2.4 chat
-
-```yaml
-scope: counter-wide  # 全員に見える
-format: text-only
-max-length: 500
-history: session-only  # 永続化なし
-```
-
-### 2.5 realtime-sync
-
-同期イベント:
-
-| event | trigger | action |
-|-------|---------|--------|
-| user_join | 入店 | 参加者リスト更新 |
-| user_leave | 退店/切断 | 参加者リスト更新 |
-| seat_change | 着席/離席 | 席状態更新 |
-| message | 送信 | チャット追加 |
-
----
-
-## 3. tech-stack
-
-```yaml
-status: confirmed  # MVP技術スタック確定
+status: confirmed
 ```
 
 ### frontend
@@ -108,21 +46,22 @@ status: confirmed  # MVP技術スタック確定
 | Zustand | クライアント状態管理 |
 | Zod | イベントバリデーション (shared) |
 
-Three.jsを中核とし、バーの「場」としての空間体験を視覚的に高品質にする。
-アバターの座り位置・カウンターの雰囲気・入退店の演出などが対象。
-
 ### backend / realtime
 
 | 技術 | 用途 |
 |------|------|
 | Node.js | ランタイム |
-| Hono | HTTP API (営業時間チェック) |
+| Hono | HTTP API |
 | ws | WebSocket リアルタイム同期 |
-| http.createServer | 単一サーバー (HTTP + WS 共存) |
 | Zod | イベントバリデーション (shared) |
 
-要件: server-sideで営業時間チェック・WebSocketによる座席・チャットの双方向同期。
-HTTP と WebSocket を同一ポートで提供し、CORS の懸念を排除。
+### testing
+
+| 技術 | 用途 |
+|------|------|
+| Vitest | Unit / Integration Test |
+| Playwright | E2E Test |
+| Testing Library | React Component Test |
 
 ### workspace
 
@@ -131,43 +70,154 @@ HTTP と WebSocket を同一ポートで提供し、CORS の懸念を排除。
 | pnpm workspaces | モノレポ管理 |
 | TypeScript | 型安全性 |
 
-Turborepo は不使用。シンプルな pnpm workspaces のみで構成。
-
-### infra
-
-```yaml
-TBD  # MVP段階ではローカル開発のみ
-```
-
 ---
 
-## 4. development-flow: ATDD-SDD
+## 3. development-flow: ATDD-SDD
 
 ### 原則
 
 | 原則 | 説明 |
 |------|------|
-| SDD (Specification-Driven Development) | このCLAUDE.mdが唯一の仕様ソース。実装の根拠はすべてここに戻る |
-| ATDD (Acceptance Test-Driven Development) | 実装の前に、仕様から直訳した受入テストを書く |
+| SDD (Specification-Driven Development) | `spec/` が唯一の仕様ソース |
+| ATDD (Acceptance Test-Driven Development) | 仕様から受入テストを先に書く |
+| AC-First | Acceptance Criteria を最初に定義 |
 
-### フロー
+### ワークフロー（簡易版）
 
 ```
-Spec (CLAUDE.md)
-  ↓ 仕様を読み取る
-Accept Test 作成  ← RED（テスト失敗を確認）
+Spec作成 (AC-First)
   ↓
-実装              ← GREEN（テスト通過を確認）
+Test作成 (E2E → Int → Unit)
   ↓
-リファクタ        ← 品質・強制 IMPROVE
+RED確認 (テスト失敗)
   ↓
-Spec 更新         ← 仕様と実装のドリフトを防止
+実装 (最小限)
+  ↓
+GREEN確認 (テスト通過)
+  ↓
+リファクタ (品質向上)
+  ↓
+カバレッジ確認 (80%+)
+  ↓
+Spec同期 (ドリフト防止)
 ```
 
-### ルールセット
+**詳細**: [`spec/README.md`](./spec/README.md) を参照
 
-1. **仕様変更は CLAUDE.md が先** — コード変更の根拠がない場合は実装しない
-2. **テストは仕様の直訳** — テストの意図は仕様の記述に1:1対応する
-3. **実装は最小限 (YAGNI)** — 仕様に記載されていない機能は追加しない
-4. **各フィーチャーは独立検証可能** — 単一フィーチャーのテスト・実装で全パスが確認できる
-5. **受入テスト = 仕様の生き証拠** — テストが仕様を正確に反映していない場合はテストを修正する
+### ディレクトリ構成
+
+```
+meimei-tei/
+├── CLAUDE.md              # このファイル（プロジェクト全体概要）
+├── spec/                  # 機能仕様
+│   ├── README.md         # ATDD-SDDワークフロー詳細
+│   ├── templates/        # 機能仕様テンプレート
+│   └── features/         # 各機能の詳細仕様
+│       ├── _index.md    # 機能一覧・状態管理
+│       ├── business-hours.md
+│       ├── user-entrance.md
+│       ├── seat-system.md
+│       ├── chat.md
+│       └── realtime-sync.md
+├── docs/                  # 開発ガイド
+│   ├── testing.md        # テスト実装ガイドライン
+│   └── development.md    # 開発環境セットアップ
+├── apps/                  # アプリケーション
+│   ├── backend/
+│   └── frontend/
+├── packages/              # 共有パッケージ
+│   └── shared/
+└── e2e/                   # E2Eテスト
+```
+
+---
+
+## 4. features
+
+機能一覧と実装状態。詳細は [`spec/features/_index.md`](./spec/features/_index.md) を参照。
+
+| ID | Feature | Status | Spec | Priority |
+|----|---------|--------|------|----------|
+| F001 | Business Hours Check | `:IMPLEMENTED` | [spec](./spec/features/business-hours.md) | High |
+| F002 | User Entrance | `:TODO` | [spec](./spec/features/user-entrance.md) | High |
+| F003 | Seat System | `:TODO` | [spec](./spec/features/seat-system.md) | High |
+| F004 | Chat | `:TODO` | [spec](./spec/features/chat.md) | High |
+| F005 | Realtime Sync | `:TODO` | [spec](./spec/features/realtime-sync.md) | High |
+
+### Status Legend
+
+- `:TODO` - 仕様未作成
+- `:SPEC_DONE` - 仕様完成
+- `:TEST_WRITTEN` - テスト作成済み
+- `:IMPLEMENTED` - 実装完了
+- `:DONE` - すべて完了
+
+---
+
+## 5. getting-started
+
+### Prerequisites
+
+- Node.js >= 20
+- pnpm >= 9
+
+### Installation
+
+```bash
+pnpm install
+```
+
+### Environment Setup
+
+```bash
+cp apps/backend/.env.example apps/backend/.env
+cp apps/frontend/.env.local.example apps/frontend/.env.local
+```
+
+### Development
+
+```bash
+pnpm dev
+```
+
+詳細は [`docs/development.md`](./docs/development.md) を参照。
+
+---
+
+## 6. testing
+
+### Test Strategy
+
+```
+E2E (Playwright)      → ユーザージャーニー全体
+   ↓
+Integration (Vitest)  → API・WebSocket・連携
+   ↓
+Unit (Vitest)         → 個別関数・ロジック
+```
+
+### Coverage Target
+
+- Minimum: 80%
+- Critical Paths: 100%
+
+詳細は [`docs/testing.md`](./docs/testing.md) を参照。
+
+---
+
+## 7. links
+
+- **プロジェクト概要**: このファイル
+- **ATDD-SDDワークフロー**: [`spec/README.md`](./spec/README.md)
+- **機能一覧**: [`spec/features/_index.md`](./spec/features/_index.md)
+- **テストガイド**: [`docs/testing.md`](./docs/testing.md)
+- **開発ガイド**: [`docs/development.md`](./docs/development.md)
+
+---
+
+## version-history
+
+| Version | Date | Changes |
+|---------|------|---------|
+| 1.0.0 | 2026-02-05 | Initial spec |
+| 1.1.0 | 2026-02-06 | ATDD-SDD workflow, spec/ structure |
