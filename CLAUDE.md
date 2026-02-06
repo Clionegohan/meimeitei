@@ -143,6 +143,9 @@ meimei-tei/
 | F003 | Seat System | `:TODO` | [spec](./spec/features/seat-system.md) | High |
 | F004 | Chat | `:TODO` | [spec](./spec/features/chat.md) | High |
 | F005 | Realtime Sync | `:TODO` | [spec](./spec/features/realtime-sync.md) | High |
+| **F006** | **User Session Management** | **`:TODO`** | **[spec](./spec/features/user-session-management.md)** | **High** |
+| **F007** | **Timeline** | **`:TODO`** | **[spec](./spec/features/timeline.md)** | **Medium** |
+| **F008** | **Private Chat** | **`:TODO`** | **[spec](./spec/features/private-chat.md)** | **Medium** |
 
 ### Status Legend
 

@@ -21,6 +21,9 @@
 | F003 | Seat System | `:TODO` | High | F002 | [spec](./seat-system.md) | E2E: ⚪️<br>Int: ⚪️<br>Unit: ⚪️ | Backend: ✅<br>Frontend: ✅ |
 | F004 | Chat | `:TODO` | High | F003 | [spec](./chat.md) | E2E: ⚪️<br>Int: ⚪️<br>Unit: ⚪️ | Backend: ✅<br>Frontend: ✅ |
 | F005 | Realtime Sync | `:TODO` | High | F003, F004 | [spec](./realtime-sync.md) | E2E: ⚪️<br>Int: ⚪️<br>Unit: ⚪️ | Backend: ✅<br>Frontend: ✅ |
+| **F006** | **User Session Management** | **`:TODO`** | **High** | **F001, F002** | **[spec](./user-session-management.md)** | **E2E: ⚪️<br>Int: ⚪️<br>Unit: ⚪️** | **Backend: ⚪️<br>Frontend: ⚪️** |
+| **F007** | **Timeline** | **`:TODO`** | **Medium** | **F006** | **[spec](./timeline.md)** | **E2E: ⚪️<br>Int: ⚪️<br>Unit: ⚪️** | **Backend: ⚪️<br>Frontend: ⚪️** |
+| **F008** | **Private Chat** | **`:TODO`** | **Medium** | **F006** | **[spec](./private-chat.md)** | **E2E: ⚪️<br>Int: ⚪️<br>Unit: ⚪️** | **Backend: ⚪️<br>Frontend: ⚪️** |
 
 ## Traceability Matrix
 
@@ -66,9 +69,13 @@ TBD
 - [ ] F001-F005: ユニットテスト作成
 - [ ] カバレッジ80%達成
 
-### Phase 3: Enhancement
+### Phase 3: Enhanced Features (Future)
 
-TBD
+- [ ] F006: User Session Management - セッション管理・リロード対応（基盤）
+- [ ] F007: Timeline - タイムライン機能（呟き）
+- [ ] F008: Private Chat - 個人チャット機能（1対1）
+
+**Note:** Phase 3はDB不要で実装可能。メモリ内＋localStorage。
 
 ## Update History
 
