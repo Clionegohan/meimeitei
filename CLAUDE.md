@@ -106,7 +106,7 @@ Spec同期 (ドリフト防止)
 
 ### ディレクトリ構成
 
-```
+```text
 meimei-tei/
 ├── CLAUDE.md              # このファイル（プロジェクト全体概要）
 ├── spec/                  # 機能仕様
@@ -222,7 +222,7 @@ git commit -m "docs(f002): spec/_index.mdのステータスを更新
 
 ### 標準フロー（型化）
 
-```
+```text
 ┌─────────────────────────────────────────────────────┐
 │ 1. ブランチ作成                                      │
 │    git checkout -b feature/f00X-feature-name        │
