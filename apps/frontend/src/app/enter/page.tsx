@@ -32,8 +32,11 @@ export default function EnterPage() {
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white">
       <h1 className="text-4xl font-bold mb-8">めぃめぃ亭</h1>
       <form onSubmit={handleSubmit} className="w-80">
-        <label className="block mb-2 text-sm">お名前</label>
+        <label htmlFor="name-input" className="block mb-2 text-sm">
+          お名前
+        </label>
         <input
+          id="name-input"
           type="text"
           value={name}
           onChange={(e) => {
@@ -42,7 +45,6 @@ export default function EnterPage() {
           }}
           className="w-full px-4 py-2 bg-gray-800 text-white border border-gray-700 rounded focus:outline-none focus:border-blue-500"
           placeholder="1-20文字"
-          maxLength={20}
         />
         {error && <p className="mt-2 text-sm text-red-400">{error}</p>}
         <button

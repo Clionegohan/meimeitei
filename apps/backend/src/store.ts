@@ -32,6 +32,10 @@ class Store {
       user.seated = seated
     }
   }
+
+  clear(): void {
+    this.users.clear()
+  }
 }
 
 export const store = new Store()
