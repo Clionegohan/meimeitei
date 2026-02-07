@@ -17,7 +17,7 @@
 | ID | Feature | Status | Priority | Dependencies | Spec | Tests | Implementation |
 |----|---------|--------|----------|--------------|------|-------|----------------|
 | F001 | Business Hours Check | `:IMPLEMENTED` | High | - | [spec](./business-hours.md) | E2E: ⚪️<br>Int: ⚪️<br>Unit: ⚪️ | Backend: ✅<br>Frontend: ✅ |
-| F002 | User Entrance | `:DONE` | High | F001 | [spec](./user-entrance.md) | E2E: ✅<br>Int: ✅<br>Unit: ✅ | Backend: ✅<br>Frontend: ✅ |
+| F002 | User Entrance | `:TEST_WRITTEN` | High | F001 | [spec](./user-entrance.md) | E2E: 🟡<br>Int: ✅<br>Unit: ✅ | Backend: ✅<br>Frontend: ✅ |
 | F003 | Seat System | `:TODO` | High | F002 | [spec](./seat-system.md) | E2E: ⚪️<br>Int: ⚪️<br>Unit: ⚪️ | Backend: ✅<br>Frontend: ✅ |
 | F004 | Chat | `:TODO` | High | F003 | [spec](./chat.md) | E2E: ⚪️<br>Int: ⚪️<br>Unit: ⚪️ | Backend: ✅<br>Frontend: ✅ |
 | F005 | Realtime Sync | `:TODO` | High | F003, F004 | [spec](./realtime-sync.md) | E2E: ⚪️<br>Int: ⚪️<br>Unit: ⚪️ | Backend: ✅<br>Frontend: ✅ |
@@ -45,8 +45,8 @@
 | AC-3: 20文字超過エラー | `user-entrance.spec.ts#should show error when name exceeds 20 characters` | - | `page.test.tsx#should show error when name exceeds 20 characters` | ✅ Pass |
 | AC-4: 空白トリミング | `user-entrance.spec.ts#should trim leading and trailing whitespace` | - | `page.test.tsx#should trim leading and trailing whitespace` | ✅ Pass |
 | AC-5: サーバー側Zodバリデーション | - | `user-entrance.integration.test.ts#should reject empty name` | - | ✅ Pass |
-| AC-6: user_joinedブロードキャスト | (E2Eで検証予定) | (E2Eに統合) | - | 🟡 E2E Pending |
-| AC-7: 重複入店防止 | (E2Eで検証予定) | (E2Eに統合) | - | 🟡 E2E Pending |
+| AC-6: user_joinedブロードキャスト | 🟡 TODO | (E2Eに統合予定) | - | 🟡 E2E Pending |
+| AC-7: 重複入店防止 | 🟡 TODO | (E2Eに統合予定) | - | 🟡 E2E Pending |
 | AC-8: localStorage永続化 | `user-entrance.spec.ts#should persist name in localStorage` | - | - | ✅ Pass |
 
 ### F003: Seat System
@@ -66,7 +66,7 @@ TBD
 ### Phase 1: MVP Core (Current)
 
 - [x] F001: Business Hours Check - 実装済み（テスト未作成）
-- [x] F002: User Entrance - **完了**（仕様・テスト・実装全て完了）
+- [x] F002: User Entrance - **テスト作成済み**（AC-6, AC-7のE2E検証が残る）
 - [x] F003: Seat System - 実装済み（テスト未作成）
 - [x] F004: Chat - 実装済み（テスト未作成）
 - [x] F005: Realtime Sync - 実装済み（テスト未作成）
