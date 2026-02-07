@@ -138,6 +138,88 @@ meimei-tei/
 
 **必ずPRを作成すること** - CodeRabbitによる自動レビューを活用するため
 
+### コミット粒度の原則
+
+**責務の分離（Single Responsibility Principle）をコミットにも適用**
+
+❌ **NG例：1つの巨大なコミット**
+```bash
+git commit -m "feat(f002): User Entrance機能の仕様書作成とテスト実装完了"
+# → 仕様書、テスト環境、E2E、Integration、Unit、実装修正、ドキュメント更新が全て1つに
+```
+
+✅ **OK例：適切な粒度で分割**
+```bash
+# 1. テスト環境セットアップ
+git commit -m "chore: Playwright と Vitest のテスト環境をセットアップ
+
+- Playwright: E2Eテストフレームワーク
+- Vitest + Testing Library: フロントエンドユニットテスト
+- Vitest: バックエンドintegrationテスト
+- 各ワークスペースに設定ファイル追加"
+
+# 2. 仕様書作成
+git commit -m "docs(f002): User Entrance機能の詳細仕様書を作成
+
+- 8つのAcceptance Criteriaを定義
+- 処理フロー、データモデル、UI要件を記述
+- WebSocketイベント仕様を明確化
+- エッジケースとエラーハンドリングを文書化"
+
+# 3. E2Eテスト作成
+git commit -m "test(f002): User EntranceのE2Eテストを作成
+
+- AC-1: 空の名前でエラー表示
+- AC-2: 有効な名前で入店成功
+- AC-3: 20文字超過でエラー表示
+- AC-8: localStorage永続化
+- エッジケース: 特殊文字、絵文字、境界値"
+
+# 4. Integrationテスト作成
+git commit -m "test(f002): User EntranceのIntegrationテストを作成
+
+- AC-5: サーバー側Zodバリデーション
+- エッジケース: 空白のみ、トリミング、境界値"
+
+# 5. Unitテスト作成
+git commit -m "test(f002): User EntranceのUnitテストを作成
+
+- AC-1, AC-3, AC-4: クライアント側バリデーション
+- AC-2: localStorage保存とリダイレクト
+- UIテスト: フォーム要素レンダリング"
+
+# 6. 実装の改善
+git commit -m "fix(f002): labelとinputの関連付けを追加
+
+- htmlFor属性でアクセシビリティ向上
+- store.clear()メソッド追加（テストクリーンアップ用）"
+
+# 7. ドキュメント更新
+git commit -m "docs(f002): spec/_index.mdのステータスを更新
+
+- F002を :TODO → :DONE に更新
+- Traceability Matrix追加
+- Update History更新"
+```
+
+**コミット分割の判断基準:**
+
+| 判断基準 | 説明 | 例 |
+|---------|------|-----|
+| **1つの目的** | コミットは1つの目的のみを持つ | テスト環境セットアップ、仕様書作成、テスト作成 |
+| **独立して理解可能** | コミットメッセージだけで何をしたか分かる | "E2Eテストを作成" は明確 |
+| **独立してrevert可能** | そのコミットだけを取り消せる | テスト追加をrevertしても他に影響なし |
+| **レビューしやすい** | 小さい変更は理解しやすい | 1ファイルの変更 vs 15ファイルの変更 |
+
+**コーディングとの対応:**
+
+| コーディング原則 | コミット原則 | 理由 |
+|----------------|-------------|------|
+| 単一責任の原則（SRP） | 1コミット1目的 | 変更理由が1つ |
+| 関心の分離 | 機能別にコミット分割 | テスト/実装/ドキュメントを分離 |
+| 小さい関数 | 小さいコミット | 理解しやすい |
+| 高凝集・低結合 | 独立したコミット | revert可能 |
+
 ### 標準フロー（型化）
 
 ```
@@ -155,9 +237,18 @@ meimei-tei/
 └─────────────────────────────────────────────────────┘
                         ↓
 ┌─────────────────────────────────────────────────────┐
-│ 3. コミット & Push（時系列順）                       │
-│    git add -A                                       │
-│    git commit -m "feat(f00X): ..."                 │
+│ 3. コミット & Push（適切な粒度で）                   │
+│    # 作業ごとに細かくコミット（責務の分離）         │
+│    git add <関連ファイル>                           │
+│    git commit -m "chore: テスト環境セットアップ"    │
+│                                                     │
+│    git add <関連ファイル>                           │
+│    git commit -m "docs(f00X): 仕様書作成"          │
+│                                                     │
+│    git add <関連ファイル>                           │
+│    git commit -m "test(f00X): E2Eテスト作成"       │
+│                                                     │
+│    # 全コミット完了後にまとめてpush                 │
 │    git push -u origin feature/f00X-feature-name    │
 │                                                     │
 │    ⚠️ mainブランチが先にpushされていない場合は      │
@@ -204,6 +295,7 @@ meimei-tei/
 作業完了前に必ず確認：
 
 - [ ] ブランチは`feature/f00X-*`形式で作成
+- [ ] **コミットは適切な粒度で分割（1目的1コミット）**
 - [ ] 全テストがGREEN（E2E, Integration, Unit）
 - [ ] カバレッジ80%以上
 - [ ] `spec/features/_index.md`のステータス更新
@@ -224,11 +316,14 @@ Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
 ```
 
 **Types:**
-- `feat`: 新機能
+- `feat`: 新機能の追加
 - `fix`: バグ修正
-- `docs`: ドキュメント
-- `test`: テスト追加
+- `docs`: ドキュメントのみの変更
+- `test`: テストの追加・修正
 - `refactor`: リファクタリング
+- `chore`: ビルド、設定、環境セットアップなど
+- `perf`: パフォーマンス改善
+- `ci`: CI/CD設定
 
 ---
 
@@ -325,3 +420,4 @@ Unit (Vitest)         → 個別関数・ロジック
 | 1.0.0 | 2026-02-05 | Initial spec |
 | 1.1.0 | 2026-02-06 | ATDD-SDD workflow, spec/ structure |
 | 1.2.0 | 2026-02-07 | Git & PR workflow追加 (CodeRabbit連携) |
+| 1.2.1 | 2026-02-07 | コミット粒度の原則を追加（SRP適用） |
