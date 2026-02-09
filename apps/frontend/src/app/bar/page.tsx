@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic'
 import { useWsConnection } from '@/ws/useWsConnection'
 import { useBarStore } from '@/stores/useBarStore'
 import { sendEvent } from '@/ws/client'
+import { getUserId } from '@/lib/session'
 import Chat from '@/components/Chat'
 
 const BarScene = dynamic(() => import('@/components/BarScene'), { ssr: false })
@@ -27,8 +28,18 @@ export default function BarPage() {
     setUsername(name)
   }, [router])
 
+  // Why: WebSocket接続確立後、セッション認証を実行
+  // authenticateイベントでuserIdとnameを送信し、既存セッションがあれば履歴を復元
   useEffect(() => {
     if (userId && username) {
+      const storedUserId = getUserId()
+      if (storedUserId) {
+        // Why: localStorage内のuserIdでセッション認証
+        // サーバーは既存セッションを探し、あればチャット履歴を返す
+        sendEvent({ type: 'authenticate', userId: storedUserId, name: username })
+      }
+
+      // Why: 既存のjoinイベントも送信（後方互換性）
       sendEvent({ type: 'join', name: username })
     }
   }, [userId, username])

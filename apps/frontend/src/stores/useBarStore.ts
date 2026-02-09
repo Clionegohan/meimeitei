@@ -72,6 +72,17 @@ export const useBarStore = create<BarState>((set) => ({
           ],
         }))
         break
+
+      case 'authenticated':
+        // Why: セッション確立確認（将来的にUI通知に使用可能）
+        // 現状はログ出力のみ、userIdはすでにlocalStorageから取得済み
+        break
+
+      case 'history_sync':
+        // Why: ブラウザリロード後にチャット履歴を復元
+        // サーバーから送信されたメッセージ履歴で上書き
+        set({ messages: event.messages })
+        break
     }
   },
 }))
