@@ -12,11 +12,24 @@ echo ""
 echo "📄 【DOING.md】現在の作業状況:"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 if [ -f "DOING.md" ]; then
-  # 🔄 作業中のセクションを抽出
-  if grep -q "🔄 作業中" DOING.md; then
+  # コードブロック外で「🔄 作業中」を検索
+  # awk でコードブロック（```で囲まれた部分）を除外
+  WORKING_SESSIONS=$(awk '
+    /^```/ { in_code = !in_code; next }
+    !in_code && /🔄 作業中/ { print; found=1 }
+    END { exit !found }
+  ' DOING.md)
+
+  if [ $? -eq 0 ]; then
     echo "⚠️  他のセッションが作業中です！"
     echo ""
-    grep -A 6 "🔄 作業中" DOING.md
+    # 該当セクションを表示
+    awk '
+      /^```/ { in_code = !in_code; next }
+      !in_code && /🔄 作業中/ { found=1 }
+      found && !in_code { print }
+      found && /^---/ { exit }
+    ' DOING.md | head -8
     echo ""
     echo "❌ このまま作業を開始すると衝突します"
     echo "✅ 対応: 他セッションの完了を待つか、別タスクを選択"
