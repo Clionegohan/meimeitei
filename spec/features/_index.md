@@ -21,7 +21,7 @@
 | F003 | Seat System | `:TODO` | High | F002 | [spec](./seat-system.md) | E2E: ⚪️<br>Int: ⚪️<br>Unit: ⚪️ | Backend: ✅<br>Frontend: ✅ |
 | F004 | Chat | `:TODO` | High | F003 | [spec](./chat.md) | E2E: ⚪️<br>Int: ⚪️<br>Unit: ⚪️ | Backend: ✅<br>Frontend: ✅ |
 | F005 | Realtime Sync | `:TODO` | High | F003, F004 | [spec](./realtime-sync.md) | E2E: ⚪️<br>Int: ⚪️<br>Unit: ⚪️ | Backend: ✅<br>Frontend: ✅ |
-| **F006** | **User Session Management** | **`:TODO`** | **High** | **F001, F002** | **[spec](./user-session-management.md)** | **E2E: ⚪️<br>Int: ⚪️<br>Unit: ⚪️** | **Backend: ⚪️<br>Frontend: ⚪️** |
+| **F006** | **User Session Management** | **`:TEST_WRITTEN`** | **High** | **F001, F002** | **[spec](./user-session-management.md)** | **E2E: ✅<br>Int: ✅<br>Unit: ✅** | **Backend: ✅<br>Frontend: ✅** |
 | **F007** | **Timeline** | **`:TODO`** | **Medium** | **F006** | **[spec](./timeline.md)** | **E2E: ⚪️<br>Int: ⚪️<br>Unit: ⚪️** | **Backend: ⚪️<br>Frontend: ⚪️** |
 | **F008** | **Private Chat** | **`:TODO`** | **Medium** | **F006** | **[spec](./private-chat.md)** | **E2E: ⚪️<br>Int: ⚪️<br>Unit: ⚪️** | **Backend: ⚪️<br>Frontend: ⚪️** |
 
@@ -61,6 +61,16 @@ TBD
 
 TBD
 
+### F006: User Session Management
+
+| AC | E2E Test | Integration Test | Unit Test | Status |
+|----|----------|------------------|-----------|--------|
+| AC-1: 初回訪問時userId生成・保存 | `user-session-management.spec.ts#AC-1` | `session-management.integration.test.ts#authenticate` | `session.test.ts#generateUserId`, `session-manager.test.ts#createSession` | ✅ Pass |
+| AC-2: リロード時セッション復元・履歴同期 | `user-session-management.spec.ts#AC-2` | - | `session.test.ts#getOrCreateUserId`, `session-manager.test.ts#updateSession` | ✅ Pass |
+| AC-3: localStorage削除後は新規ユーザー | `user-session-management.spec.ts#AC-3` | - | `session.test.ts#clearUserId` | ✅ Pass |
+| AC-4: 閉店時全セッションクリア | - | - | `session-manager.test.ts#clearAllSessions` | ✅ Pass |
+| AC-5: サーバー側Zodバリデーション | - | `session-management.integration.test.ts#validate` | - | ✅ Pass |
+
 ## Roadmap
 
 ### Phase 1: MVP Core (Current)
@@ -90,5 +100,6 @@ TBD
 
 | Date | Feature | Change | Author |
 |------|---------|--------|--------|
+| 2026-02-09 | F006 | 仕様実装・テスト作成完了・ステータス更新 | Claude |
 | 2026-02-07 | F002 | 仕様完成・テスト実装・ステータス更新 | Claude |
 | 2026-02-06 | - | spec/構造作成 | - |
