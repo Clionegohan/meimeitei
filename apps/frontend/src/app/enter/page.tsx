@@ -24,8 +24,10 @@ export default function EnterPage() {
       return
     }
 
-    // Why: ブラウザリロード後もセッションを維持するため、userIdを生成・保存
-    // 既存のuserIdがあれば再利用、なければ新規生成
+    // TODO(F006): userId管理機能の将来的な統合
+    // Why: 現在はバックエンドが welcomeイベントで userId を生成・送信
+    // Why: getOrCreateUserId() は F006 セッション管理機能の基盤として準備
+    // Why: F006 実装時に、フロントエンド生成 userId をバックエンドに送信してセッション復元
     getOrCreateUserId()
 
     // localStorageに保存
