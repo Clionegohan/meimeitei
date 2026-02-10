@@ -19,7 +19,7 @@
 | F001 | Business Hours Check | `:IMPLEMENTED` | High | - | [spec](./business-hours.md) | E2E: ⚪️<br>Int: ⚪️<br>Unit: ⚪️ | Backend: ✅<br>Frontend: ✅ |
 | F002 | User Entrance | `:TEST_WRITTEN` | High | F001 | [spec](./user-entrance.md) | E2E: 🟡<br>Int: ✅<br>Unit: ✅ | Backend: ✅<br>Frontend: ✅ |
 | F003 | Seat System | `:TEST_WRITTEN` | High | F002 | [spec](./seat-system.md) | E2E: ✅<br>Int: ✅<br>Unit: ✅ | Backend: ✅<br>Frontend: ✅ |
-| F004 | Chat | `:TODO` | High | F003 | [spec](./chat.md) | E2E: ⚪️<br>Int: ⚪️<br>Unit: ⚪️ | Backend: ✅<br>Frontend: ✅ |
+| F004 | Chat | `:TEST_WRITTEN` | High | F003 | [spec](./chat.md) | E2E: 🟡<br>Int: ✅<br>Unit: ✅ | Backend: ✅<br>Frontend: ✅ |
 | F005 | Realtime Sync | `:TODO` | High | F003, F004 | [spec](./realtime-sync.md) | E2E: ⚪️<br>Int: ⚪️<br>Unit: ⚪️ | Backend: ✅<br>Frontend: ✅ |
 | **F006** | **User Session Management** | **`:TODO`** | **High** | **F001, F002** | **[spec](./user-session-management.md)** | **E2E: ⚪️<br>Int: ⚪️<br>Unit: ⚪️** | **Backend: ⚪️<br>Frontend: ⚪️** |
 | **F007** | **Timeline** | **`:TODO`** | **Medium** | **F006** | **[spec](./timeline.md)** | **E2E: ⚪️<br>Int: ⚪️<br>Unit: ⚪️** | **Backend: ⚪️<br>Frontend: ⚪️** |
@@ -72,7 +72,28 @@
 
 ### F004: Chat
 
-TBD
+| AC | E2E Test | Integration Test | Unit Test | Status |
+|----|----------|------------------|-----------|--------|
+| AC-1: メッセージ送信基本 | `chat.spec.ts#メッセージを送信すると表示され、フォームがクリアされる` | - | `Chat.test.tsx#should render message list with sender name and text` | 🟡 E2E Pending |
+| AC-1: フォームクリア | `chat.spec.ts#メッセージを送信すると表示され、フォームがクリアされる` | - | `Chat.test.tsx#should clear input field after sending message` | 🟡 E2E Pending |
+| AC-2: 複数ユーザー同期 | `chat.spec.ts#複数ユーザー間でメッセージが同期される` | - | `useBarStore.test.ts#should add message to messages array on message event` | 🟡 E2E Pending |
+| AC-3: 文字数制限（空） | `chat.spec.ts#空メッセージは送信されない` | `chat.integration.test.ts#should reject empty text` | `Chat.test.tsx#should not submit empty message` | 🟡 E2E Pending |
+| AC-3: 文字数制限（501文字） | `chat.spec.ts#長文メッセージの制限` | `chat.integration.test.ts#should reject text exceeding 500 characters` | `Chat.test.tsx#should not submit message exceeding 500 characters` | 🟡 E2E Pending |
+| AC-3: 文字数制限（500文字） | `chat.spec.ts#長文メッセージの制限` | `chat.integration.test.ts#should accept message with exactly 500 characters` | `Chat.test.tsx#should submit message with exactly 500 characters` | 🟡 E2E Pending |
+| AC-4: 前後空白トリミング | `chat.spec.ts#前後空白のトリミング` | - | `Chat.test.tsx#should trim leading whitespace` | 🟡 E2E Pending |
+| AC-4: 空白のみブロック | `chat.spec.ts#空メッセージは送信されない` | - | `Chat.test.tsx#should not submit whitespace-only message` | 🟡 E2E Pending |
+| AC-5: 未入店ガード | 🟡 TODO: E2E追加予定 | - | - | 🟡 TODO |
+| AC-6: SendMessageEvent検証 | - | `chat.integration.test.ts#SendMessageEvent Validation (8 tests)` | - | ✅ Pass |
+| AC-7: MessageEvent検証 | - | `chat.integration.test.ts#MessageEvent Validation (8 tests)` | - | ✅ Pass |
+| AC-7: 名前改竄防止 | - | `chat.integration.test.ts#should accept valid message event` | - | ✅ Pass |
+| AC-7: タイムスタンプ改竄防止 | - | `chat.integration.test.ts#should accept Unix timestamp in milliseconds` | - | ✅ Pass |
+| AC-8: Immutability | - | - | `useBarStore.test.ts#should maintain immutability on message event` | ✅ Pass |
+| AC-8: 配列末尾に追加 | - | - | `useBarStore.test.ts#should grow messages array length on each message event` | ✅ Pass |
+| AC-9: セッション保持のみ | `chat.spec.ts#ページリロード後の履歴消失` | - | - | 🟡 E2E Pending |
+| Unit: メッセージ順序保持 | - | - | `useBarStore.test.ts#should preserve message order` | ✅ Pass |
+| Unit: 複数ユーザーメッセージ | - | - | `useBarStore.test.ts#should handle messages from different users` | ✅ Pass |
+| Unit: 同一ユーザー複数メッセージ | - | - | `useBarStore.test.ts#should handle multiple messages from same user` | ✅ Pass |
+| Unit: トリミング動作 | - | - | `Chat.test.tsx#Trimming Behavior (4 tests)` | ✅ Pass |
 
 ### F005: Realtime Sync
 
@@ -85,7 +106,7 @@ TBD
 - [x] F001: Business Hours Check - 実装済み（テスト未作成）
 - [x] F002: User Entrance - **テスト作成済み**（AC-6, AC-7のE2E検証が残る）
 - [x] F003: Seat System - **テスト作成完了**（E2E, Integration, Unit全て完成）
-- [x] F004: Chat - 実装済み（テスト未作成）
+- [x] F004: Chat - **テスト作成済み**（E2E: 6 tests作成済み・手動実行待ち、Int: 16 tests全PASS、Unit: 29 tests全PASS）
 - [x] F005: Realtime Sync - 実装済み（テスト未作成）
 
 ### Phase 2: Test Coverage
@@ -107,6 +128,7 @@ TBD
 
 | Date | Feature | Change | Author |
 |------|---------|--------|--------|
+| 2026-02-10 | F004 | 仕様完成・テスト実装完了・ステータス更新（:TODO → :TEST_WRITTEN）- E2E: 6 tests、Int: 16 tests全PASS、Unit: 29 tests全PASS | Claude |
 | 2026-02-09 | F003 | 仕様完成・テスト実装完了・ステータス更新（:TODO → :TEST_WRITTEN） | Claude |
 | 2026-02-07 | F002 | 仕様完成・テスト実装・ステータス更新 | Claude |
 | 2026-02-06 | - | spec/構造作成 | - |
