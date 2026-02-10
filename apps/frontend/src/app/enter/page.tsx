@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { getOrCreateUserId } from '@/lib/session'
 
 export default function EnterPage() {
   const router = useRouter()
@@ -22,6 +23,10 @@ export default function EnterPage() {
       setError('名前は20文字以内で入力してください')
       return
     }
+
+    // Why: ブラウザリロード後もセッションを維持するため、userIdを生成・保存
+    // 既存のuserIdがあれば再利用、なければ新規生成
+    getOrCreateUserId()
 
     // localStorageに保存
     localStorage.setItem('meimei_username', trimmedName)
