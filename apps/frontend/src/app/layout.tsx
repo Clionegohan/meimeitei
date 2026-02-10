@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import { StrictModeWrapper } from './StrictModeWrapper'
 
 export const metadata: Metadata = {
   title: 'めぃめぃ亭',
@@ -13,7 +14,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ja">
-      <body>{children}</body>
+      <body>
+        <StrictModeWrapper>{children}</StrictModeWrapper>
+      </body>
     </html>
   )
 }
