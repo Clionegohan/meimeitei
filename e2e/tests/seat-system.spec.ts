@@ -21,19 +21,11 @@ async function enterBar(page: Page, username: string): Promise<void> {
   await page.click('button[type="submit"]')
   await expect(page).toHaveURL('/bar')
 
-  // WebSocket接続を待機（welcome + state_syncイベント受信）
-  await page.waitForFunction(
-    () => {
-      const wsState = (window as any).__wsConnected
-      return wsState === true
-    },
-    { timeout: 5000 }
-  ).catch(() => {
-    // タイムアウトしても続行（WebSocket接続チェックはベストエフォート）
-  })
+  // 参加者リストが表示されるまで待機（WebSocket接続の確認）
+  await expect(page.locator('text=参加者')).toBeVisible({ timeout: 5000 })
 
   // DOM更新を待機
-  await page.waitForTimeout(500)
+  await page.waitForTimeout(1000)
 }
 
 test.describe('F003: Seat System', () => {
@@ -201,12 +193,9 @@ test.describe('F003: Seat System', () => {
     const username = await page.evaluate(() => localStorage.getItem('meimei_username'))
     expect(username).toBe('リロードユーザー')
 
-    // WebSocket再接続待機
-    await page.waitForFunction(
-      () => (window as any).__wsConnected === true,
-      { timeout: 5000 }
-    ).catch(() => {})
-    await page.waitForTimeout(1000)
+    // 参加者リストが表示されるまで待機（WebSocket再接続確認）
+    await expect(page.locator('text=参加者')).toBeVisible({ timeout: 5000 })
+    await page.waitForTimeout(1500)
 
     // 座席状態が復元されている（state_syncイベント）
     // Note: 現在の実装ではstate_syncでseated情報が含まれている
