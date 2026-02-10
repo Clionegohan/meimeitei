@@ -6,3 +6,7 @@ dist
 .env
 .env.local
 .DS_Store
+
+# Playwright
+playwright-report/
+test-results/
