@@ -19,18 +19,8 @@ export default defineConfig({
     },
   ],
 
-  webServer: [
-    {
-      command: 'pnpm -F frontend dev',
-      url: 'http://localhost:3002',
-      reuseExistingServer: !process.env.CI,
-      timeout: 120000,
-    },
-    {
-      command: 'pnpm -F backend dev',
-      url: 'http://localhost:3001',
-      reuseExistingServer: !process.env.CI,
-      timeout: 120000,
-    },
-  ],
+  // webServer設定は削除し、手動起動したサーバーを使用
+  // E2Eテスト実行前に以下のコマンドでサーバーを起動すること：
+  // フロントエンド: PORT=3002 NEXT_PUBLIC_DISABLE_STRICT_MODE=true pnpm -F frontend dev
+  // バックエンド: pnpm -F backend dev
 })
