@@ -76,20 +76,31 @@ test.describe('F002: User Entrance', () => {
   })
 
   // AC-8: localStorage永続化
-  test('should persist name in localStorage after refresh', async ({ page }) => {
-    await page.goto('/enter')
+  test('should persist name in localStorage after refresh', async ({ browser }) => {
+    // このテストではaddInitScriptを使わずに手動でlocalStorageをクリア
+    const context = await browser.newContext()
+    const page = await context.newPage()
 
-    // 名前を入力して入店
-    await page.fill('input[type="text"]', 'Bob')
-    await page.click('button[type="submit"]')
-    await expect(page).toHaveURL('/bar')
+    try {
+      // 手動でlocalStorageをクリア
+      await page.goto('/enter')
+      await page.evaluate(() => localStorage.clear())
+      await page.reload()
 
-    // ページをリロード
-    await page.reload()
+      // 名前を入力して入店
+      await page.fill('input[type="text"]', 'Bob')
+      await page.click('button[type="submit"]')
+      await expect(page).toHaveURL('/bar')
 
-    // localStorageに名前が保持されていることを確認
-    const stored = await page.evaluate(() => localStorage.getItem('meimei_username'))
-    expect(stored).toBe('Bob')
+      // ページをリロード
+      await page.reload()
+
+      // localStorageに名前が保持されていることを確認
+      const stored = await page.evaluate(() => localStorage.getItem('meimei_username'))
+      expect(stored).toBe('Bob')
+    } finally {
+      await context.close()
+    }
   })
 
   // AC-4に関連: 前後の空白がトリミングされる（E2Eレベル）
@@ -161,5 +172,87 @@ test.describe('F002: User Entrance', () => {
     await expect(page).toHaveURL('/bar')
     const stored = await page.evaluate(() => localStorage.getItem('meimei_username'))
     expect(stored).toBe('Dave')
+  })
+
+  // AC-6: WebSocket参加イベントのブロードキャスト
+  test('should broadcast user_joined event to other users', async ({ browser }) => {
+    // 2つのブラウザコンテキストを作成
+    const context1 = await browser.newContext()
+    const context2 = await browser.newContext()
+    const page1 = await context1.newPage()
+    const page2 = await context2.newPage()
+
+    // localStorageをクリア
+    await page1.addInitScript(() => localStorage.clear())
+    await page2.addInitScript(() => localStorage.clear())
+
+    try {
+      // User1が先に入店
+      await page1.goto('/enter')
+      await page1.fill('input[type="text"]', 'Alice')
+      await page1.click('button[type="submit"]')
+      await expect(page1).toHaveURL('/bar')
+      // ページが完全にロードされるまで待つ
+      await expect(page1.locator('h2:has-text("参加者")')).toBeVisible({ timeout: 10000 })
+
+      // User2が入店
+      await page2.goto('/enter')
+      await page2.fill('input[type="text"]', 'Bob')
+      await page2.click('button[type="submit"]')
+      await expect(page2).toHaveURL('/bar')
+      // ページが完全にロードされるまで待つ
+      await expect(page2.locator('h2:has-text("参加者")')).toBeVisible({ timeout: 10000 })
+
+      // User2の画面でまず自分自身が表示されることを確認
+      await expect(page2.locator('li:has-text("Bob")')).toBeVisible({ timeout: 10000 })
+
+      // User2の画面でUser1が既に存在することを確認（state_sync）
+      // state_syncイベントで既存ユーザー一覧が送信される
+      await expect(page2.locator('text=参加者 (2)')).toBeVisible({ timeout: 10000 })
+      await expect(page2.locator('li:has-text("Alice")')).toBeVisible()
+
+      // User1の画面で参加者が2人になるまで待つ（user_joinedブロードキャスト）
+      await expect(page1.locator('text=参加者 (2)')).toBeVisible({ timeout: 10000 })
+
+      // User1の画面でUser2が表示されることを確認
+      await expect(page1.locator('li:has-text("Bob")')).toBeVisible()
+    } finally {
+      await context1.close()
+      await context2.close()
+    }
+  })
+
+  // AC-7: 重複入店の防止
+  // 注: このテストはバックエンドのisJoinedフラグを検証するが、
+  // フロントエンドからは通常2回目のjoinイベントを送信できない。
+  // そのため、Integration Testで検証する方が適切。
+  // E2Eレベルでは、「同じ名前で2回入店しようとした場合」をテストする。
+  test('should handle duplicate entrance attempt gracefully', async ({ browser }) => {
+    const context1 = await browser.newContext()
+    const page1 = await context1.newPage()
+
+    await page1.addInitScript(() => localStorage.clear())
+
+    try {
+      // User1が入店
+      await page1.goto('/enter')
+      await page1.fill('input[type="text"]', 'Charlie')
+      await page1.click('button[type="submit"]')
+      await expect(page1).toHaveURL('/bar')
+
+      // 同じブラウザで再度/enterにアクセス（localStorageには既に名前がある）
+      await page1.goto('/enter')
+
+      // 既にlocalStorageに名前があるので、再度同じ名前で入店を試みる
+      await page1.fill('input[type="text"]', 'Charlie')
+      await page1.click('button[type="submit"]')
+      await expect(page1).toHaveURL('/bar')
+
+      // エラーが発生せず、正常に/barに遷移できることを確認
+      // バックエンド側でisJoinedフラグにより重複ブロードキャストは防止される
+      await expect(page1.locator('text=Charlie')).toBeVisible()
+    } finally {
+      await context1.close()
+    }
   })
 })

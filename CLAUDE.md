@@ -368,7 +368,188 @@ Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
 
 ---
 
-## 5. features
+## 5. ai-pair-programming: AI協働開発の原則
+
+このプロジェクトはAIを活用しながらコードリーディングスキルを向上させることも目的としています。
+
+### 実装前の方針説明（必須）
+
+**CRITICAL: コードを書き換える前に、必ず以下を日本語で説明し、ユーザーの承認（OK）を得る**
+
+| 説明項目 | 内容 | 例 |
+|---------|------|-----|
+| 修正の目的 | なぜこの変更が必要か | 「WebSocket接続が切断される問題を解決するため」 |
+| 使用するライブラリ/手法 | 何を使うか、なぜそれを選ぶか | 「Playwrightの`page.waitForEvent()`を使用。理由: WebSocket接続確立を確実に待てるため」 |
+| 全体の方針 | どのようなアプローチで解決するか | 「接続確立を待機してからテストを実行する方式に変更」 |
+| 代替案 | 他にどんな方法があったか | 「タイムアウトを延ばす方法もあるが、根本解決にならない」 |
+
+**承認フロー:**
+
+```
+1. Claude: 方針説明を提示
+2. User: 承認（OK）または修正要求
+3. Claude: 承認後に実装開始
+```
+
+### コード内での「Why」の記述
+
+**すべてのコードに「なぜ」を記述する**
+
+```typescript
+// ❌ BAD: Howだけ
+const result = data.filter(x => x.value > 0).map(x => x.id)
+
+// ✅ GOOD: WhyとHowの両方
+// フィルタリング理由: 無効なデータ（value <= 0）を除外
+// map理由: IDのみが必要で、他のフィールドは不要（メモリ効率化）
+const result = data
+  .filter(x => x.value > 0)  // 有効なデータのみ抽出
+  .map(x => x.id)            // IDのみを取得
+```
+
+**コメントで説明すべき内容:**
+
+| 項目 | 説明内容 | 例 |
+|------|---------|-----|
+| なぜそのライブラリ/関数を採用したか | 選択理由 | `// zustandを採用: グローバル状態管理が必要で、Contextより軽量` |
+| パフォーマンスやメンテナンス性のメリット | 利点 | `// Map使用: O(1)で検索できるため、配列のO(n)より高速` |
+| 代替案があった場合、なぜ不採用か | 不採用理由 | `// Reduxは不採用: 小規模アプリには過剰な設定が必要` |
+| 複雑なロジックの意図 | 背景説明 | `// WebSocket再接続ロジック: ネットワーク不安定時の対策` |
+
+### 読みやすさ（可読性）の徹底
+
+**リーダブルコードの原則に従う**
+
+```typescript
+// ❌ BAD: 複雑なネスト、短縮記法
+const r = d.filter(x => x.v > 0 && x.t === 'a').map(x => ({...x, n: x.n.trim()})).reduce((a, b) => a + b.v, 0)
+
+// ✅ GOOD: 段階的、意味のある命名
+const activeData = data.filter(item =>
+  item.value > 0 && item.type === 'active'
+)
+
+const normalizedData = activeData.map(item => ({
+  ...item,
+  name: item.name.trim()  // 前後の空白を削除
+}))
+
+const totalValue = normalizedData.reduce(
+  (sum, item) => sum + item.value,
+  0  // 初期値
+)
+```
+
+**禁止事項:**
+
+| 禁止 | 理由 | 代替 |
+|------|------|------|
+| 過度なネスト（4階層以上） | 可読性低下 | 関数分割、早期リターン |
+| 1文字変数（ループ以外） | 意図不明 | 意味のある名前 |
+| マジックナンバー | 理由不明 | 定数化してコメント |
+| 長すぎる関数（50行以上） | 責務不明確 | 関数分割 |
+
+**推奨事項:**
+
+```typescript
+// ✅ 意味のある命名
+const MAX_USERNAME_LENGTH = 20  // 名前の最大文字数（DB制約に合わせる）
+const WEBSOCKET_TIMEOUT_MS = 5000  // WebSocket接続タイムアウト（UX考慮）
+
+// ✅ 関数分割
+function validateUsername(name: string): boolean {
+  // バリデーション理由: 空文字・空白のみ・長すぎる名前を防ぐ
+  const trimmedName = name.trim()
+  return trimmedName.length > 0 && trimmedName.length <= MAX_USERNAME_LENGTH
+}
+
+// ✅ 早期リターン
+function processUser(user: User | null): string {
+  if (!user) return 'Unknown'  // null/undefinedガード
+  if (!user.name) return 'Anonymous'  // 名前なしガード
+  return user.name  // 正常系
+}
+```
+
+### 解説モード
+
+**ユーザーが「詳しく」と聞いたら、ステップバイステップで解説する**
+
+**解説の構造:**
+
+```
+1. 全体の目的: このコードが何を実現するか
+2. 前提条件: 入力、状態、依存関係
+3. ステップ分解: 1行ずつ、何をしているか
+4. なぜそうするか: 各ステップの理由
+5. 代替案: 他の方法と比較
+6. 注意点: エッジケース、パフォーマンス
+```
+
+**解説例:**
+
+```typescript
+// ユーザーが「このuseEffectを詳しく」と聞いた場合
+
+useEffect(() => {
+  if (userId && username) {
+    sendEvent({ type: 'join', name: username })
+  }
+}, [userId, username])
+
+/*
+【解説】
+
+1. 全体の目的:
+   - WebSocket接続確立後、自動的にjoinイベントを送信する
+
+2. 前提条件:
+   - userId: サーバーからwelcomeイベントで受信したID
+   - username: localStorageから取得したユーザー名
+   - sendEvent: WebSocket送信関数
+
+3. ステップ分解:
+   - if (userId && username): 両方が設定されているか確認
+     → なぜ: どちらかが欠けていると正常な入店処理ができない
+   - sendEvent({ type: 'join', name: username }): joinイベント送信
+     → なぜ: サーバーにユーザー参加を通知する必要がある
+
+4. useEffectの依存配列 [userId, username]:
+   - なぜ: どちらかが変更されたら再実行
+   - userId変更: WebSocket再接続時
+   - username変更: ユーザーが名前を変更した時（現状では発生しない）
+
+5. 代替案:
+   - ボタンクリックで送信: ユーザーアクションが必要（UX悪い）
+   - useCallbackで関数化: 過剰（このケースでは不要）
+
+6. 注意点:
+   - StrictModeで2回実行される可能性
+   - バックエンドでisJoinedガードが必要
+*/
+```
+
+### 実装時のチェックリスト
+
+実装前に確認:
+- [ ] 方針説明を書いた
+- [ ] ユーザーの承認を得た
+- [ ] 代替案を検討した
+
+実装中に確認:
+- [ ] Whyコメントを書いている
+- [ ] 意味のある命名をしている
+- [ ] 関数が50行以下
+- [ ] ネストが4階層以下
+
+実装後に確認:
+- [ ] コメントがHowだけでなくWhyを説明している
+- [ ] マジックナンバーを定数化している
+- [ ] 解説を求められたら答えられる
+
+---
+
+## 6. features
 
 機能一覧と実装状態。詳細は [`spec/features/_index.md`](./spec/features/_index.md) を参照。
 
@@ -393,7 +574,7 @@ Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
 
 ---
 
-## 6. getting-started
+## 7. getting-started
 
 ### Prerequisites
 
@@ -423,7 +604,7 @@ pnpm dev
 
 ---
 
-## 7. testing
+## 8. testing
 
 ### Test Strategy
 
@@ -444,7 +625,7 @@ Unit (Vitest)         → 個別関数・ロジック
 
 ---
 
-## 8. links
+## 9. links
 
 - **プロジェクト概要**: このファイル
 - **ATDD-SDDワークフロー**: [`spec/README.md`](./spec/README.md)

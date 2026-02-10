@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { getOrCreateUserId } from '@/lib/session'
 
 export default function EnterPage() {
   const router = useRouter()
@@ -22,6 +23,12 @@ export default function EnterPage() {
       setError('名前は20文字以内で入力してください')
       return
     }
+
+    // TODO(F006): userId管理機能の将来的な統合
+    // Why: 現在はバックエンドが welcomeイベントで userId を生成・送信
+    // Why: getOrCreateUserId() は F006 セッション管理機能の基盤として準備
+    // Why: F006 実装時に、フロントエンド生成 userId をバックエンドに送信してセッション復元
+    getOrCreateUserId()
 
     // localStorageに保存
     localStorage.setItem('meimei_username', trimmedName)
