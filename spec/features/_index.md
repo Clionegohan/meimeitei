@@ -62,7 +62,7 @@
 | AC-5: 離席時の🪑消失 | `seat-system.spec.ts#should remove 🪑 icon when user leaves seat` | - | - | ✅ Pass |
 | AC-6: 3Dアバター配置 | （実装済み・手動確認） | - | - | 🟡 Manual |
 | AC-7: Immutability | - | - | `useBarStore.test.ts#should maintain immutability on seat_changed` | ✅ Pass |
-| AC-8: 未入店ユーザーガード | （既存実装で保証） | - | - | ✅ Pass |
+| AC-8: 未入店ユーザーガード | 🟡 TODO: Integration/E2Eテスト追加予定 | - | - | 🟡 TODO |
 | Edge: 複数回トグル | `seat-system.spec.ts#should toggle seat state multiple times correctly` | - | - | ✅ Pass |
 | Edge: ページリロード後復元 | `seat-system.spec.ts#should restore seat state after page reload` | - | - | ✅ Pass |
 | Unit: updateSeated(true) | - | - | `store.test.ts#should update seated status to true` | ✅ Pass |

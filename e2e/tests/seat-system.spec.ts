@@ -24,8 +24,8 @@ async function enterBar(page: Page, username: string): Promise<void> {
   // 参加者リストが表示されるまで待機（WebSocket接続の確認）
   await expect(page.locator('text=参加者')).toBeVisible({ timeout: 5000 })
 
-  // DOM更新を待機
-  await page.waitForTimeout(1000)
+  // 入店したユーザー名が参加者リストに表示されるまで待機
+  await expect(page.locator(`text=${username}`)).toBeVisible({ timeout: 5000 })
 }
 
 test.describe('F003: Seat System', () => {
@@ -195,7 +195,9 @@ test.describe('F003: Seat System', () => {
 
     // 参加者リストが表示されるまで待機（WebSocket再接続確認）
     await expect(page.locator('text=参加者')).toBeVisible({ timeout: 5000 })
-    await page.waitForTimeout(1500)
+
+    // ユーザー名が表示されるまで待機
+    await expect(page.locator('text=リロードユーザー')).toBeVisible({ timeout: 5000 })
 
     // 座席状態が復元されている（state_syncイベント）
     // Note: 現在の実装ではstate_syncでseated情報が含まれている

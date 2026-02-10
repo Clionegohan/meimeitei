@@ -8,6 +8,14 @@ import { SeatToggleEventSchema, SeatChangedEventSchema } from '@meimei-tei/share
  * - AC-2: WebSocketイベントのZodバリデーション
  *   - SeatToggleEvent (Client → Server)
  *   - SeatChangedEvent (Server → Client)
+ *
+ * Note: これらはスキーマレベルのバリデーションテスト。
+ * 真のIntegrationテストは、WebSocket handler全体（受信→検証→store更新→broadcast）を
+ * テストする必要がある。将来的には、実際のWebSocket接続を使用したテストへの進化を検討。
+ *
+ * 改善提案:
+ * - packages/shared/src/events.ts の userId フィールドに .min(1) を追加し、
+ *   空文字列を防ぐ（現在は z.string() のため空文字列がパスする）
  */
 
 describe('F003: Seat System Integration Tests', () => {
