@@ -2,11 +2,11 @@
 
 ---
 feature: f004
-status: :TODO
+status: :TEST_WRITTEN
 priority: high
 dependencies: [F002, F003]
 created: 2026-02-06
-updated: 2026-02-10
+updated: 2026-02-11
 ---
 
 ## 1. Definition
@@ -465,9 +465,9 @@ BarLayout
 | Test Type | File Path | Priority | Test Count |
 |-----------|-----------|----------|------------|
 | E2E | `e2e/tests/chat.spec.ts` | 1 | 6 tests |
-| Integration | `apps/backend/tests/integration/chat.integration.test.ts` | 2 | 6 tests |
-| Unit (Frontend) | `apps/frontend/src/components/__tests__/Chat.test.tsx` | 3 | 4 tests |
-| Unit (Frontend) | `apps/frontend/src/stores/__tests__/useBarStore.test.ts` | 3 | 3 tests (追加) |
+| Integration | `apps/backend/tests/integration/chat.integration.test.ts` | 2 | 16 tests |
+| Unit (Frontend) | `apps/frontend/src/components/__tests__/Chat.test.tsx` | 3 | 16 tests |
+| Unit (Frontend) | `apps/frontend/src/stores/__tests__/useBarStore.test.ts` | 3 | 13 tests (追加) |
 
 **カバレッジ目標:**
 

@@ -26,7 +26,7 @@ export function useWsConnection() {
 
     ws.onerror = (error) => {
       // WebSocket接続エラーはログのみ（開発環境のエラーオーバーレイを防ぐ）
-      console.log('WebSocket error:', error)
+      console.warn('WebSocket error:', error)
     }
 
     ws.onclose = () => {

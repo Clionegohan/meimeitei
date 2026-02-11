@@ -100,7 +100,7 @@ describe('F004: Chat Integration Tests', () => {
       expect(() => SendMessageEventSchema.parse(event)).toThrow()
     })
 
-    it('should reject text with only whitespace (Zod does not trim)', () => {
+    it('should accept text with only whitespace (Zod does not trim)', () => {
       // Given: 空白のみのメッセージ（Zodはtrimしない）
       const event = {
         type: 'send_message',

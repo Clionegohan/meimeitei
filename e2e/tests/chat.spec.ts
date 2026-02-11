@@ -1,4 +1,4 @@
-import { test, expect, type Page, type BrowserContext } from '@playwright/test'
+import { test, expect, type Page } from '@playwright/test'
 
 /**
  * F004: Chat - E2E Tests
@@ -31,9 +31,6 @@ async function enterBar(page: Page, username: string): Promise<void> {
 }
 
 test.describe('F004: Chat', () => {
-  // AC-2は複数コンテキストを使用するため、直列実行
-  test.describe.configure({ mode: 'serial' })
-
   test('AC-1: メッセージを送信すると表示され、フォームがクリアされる', async ({ page }) => {
     // Given: ユーザーが入店済み
     await enterBar(page, 'Alice')
@@ -135,12 +132,12 @@ test.describe('F004: Chat', () => {
     // 送信してみる
     await page.press(inputSelector, 'Enter')
 
-    // 500文字のメッセージが表示される
-    await expect(
-      page.locator(`span.text-gray-200:has-text("${'A'.repeat(500)}")`),
-    ).toBeVisible({
-      timeout: 5000,
-    })
+    // 500文字のメッセージが表示される（長さを検証）
+    // 500文字の"A"で始まるメッセージを探す
+    const messageSpan = page.locator('span.text-gray-200').filter({ hasText: /^A{50,}/ })
+    await expect(messageSpan.first()).toBeVisible({ timeout: 5000 })
+    const displayedText = await messageSpan.first().textContent()
+    expect(displayedText?.length).toBe(500)
   })
 
   test('AC-4: 前後空白のトリミング', async ({ page }) => {
@@ -171,7 +168,7 @@ test.describe('F004: Chat', () => {
     await page.press(inputSelector, 'Enter')
 
     // メッセージが表示されることを確認
-    await expect(page.locator('span.text-gray-200:has-text("Test message")')).toBeVisible({
+    await expect(page.locator('span.text-gray-200:has-text("Test message")').first()).toBeVisible({
       timeout: 5000,
     })
 
