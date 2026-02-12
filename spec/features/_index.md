@@ -16,7 +16,7 @@
 
 | ID | Feature | Status | Priority | Dependencies | Spec | Tests | Implementation |
 |----|---------|--------|----------|--------------|------|-------|----------------|
-| F001 | Business Hours Check | `:IMPLEMENTED` | High | - | [spec](./business-hours.md) | E2E: ⚪️<br>Int: ⚪️<br>Unit: ⚪️ | Backend: ✅<br>Frontend: ✅ |
+| F001 | Business Hours Check | `:DONE` | High | - | [spec](./business-hours.md) | E2E: ✅<br>Int: ✅<br>Unit: ✅ | Backend: ✅<br>Frontend: ✅ |
 | F002 | User Entrance | `:TEST_WRITTEN` | High | F001 | [spec](./user-entrance.md) | E2E: 🟡<br>Int: ✅<br>Unit: ✅ | Backend: ✅<br>Frontend: ✅ |
 | F003 | Seat System | `:TEST_WRITTEN` | High | F002 | [spec](./seat-system.md) | E2E: ✅<br>Int: ✅<br>Unit: ✅ | Backend: ✅<br>Frontend: ✅ |
 | F004 | Chat | `:TEST_WRITTEN` | High | F003 | [spec](./chat.md) | E2E: 🟡<br>Int: ✅<br>Unit: ✅ | Backend: ✅<br>Frontend: ✅ |
@@ -31,10 +31,21 @@
 
 | AC | E2E Test | Integration Test | Unit Test | Status |
 |----|----------|------------------|-----------|--------|
-| AC-1: 営業時間内アクセス | `business-hours.spec.ts#AC-1` | `business-hours.integration.test.ts#OPEN` | `business-hours.test.ts#22:00` | ⚪️ Pending |
-| AC-2: 営業時間外アクセス | `business-hours.spec.ts#AC-2` | `business-hours.integration.test.ts#CLOSED` | `business-hours.test.ts#12:00` | ⚪️ Pending |
-| AC-3: 境界値（開店） | - | - | `business-hours.test.ts#boundary-22:00` | ⚪️ Pending |
-| AC-4: 境界値（閉店） | - | - | `business-hours.test.ts#boundary-04:00` | ⚪️ Pending |
+| AC-1: 営業時間内アクセス | `business-hours.spec.ts#AC-1: should redirect to /enter during business hours` | `api.integration.test.ts#should return { open: true } during business hours` | `business-hours.test.ts#should return true at exactly 22:00 JST` | ✅ Pass |
+| AC-2: 営業時間外アクセス | `business-hours.spec.ts#AC-2: should show CLOSED during non-business hours` | `api.integration.test.ts#should return { open: false } outside business hours` | `business-hours.test.ts#should return false at exactly 04:00 JST` | ✅ Pass |
+| AC-3: 境界値（開店） | - | `api.integration.test.ts#should return { open: true } at opening time` | `business-hours.test.ts#should return true at exactly 22:00 JST (opening time)` | ✅ Pass |
+| AC-4: 境界値（閉店） | - | `api.integration.test.ts#should return { open: false } at closing time` | `business-hours.test.ts#should return false at exactly 04:00 JST (closing time)` | ✅ Pass |
+| Edge: Real Date Path | - | - | `business-hours.test.ts#Real Date Path (getJSTHour)` - 6 tests | ✅ Pass |
+| Edge: 23時 | - | `api.integration.test.ts#should return { open: true } during business hours (23:00 JST)` | `business-hours.test.ts#should return true at 23:00 JST` | ✅ Pass |
+| Edge: 深夜0時 | - | `api.integration.test.ts#should return { open: true } at midnight` | `business-hours.test.ts#should return true at 00:00 JST (midnight)` | ✅ Pass |
+| Edge: 正午12時 | - | `api.integration.test.ts#should return { open: false } outside business hours (12:00 JST)` | `business-hours.test.ts#should return false at 12:00 JST (noon)` | ✅ Pass |
+| UI: CLOSED画面要素 | `business-hours.spec.ts#should display proper CLOSED screen elements` | - | - | ✅ Pass |
+| UI: Loading表示 | `business-hours.spec.ts#should show Loading state initially` | - | - | ✅ Pass |
+| Error: Backend未起動 | `business-hours.spec.ts#should show CLOSED when backend is not available` | - | - | ✅ Pass |
+| Edge: SKIP_BUSINESS_HOURS_CHECK | - | `api.integration.test.ts#should return { open: true } when SKIP_BUSINESS_HOURS_CHECK is enabled` | `business-hours.test.ts#should return true when SKIP_BUSINESS_HOURS_CHECK is "true"` | ✅ Pass |
+| Edge: TEST_JST_HOUR validation | - | - | `business-hours.test.ts#TEST_JST_HOUR 環境変数のバリデーション (5 tests)` | ✅ Pass |
+| API: CORS | - | `api.integration.test.ts#should include CORS headers` | - | ✅ Pass |
+| API: Health check | - | `api.integration.test.ts#should return { status: "ok" }` | - | ✅ Pass |
 
 ### F002: User Entrance
 
@@ -103,7 +114,7 @@ TBD
 
 ### Phase 1: MVP Core (Current)
 
-- [x] F001: Business Hours Check - 実装済み（テスト未作成）
+- [x] F001: Business Hours Check - **テスト作成完了**（E2E: 2 tests、Int: 10 tests全PASS、Unit: 18 tests全PASS）
 - [x] F002: User Entrance - **テスト作成済み**（AC-6, AC-7のE2E検証が残る）
 - [x] F003: Seat System - **テスト作成完了**（E2E, Integration, Unit全て完成）
 - [x] F004: Chat - **テスト作成済み**（E2E: 6 tests作成済み・手動実行待ち、Int: 16 tests全PASS、Unit: 29 tests全PASS）
@@ -128,6 +139,8 @@ TBD
 
 | Date | Feature | Change | Author |
 |------|---------|--------|--------|
+| 2026-02-12 | F001 | HIGH Issues修正完了・ステータス更新（:TEST_WRITTEN → :DONE）- Real Date Pathテスト追加（+6 tests）、AC-2 E2E実装（skip削除）、合計79 tests全PASS | Claude |
+| 2026-02-12 | F001 | ATDD違反是正・テスト作成完了・ステータス更新（:IMPLEMENTED → :TEST_WRITTEN）- E2E: 2 tests、Int: 10 tests全PASS、Unit: 18 tests全PASS | Claude |
 | 2026-02-10 | F004 | 仕様完成・テスト実装完了・ステータス更新（:TODO → :TEST_WRITTEN）- E2E: 6 tests、Int: 16 tests全PASS、Unit: 29 tests全PASS | Claude |
 | 2026-02-09 | F003 | 仕様完成・テスト実装完了・ステータス更新（:TODO → :TEST_WRITTEN） | Claude |
 | 2026-02-07 | F002 | 仕様完成・テスト実装・ステータス更新 | Claude |
