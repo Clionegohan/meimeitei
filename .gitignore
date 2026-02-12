@@ -10,3 +10,10 @@ dist
 # Playwright
 playwright-report/
 test-results/
+
+# Test coverage
+coverage/
+*.lcov
+
+# Claude Code agents (local only)
+agents/
