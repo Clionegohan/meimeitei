@@ -19,3 +19,6 @@ export {
   closesAtOf,
   closedReason,
 } from './shared/time'
+export type { User, PresenceVisibility, SignTag, CreateUserInput } from './user/user'
+export { createUser, isSignTag, SIGN_TAGS } from './user/user'
+export type { UserRepository } from './user/repository'
