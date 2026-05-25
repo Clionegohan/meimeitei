@@ -145,6 +145,27 @@ J Timeline 内 reply / L お席（グループトーク）/ P 通知・未読バ
 
 ---
 
+## 9. Phase 計画（**層ごと**、MVPα）
+
+| Phase | 層 | スコープ |
+| --- | --- | --- |
+| 1 — Domain core | `packages/domain` | User refactor / Conversation / Message / Post |
+| 2 — Domain extras | `packages/domain` | Like / Block / Presence / Typing |
+| 3 — Application | `packages/application` | registerUser / updateProfile / blockUser / sendMessage / markAsRead / updateTyping / createPost / deletePost / likePost / unlikePost / startConversationByPost (R1) / startConversationDirect (R2) / updatePresence / listTimeline / listConversations / listMessages（各 use case に `BusinessHoursGuard` 適用） |
+| 4 — Infrastructure | `packages/infrastructure` | In-memory repositories (all) / Auth.js v5 + Google OAuth / Socket.IO event-bus adapter |
+| 5 — Presentation | `apps/web` | routes (`/login`, `/onboarding`, `/chats`, `/chats/[id]`, `/profile`, `/closed`) / TopBar / Sidebar / RightRail / Socket.IO client |
+| 6 — Deploy + polish | infra | Render Web Service デプロイ / `/api/health` 動作確認 / Playwright E2E（2 ユーザーで DM 動作） / README 更新 |
+
+**各 Phase で守るルール**:
+- TDD（test 先行 → RED → 最小実装 GREEN → REFACTOR）
+- 各 Phase 着手時に `docs/dev-log/phase-<id>.md` で方針 / TDD cycle / 検証手順を記録
+- feature branch + PR + merge commit（main 直 push 禁止）
+- spec が真。spec と実装が乖離した場合、原則 spec を優先（spec の方を変えるなら別 PR で改訂）
+
+**MVPβ は MVPα の安定後に追加 Phase として計画する。**
+
+---
+
 ## 進捗
 
 | 論点 | 状態 |
