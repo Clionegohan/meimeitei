@@ -8,6 +8,7 @@ export type {
   PostId,
   ReplyId,
   LikeId,
+  BlockId,
 } from './shared/id'
 export { DomainError, NotFoundError, ValidationError, ForbiddenError } from './shared/errors'
 export type { NightId } from './shared/time'
@@ -34,3 +35,6 @@ export type { PostRepository, ListPostsQuery } from './post/repository'
 export type { Like, CreateLikeInput } from './like/like'
 export { createLike } from './like/like'
 export type { LikeRepository } from './like/repository'
+export type { Block, CreateBlockInput } from './block/block'
+export { createBlock } from './block/block'
+export type { BlockRepository } from './block/repository'

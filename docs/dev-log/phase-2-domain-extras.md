@@ -74,6 +74,40 @@ typecheck 緑。
 - 一方向。「A が B をブロック」と「B が A をブロック」は別 record
 - ただし **「両者のいずれかがブロック中なら相互的に影響する」** という解釈で use case 側が判定
 
+`BlockRepository`:
+- `findById` / `findBy(blockerId, blockedId)` / `save` / `delete`
+- `existsBetween(a, b)` は無向で「いずれか方向に block があれば true」
+- `listBlockedBy(blockerId)` で blocker が block している相手の UserId 一覧
+
+### TDD cycle 記録（Phase 2-2）
+
+#### 1. RED
+
+`block.test.ts` 2 件先行 Write（正常系 + self-block 拒否）。`id.ts` に `BlockId` brand 追加。
+
+```
+FAIL  src/block/block.test.ts
+Error: Failed to load url ./block
+```
+
+#### 2. GREEN
+
+最小実装:
+- `block.ts`: `Block` + `createBlock` factory（self-block 拒否）
+- `repository.ts`: `BlockRepository`
+- `index.ts` 公開 API 更新
+
+```
+Test Files  7 passed (7)
+     Tests  73 passed (73)
+```
+
+typecheck 緑。
+
+#### 3. REFACTOR
+
+不要。entity は最小、ポリシー（相互的影響）は use case 側に持たせる方針を貫いた。
+
 ## Presence 設計（Phase 2-3）
 
 - **揮発**（永続化しない、in-memory のみ）
