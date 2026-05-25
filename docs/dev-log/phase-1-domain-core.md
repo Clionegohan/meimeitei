@@ -65,11 +65,48 @@ typecheck も緑。
 
 不要。entity は immutable readonly tuple、factory は spec の不変条件（lex 正規化 + self-pair 拒否）のみを担当。R2 既存再利用や R1 投稿ごと別 conv は repository / use case 層の責務として明確に分離。
 
-## Message 設計（Phase 1-2） — Phase 1-1 完了後
+## Message 設計（Phase 1-2）
 
 - fields: `id` / `conversationId` / `senderId` / `body` / `sentAt` / `readAt: Date | null` / `deletedAt: Date | null`
-- `body` 1–280 graphemes（空メッセージは送信不可）
+- `body` 1–280 graphemes（空メッセージは送信不可、改行は保持）
 - `deletedAt != null` の場合は body を返さず、presentation で「取り消されました」placeholder
+
+`MessageRepository`:
+- `findById` / `save` / `listByConversation`
+- `listByConversation` は cursor-based pagination（`before: Date`, `limit?`）。並び順は **ascending by sentAt**（古い順、chat 慣例）
+
+純粋関数:
+- `markAsRead(msg, readAt)`: idempotent。既読なら同インスタンスを返す
+- `markAsDeleted(msg, deletedAt)`: idempotent。`readAt` は維持
+
+### TDD cycle 記録（Phase 1-2）
+
+#### 1. RED
+
+`message.test.ts` を spec 仕様で先行 Write（11 件: factory + validation + markAsRead / markAsDeleted の immutability・idempotency・read/delete 順序保持）。
+
+```
+FAIL  src/message/message.test.ts
+Error: Failed to load url ./message
+```
+
+#### 2. GREEN
+
+最小実装:
+- `message.ts`: `Message` 型 + `createMessage` + `markAsRead` + `markAsDeleted`
+- `repository.ts`: `MessageRepository` interface + `ListMessagesQuery` 型（cursor-based）
+- `index.ts` 公開 API 更新
+
+```
+Test Files  4 passed (4)
+     Tests  57 passed (57)
+```
+
+typecheck 緑。
+
+#### 3. REFACTOR
+
+不要。`markAsRead` / `markAsDeleted` は早期 return で副作用なし。`graphemeLength` は User と重複しているが、Phase 1 中に shared util 化するか後で判断する（YAGNI）。
 
 ## Post 設計（Phase 1-3） — Phase 1-2 完了後
 
