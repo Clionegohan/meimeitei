@@ -22,3 +22,6 @@ export {
 export type { User, PresenceVisibility, SignTag, Tone, CreateUserInput } from './user/user'
 export { createUser, isSignTag, SIGN_TAGS, TONES } from './user/user'
 export type { UserRepository } from './user/repository'
+export type { Conversation, CreateConversationInput } from './conversation/conversation'
+export { createConversation, normalizeParticipants } from './conversation/conversation'
+export type { ConversationRepository } from './conversation/repository'
