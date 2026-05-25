@@ -8,3 +8,4 @@ export type MessageId = Brand<string, 'MessageId'>
 export type PostId = Brand<string, 'PostId'>
 export type ReplyId = Brand<string, 'ReplyId'>
 export type LikeId = Brand<string, 'LikeId'>
+export type BlockId = Brand<string, 'BlockId'>
