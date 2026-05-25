@@ -118,4 +118,48 @@ typecheck 緑。
 
 - **揮発**
 - fields: `conversationId` / `userId` / `startedAt`
-- 一定時間（例 5 秒）で expire する想定（use case / adapter 側）
+- `TYPING_TTL_MS = 5_000`、`hasExpired(typing, now)` で expire 判定（boundary は inclusive）
+
+`TypingRepository`:
+- `findByConversationAndUser` / `set` / `clear`
+- `listActiveByConversation(convId, now)`: implementer が `now` を見て expired を除外する
+
+### TDD cycle 記録（Phase 2-3 + 2-4 統合）
+
+両者とも volatile な小さい entity のため **1 PR に統合**。
+
+#### 1. RED
+
+- `presence.test.ts` 6 件 + `typing.test.ts` 6 件先行 Write
+- `pnpm test`: `Failed to load url ./presence` / `./typing`
+- 既存 73 件は緑のまま
+
+#### 2. GREEN
+
+- `presence.ts`: `Presence` + `createPresence` + **`visibleStatusTo`**（非対称 stealth を pure function として entity に閉じ込めた）
+- `presence/repository.ts`: `PresenceRepository`（raw を返し viewer filter は entity 関数で）
+- `typing.ts`: `Typing` + `createTyping` + `hasExpired` + `TYPING_TTL_MS`
+- `typing/repository.ts`: `TypingRepository`
+- `index.ts` 公開 API 更新
+
+```
+Test Files  9 passed (9)
+     Tests  85 passed (85)
+```
+
+typecheck 緑。
+
+#### 3. REFACTOR
+
+不要。`visibleStatusTo` を entity に置いたことで、use case 側はこの純粋関数を呼ぶだけで秘匿仕様を強制できる。
+
+---
+
+## Phase 2 完了
+
+Like / Block / Presence / Typing と各 Repository port が出揃った。
+
+- 累計 test: **85 / 85**（27 time + 12 user + 7 conv + 11 msg + 12 post + 2 like + 2 block + 6 presence + 6 typing）
+- 公開 API: `@me-me-en/domain` から全 entity + repo port が import 可能
+
+次フェーズ: **Phase 3 (application use cases + BusinessHoursGuard)**
