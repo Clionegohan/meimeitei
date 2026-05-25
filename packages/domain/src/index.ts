@@ -7,7 +7,7 @@ export type {
   MessageId,
   PostId,
   ReplyId,
-  CandleId,
+  LikeId,
 } from './shared/id'
 export { DomainError, NotFoundError, ValidationError, ForbiddenError } from './shared/errors'
 export type { NightId } from './shared/time'
@@ -31,3 +31,6 @@ export type { MessageRepository, ListMessagesQuery } from './message/repository'
 export type { Post, CreatePostInput } from './post/post'
 export { createPost, markPostAsDeleted } from './post/post'
 export type { PostRepository, ListPostsQuery } from './post/repository'
+export type { Like, CreateLikeInput } from './like/like'
+export { createLike } from './like/like'
+export type { LikeRepository } from './like/repository'
