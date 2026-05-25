@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: me-me-en
+    runtime: node
+    plan: starter
+    buildCommand: corepack enable && corepack prepare pnpm@9.15.0 --activate && pnpm install --frozen-lockfile && pnpm -F @me-me-en/web build
+    startCommand: pnpm -F @me-me-en/web start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: '20'
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_TELEMETRY_DISABLED
+        value: '1'
+      - key: DATA_STORE
+        value: memory

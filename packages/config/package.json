@@ -1,0 +1,10 @@
+{
+  "name": "@me-me-en/config",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Shared build/lint/tsconfig presets for me-me-en workspace",
+  "type": "module",
+  "files": [
+    "tsconfig.base.json"
+  ]
+}
