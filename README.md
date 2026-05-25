@@ -1,4 +1,4 @@
-# meimeitei
+# me-me-en
 
 夜限定の 1on1 DM + タイムライン Webアプリ。
 
