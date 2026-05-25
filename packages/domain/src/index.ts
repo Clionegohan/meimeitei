@@ -38,3 +38,13 @@ export type { LikeRepository } from './like/repository'
 export type { Block, CreateBlockInput } from './block/block'
 export { createBlock } from './block/block'
 export type { BlockRepository } from './block/repository'
+export type {
+  Presence,
+  PresenceStatus,
+  CreatePresenceInput,
+} from './presence/presence'
+export { createPresence, visibleStatusTo } from './presence/presence'
+export type { PresenceRepository } from './presence/repository'
+export type { Typing, CreateTypingInput } from './typing/typing'
+export { createTyping, hasExpired, TYPING_TTL_MS } from './typing/typing'
+export type { TypingRepository } from './typing/repository'
