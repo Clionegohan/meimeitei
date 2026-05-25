@@ -108,12 +108,62 @@ typecheck 緑。
 
 不要。`markAsRead` / `markAsDeleted` は早期 return で副作用なし。`graphemeLength` は User と重複しているが、Phase 1 中に shared util 化するか後で判断する（YAGNI）。
 
-## Post 設計（Phase 1-3） — Phase 1-2 完了後
+## Post 設計（Phase 1-3）
 
 - fields: `id` / `authorId` / `body` / `postedAt` / `nightId` / `deletedAt: Date | null`
-- `body` 1–280 graphemes
+- `body` 1–280 graphemes、改行保持
+- **`createPost` は `nightIdOf(postedAt)` を呼ぶ → 営業時間外なら `ValidationError`** （domain で夜の制約を強制）
 - visibility は use case 側で判定:
   - `postedAt` の nightId == current nightId → 他者公開
   - それ以外 → 自分のみ可視
 - Post への like 累計は別 read model（Phase 2 Like で扱う）
 - Post 削除時、関連 R1 Conversation は orphan（cascade なし）— Phase 3 で扱う
+
+`PostRepository`:
+- `findById` / `save` / `list`
+- `ListPostsQuery`: `nightId`（公開フィード）/ `authorId`（自分の過去 post）/ cursor-based (`before` / `limit`)
+- 並び順: descending by `postedAt`（spec C 行、新しい投稿が上）
+
+純粋関数:
+- `markPostAsDeleted(post, deletedAt)`: idempotent、原 post を変更しない
+
+### TDD cycle 記録（Phase 1-3）
+
+#### 1. RED
+
+`post.test.ts` 12 件先行 Write。営業時間境界（22:00 / 04:59 / 05:00 / 12:00 JST）と body validation、idempotent deletion をカバー。
+
+```
+FAIL  src/post/post.test.ts
+Error: Failed to load url ./post
+```
+
+#### 2. GREEN
+
+最小実装:
+- `post.ts`: `Post` 型 + `createPost`（`nightIdOf` に postedAt を委譲して夜の制約を強制）+ `markPostAsDeleted`
+- `repository.ts`: `PostRepository` + `ListPostsQuery`
+- `index.ts` 公開 API 更新
+
+```
+Test Files  5 passed (5)
+     Tests  69 passed (69)
+```
+
+typecheck 緑。
+
+#### 3. REFACTOR
+
+不要。営業時間判定は `nightIdOf` に委譲できているため Post entity 自身は純粋な validation と nightId 導出のみ。
+
+---
+
+## Phase 1 完了
+
+Conversation / Message / Post entity と各 Repository port が出揃った。
+
+- 累計 test: **69/69**（27 time + 12 user + 7 conv + 11 msg + 12 post）
+- 公開 API: `@me-me-en/domain` から各 entity 型 / factory / repository interface が import 可能
+
+次フェーズ:
+- **Phase 2**（domain extras）: Like, Block, Presence, Typing
