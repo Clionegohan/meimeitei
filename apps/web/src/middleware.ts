@@ -23,16 +23,20 @@ export default auth((req) => {
   const path = nextUrl.pathname
 
   const isAuthApi = path.startsWith('/api/auth')
+  // /api/test/* は E2E (Playwright) 用の seed endpoint。route handler 側で
+  // NODE_ENV !== 'production' && E2E_TEST_ENABLED === 'true' を要求するので、
+  // middleware では public 扱いにして素通しする。
+  const isTestApi = path.startsWith('/api/test')
   const isLoginPage = path === '/login'
   const isClosedPage = path === '/closed'
   const isHealth = path === '/api/health'
-  const isPublic = isAuthApi || isLoginPage || isHealth || isClosedPage
+  const isPublic = isAuthApi || isTestApi || isLoginPage || isHealth || isClosedPage
 
   const businessHoursOpen = isOpen(new Date())
 
   // (1) Business hours gate
   if (!businessHoursOpen) {
-    if (isClosedPage || isAuthApi || isHealth) return NextResponse.next()
+    if (isClosedPage || isAuthApi || isTestApi || isHealth) return NextResponse.next()
     const url = nextUrl.clone()
     url.pathname = '/closed'
     return NextResponse.redirect(url)

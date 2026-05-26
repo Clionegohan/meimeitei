@@ -86,18 +86,38 @@ docker compose down -v
 - Render の再 deploy で in-memory データは消える（Postgres モードでは消えない）
 - 営業時間判定は `Date.now()` ベース。OS の時計が JST 連動していること（CI / Render は UTC で動くが、`time.ts` の `isOpen` が JST に変換する）
 
-## 5. bug を見つけたら
+## 4.5 開発用 escape hatch（production には絶対効かない）
+
+| 環境変数 | 効果 | 効く条件 |
+| --- | --- | --- |
+| `BYPASS_BUSINESS_HOURS=true` | `isOpen` が常に true、`nightIdOf` が JST 日付を返す | `NODE_ENV !== 'production'` |
+| `E2E_TEST_ENABLED=true` | `/api/test/seed` が user + AuthIdentity を pre-register する | `NODE_ENV !== 'production'` |
+
+両方とも `NODE_ENV` を厳格に判定するので production deploy では絶対に効かない。ローカル QA や Playwright spec から使う。
+
+## 5. Playwright で自動 QA
+
+```bash
+# bypass + seed endpoint を許可してフル spec を走らせる
+BYPASS_BUSINESS_HOURS=true E2E_TEST_ENABLED=true pnpm -F @me-me-en/web e2e
+```
+
+- `tests/e2e/smoke.spec.ts` — public surface（health / login / closed redirect）
+- `tests/e2e/authenticated.spec.ts` — `next-auth/jwt` encode で session cookie 注入、`/api/test/seed` で user を pre-register。`/chats` / `/timeline` / `/profile` / `/profile/[other]` を smoke
+- `tests/e2e/_helpers.ts` — `signInAs(context, baseURL, user)` を提供
+
+## 6. bug を見つけたら
 
 - 再現手順 + 期待 / 実際 + 該当 PR / commit を記録
 - application 層の bug → `packages/application/.../*.test.ts` に regression test を追加して RED → 修正で GREEN
 - presentation 層の bug → Playwright spec で再現できるなら `apps/web/tests/e2e/` に追加
 
-## 6. 自動化済の項目（CI で常時検証）
+## 7. 自動化済の項目（CI で常時検証）
 
 - ESLint 境界ルール（clean architecture 層間依存）
 - TypeScript（全 workspace `tsc --noEmit`）
 - Vitest（domain 88 + application 125 + infrastructure 42 = 255 件）
 - Postgres integration test（9 adapter × smoke、計 32 件）
-- Playwright public-surface smoke（/api/health / / → redirect / /login or /closed render）
+- Playwright（public-surface + authenticated 計 8 件）
 
 GitHub Actions の 3 job (`verify` / `integration` / `e2e`) で PR ごとに自動実行。

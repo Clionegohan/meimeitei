@@ -14,6 +14,13 @@ const CLOSE_HOUR = 5
 
 const toJst = (utc: Date): Date => new Date(utc.getTime() + JST_OFFSET_MS)
 
+// 開発時のローカル QA 用 escape hatch。production NODE_ENV では絶対効かない。
+// 営業時間外でも UI を触れるようにする補助フラグ。
+// 設定方法: NODE_ENV !== 'production' && BYPASS_BUSINESS_HOURS=true
+const isBusinessHoursBypassed = (): boolean =>
+  process.env.NODE_ENV !== 'production' &&
+  process.env.BYPASS_BUSINESS_HOURS === 'true'
+
 const formatYmd = (jstShifted: Date): string => {
   const y = jstShifted.getUTCFullYear()
   const m = String(jstShifted.getUTCMonth() + 1).padStart(2, '0')
@@ -22,6 +29,7 @@ const formatYmd = (jstShifted: Date): string => {
 }
 
 export const isOpen = (now: Date): boolean => {
+  if (isBusinessHoursBypassed()) return true
   const h = toJst(now).getUTCHours()
   return h >= OPEN_HOUR || h < CLOSE_HOUR
 }
@@ -33,6 +41,10 @@ export const nightIdOf = (now: Date): NightId => {
   if (h < CLOSE_HOUR) {
     const prev = new Date(jst.getTime() - 24 * 60 * 60 * 1000)
     return formatYmd(prev) as NightId
+  }
+  if (isBusinessHoursBypassed()) {
+    // bypass 中は「今日の JST 日付」を night として扱う。post 作成等のため。
+    return formatYmd(jst) as NightId
   }
   throw new ValidationError(
     `time ${now.toISOString()} is outside business hours (22:00-05:00 JST); no night assigned`,
