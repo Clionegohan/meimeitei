@@ -28,7 +28,7 @@ spec Phase 計画の Phase 3。`packages/application` を埋めていく。entit
 
 ApplicationError 独自階層は作らず、`@me-me-en/domain` の `ForbiddenError` / `NotFoundError` / `ValidationError` を再利用する（最小 dependency）。
 
-### TDD cycle 記録
+### TDD cycle 記録（Phase 3-0）
 
 #### 1. RED
 
@@ -55,3 +55,57 @@ typecheck 緑。
 #### 3. REFACTOR
 
 不要。`isOpen` は domain にあり、application は clock 経由でそれを呼ぶ薄い層。Phase 3-1 以降の use case は冒頭で `guard.ensureOpen()` を呼ぶパターンを踏襲する。
+
+---
+
+## Phase 3-1 — User use cases
+
+### 範囲
+
+- `IdGenerator` port + `systemIdGenerator`（branded id 生成、application 層）
+- `registerUser` use case
+- `updateProfile` use case
+
+### 設計
+
+#### `IdGenerator`
+- 各 entity の brand id を返す port（`user()` / `conversation()` / `message()` / `post()` / `like()` / `block()`）
+- production: `crypto.randomUUID()` で実装した `systemIdGenerator`
+- test: deterministic sequential generator を helper として用意
+
+#### `registerUser`
+- 入力: `{ nickname }`
+- 挙動: `BusinessHoursGuard.ensureOpen` → `findByNickname` で uniqueness → `createUser` factory → `save` → 戻り値 `User`
+- onboarding 最小（nickname のみ必須、bio / tone / 等は default）
+
+#### `updateProfile`
+- 入力: `{ userId, patch: { nickname?, bio?, tone?, presenceVisibility?, currentSigns? } }`
+- 挙動: `ensureOpen` → `findById`（無ければ `NotFoundError`）→ nickname 変更時のみ uniqueness（本人除く）→ `createUser` で再構築して validation 再実行 → `save` → 戻り値 `User`
+- 「patch + 再 factory」パターンで immutability と validation を両立
+
+### TDD cycle 記録（Phase 3-1）
+
+#### 1. RED
+
+- `__test-helpers__/fakes.ts` を共有 helper として用意（`jst` / `fixedClock` / `openGuard` / `closedGuard` / `sequentialIdGen` / `inMemoryUserRepo`）
+- `id-generator.test.ts` 3 件、`register-user.test.ts` 5 件、`update-profile.test.ts` 7 件を先行 Write
+- `pnpm test`: 3 file failed（`Cannot find module './id-generator' / './register-user' / './update-profile'`）
+- 既存 6 件は緑のまま
+
+#### 2. GREEN
+
+- `ports/id-generator.ts`: `IdGenerator` interface + `systemIdGenerator`（`globalThis.crypto.randomUUID()`）
+- `use-cases/user/register-user.ts`: `createRegisterUser` factory（ensureOpen → uniqueness → `createUser` → save → return）
+- `use-cases/user/update-profile.ts`: `createUpdateProfile` factory（ensureOpen → findById [NotFoundError] → 変更時のみ uniqueness [self 除外] → `createUser` で再構築 → save → return）
+- `index.ts` 公開 API 更新
+
+```
+Test Files  4 passed (4)
+     Tests  21 passed (21)
+```
+
+typecheck 緑。
+
+#### 3. REFACTOR
+
+不要。`updateProfile` の「patch + `createUser` 再構築」パターンは domain factory の全 validation をそのまま再利用できるので簡潔。他の use case でも同じパターンを踏襲予定。
