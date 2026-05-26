@@ -1,9 +1,15 @@
+databases:
+  - name: meimeitei-db
+    plan: free
+    databaseName: meimeitei
+    user: meimeitei
+
 services:
   - type: web
     name: me-me-en
     runtime: node
     plan: starter
-    buildCommand: corepack enable && corepack prepare pnpm@9.15.0 --activate && pnpm install --frozen-lockfile && pnpm -F @me-me-en/web build
+    buildCommand: corepack enable && corepack prepare pnpm@9.15.0 --activate && pnpm install --frozen-lockfile && pnpm --filter @me-me-en/infrastructure exec prisma generate --schema=prisma/schema.prisma && pnpm --filter @me-me-en/infrastructure exec prisma migrate deploy --schema=prisma/schema.prisma && pnpm -F @me-me-en/web build
     startCommand: pnpm -F @me-me-en/web start
     healthCheckPath: /api/health
     envVars:
@@ -14,7 +20,11 @@ services:
       - key: NEXT_TELEMETRY_DISABLED
         value: '1'
       - key: DATA_STORE
-        value: memory
+        value: prisma
+      - key: DATABASE_URL
+        fromDatabase:
+          name: meimeitei-db
+          property: connectionString
       # Auth.js v5 — set these in the Render dashboard.
       - key: AUTH_SECRET
         sync: false
