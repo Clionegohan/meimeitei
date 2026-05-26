@@ -1,24 +1,33 @@
-import type { UserId } from '@me-me-en/domain'
+import type { AuthIdentity, UserId } from '@me-me-en/domain'
 import { authIdentityRepository } from '@/server/di'
 
-// Bridge between Google account (email) and me-me-en User.id.
-// β-5-c から AuthIdentityRepository 経由。DATA_STORE=memory なら従来の
-// in-memory Map、DATA_STORE=prisma なら user_auth_identities テーブル。
-//
-// 注: providerId に email を入れているのは MVP の暫定。本来は Google の `sub`
-// を使うべきで、β-5-d で auth.ts callback から `token.sub` を渡す改修を行う。
-// それまでは email を identity key として運用する。
-const PROVIDER = 'google' as const
+// AuthIdentityRepository への薄いラッパー。
+//   - findUserIdByProviderId: 毎リクエストの jwt callback から呼ぶ
+//   - bindIdentity: onboarding 完了時に provider 情報を確定させる
+//   - findUserIdByEmail: legacy 互換のため残置 (β-5-d 以降では providerId 経由)
+
+export const findUserIdByProviderId = async (
+  provider: AuthIdentity['provider'],
+  providerId: string,
+): Promise<UserId | null> => {
+  const identity = await authIdentityRepository.findByProviderId(provider, providerId)
+  return identity === null ? null : identity.userId
+}
 
 export const findUserIdByEmail = async (email: string): Promise<UserId | null> => {
   const identity = await authIdentityRepository.findByEmail(email)
   return identity === null ? null : identity.userId
 }
 
-export const bindEmailToUser = async (email: string, userId: UserId): Promise<void> => {
+export const bindIdentity = async (
+  provider: AuthIdentity['provider'],
+  providerId: string,
+  email: string | null,
+  userId: UserId,
+): Promise<void> => {
   await authIdentityRepository.upsert({
-    provider: PROVIDER,
-    providerId: email,
+    provider,
+    providerId,
     email,
     userId,
   })
