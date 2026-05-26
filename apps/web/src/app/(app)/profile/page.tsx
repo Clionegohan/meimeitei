@@ -1,6 +1,13 @@
 import { notFound } from 'next/navigation'
 import { auth } from '@/auth'
-import { likeRepository, postRepository, userRepository } from '@/server/di'
+import {
+  getCloseSheep,
+  getHourlyPresenceChart,
+  getProfileStats,
+  userRepository,
+} from '@/server/di'
+import { CloseSheepList } from './_components/close-sheep-list'
+import { HourlyPresenceChart } from './_components/hourly-presence-chart'
 import { ProfileEditor, type ProfileEditorDto } from './profile-editor'
 
 export default async function MyProfilePage() {
@@ -20,12 +27,13 @@ export default async function MyProfilePage() {
     joinedAt: user.joinedAt.toISOString(),
   }
 
-  // Owner-only statistics. Two are computed directly from repositories.
-  // Login-night history and presence-hour distribution require event logs
-  // we don't track yet; rendered as placeholders for MVPα.
-  const ownPosts = await postRepository.list({ authorId: user.id })
-  const postCount = ownPosts.filter((p) => p.deletedAt === null).length
-  const candleCount = await likeRepository.countReceivedByUser(user.id)
+  // β-2: β-1 で作った use case を resolve して placeholder を実値化。
+  // 3 つは並行に呼べる（互いに独立）。
+  const [stats, hourly, closeSheep] = await Promise.all([
+    getProfileStats({ userId: user.id }),
+    getHourlyPresenceChart({ userId: user.id }),
+    getCloseSheep({ userId: user.id }),
+  ])
 
   return (
     <div className="p-10 max-w-3xl">
@@ -42,29 +50,42 @@ export default async function MyProfilePage() {
           <div className="flex items-baseline justify-between border-b border-dotted border-[#1F2533] pb-3">
             <dt className="text-xs text-[#9A9484] tracking-widest">置いた文</dt>
             <dd className="text-xl text-[#ECE6D4] tabular-nums">
-              {postCount}
+              {stats.postCount}
               <span className="text-[10px] text-[#5E5A4F] ml-1 tracking-widest">通</span>
             </dd>
           </div>
           <div className="flex items-baseline justify-between border-b border-dotted border-[#1F2533] pb-3">
             <dt className="text-xs text-[#9A9484] tracking-widest">寄せられた燭</dt>
             <dd className="text-xl text-[#ECE6D4] tabular-nums">
-              {candleCount}
+              {stats.candleReceivedCount}
               <span className="text-[10px] text-[#5E5A4F] ml-1 tracking-widest">本</span>
             </dd>
           </div>
           <div className="flex items-baseline justify-between border-b border-dotted border-[#1F2533] pb-3">
             <dt className="text-xs text-[#9A9484] tracking-widest">入店した夜</dt>
-            <dd className="text-xs text-[#5E5A4F] tracking-widest">集計中…</dd>
+            <dd className="text-xl text-[#ECE6D4] tabular-nums">
+              {stats.totalLoginNights}
+              <span className="text-[10px] text-[#5E5A4F] ml-1 tracking-widest">夜</span>
+            </dd>
           </div>
           <div className="flex items-baseline justify-between border-b border-dotted border-[#1F2533] pb-3">
             <dt className="text-xs text-[#9A9484] tracking-widest">連続来店</dt>
-            <dd className="text-xs text-[#5E5A4F] tracking-widest">集計中…</dd>
+            <dd className="text-xl text-[#ECE6D4] tabular-nums">
+              {stats.consecutiveLoginNights}
+              <span className="text-[10px] text-[#5E5A4F] ml-1 tracking-widest">夜</span>
+            </dd>
           </div>
         </dl>
-        <p className="mt-6 text-[10px] text-[#5E5A4F] tracking-widest leading-loose">
-          ※ 在席の刻 chart と 親しい羊 はログ集計が必要なため後続フェーズで実装します。
-        </p>
+      </section>
+
+      <section className="mt-12">
+        <p className="text-xs text-[#5E5A4F] tracking-[0.35em] mb-6">在 席 の 刻</p>
+        <HourlyPresenceChart buckets={hourly} />
+      </section>
+
+      <section className="mt-12">
+        <p className="text-xs text-[#5E5A4F] tracking-[0.35em] mb-6">親 し い 羊</p>
+        <CloseSheepList sheep={closeSheep} />
       </section>
     </div>
   )

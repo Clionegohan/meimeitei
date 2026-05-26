@@ -1,6 +1,8 @@
 import { createServer } from 'node:http'
 import next from 'next'
 import { Server as SocketIOServer } from 'socket.io'
+import type { UserId } from '@me-me-en/domain'
+import { recordPresenceEvent } from './src/server/di'
 import { setIoServer } from './src/server/realtime/io-bridge'
 
 // Custom server hosting Next.js + Socket.IO on the same HTTP port.
@@ -38,6 +40,9 @@ void app.prepare().then(() => {
   io.on('connection', (socket) => {
     const userId = socket.data.userId as string
     void socket.join(`user:${userId}`)
+    // 「在席の刻」集計用 event log。複数タブ接続でも online を毎回積む
+    // 近似で十分（hourly chart は max 正規化で吸収する）。
+    void recordPresenceEvent({ userId: userId as UserId, type: 'online' })
 
     socket.on('conversation:join', (conversationId: string) => {
       if (typeof conversationId !== 'string' || conversationId.length === 0) return
@@ -70,7 +75,9 @@ void app.prepare().then(() => {
     })
 
     socket.on('disconnect', () => {
-      // Presence update lands in Phase 5-4
+      // recordPresenceEvent は意図的に BusinessHoursGuard を外しているので、
+      // 05:00 force-disconnect 時にも offline を記録できる。
+      void recordPresenceEvent({ userId: userId as UserId, type: 'offline' })
     })
   })
 
