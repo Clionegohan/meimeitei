@@ -12,4 +12,8 @@ export interface BlockRepository {
   // Either direction counts.
   existsBetween(a: UserId, b: UserId): Promise<boolean>
   listBlockedBy(blockerId: UserId): Promise<readonly UserId[]>
+  // 逆向き: blockedId を block している全 blocker を列挙。
+  // post 作成時の block-aware broadcast で「この投稿者をブロックしている人」を
+  // 集めるために使う。listBlockedBy と組み合わせて両方向の除外集合を作れる。
+  listBlockersOf(blockedId: UserId): Promise<readonly UserId[]>
 }

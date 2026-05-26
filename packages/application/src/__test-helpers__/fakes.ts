@@ -232,6 +232,8 @@ export const inMemoryBlockRepo = (): {
       ),
     listBlockedBy: async (blockerId) =>
       state.filter((b) => b.blockerId === blockerId).map((b) => b.blockedId),
+    listBlockersOf: async (blockedId) =>
+      state.filter((b) => b.blockedId === blockedId).map((b) => b.blockerId),
   }
   return { repo, state }
 }

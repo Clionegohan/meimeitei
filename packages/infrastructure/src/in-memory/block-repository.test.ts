@@ -51,4 +51,13 @@ describe('InMemoryBlockRepository', () => {
     const result = await repo.listBlockedBy(alice)
     expect([...result].sort()).toEqual([bob, carol].sort())
   })
+
+  it('listBlockersOf returns user ids who have blocked the target', async () => {
+    const repo = createInMemoryBlockRepository()
+    await repo.save(seed('b1', alice, bob))
+    await repo.save(seed('b2', carol, bob))
+    const result = await repo.listBlockersOf(bob)
+    expect([...result].sort()).toEqual([alice, carol].sort())
+    expect(await repo.listBlockersOf(alice)).toEqual([])
+  })
 })
