@@ -124,3 +124,37 @@ UI レベルの unit test は書かず、typecheck を緑にして締める。E2
 - `pnpm -F @me-me-en/web typecheck`: 緑
 
 次フェーズ: **Phase 5-3 (手紙 / DM end-to-end)**
+
+---
+
+## Phase 5-3 — 手紙（DM）UI
+
+Phase 5-3 は範囲が大きいため、2 PR に分割:
+
+- **Phase 5-3-a**: 共通 layout + `/chats` list + `/chats/[id]` thread + server action による送信
+- **Phase 5-3-b**: Socket.IO server handlers + client 接続でリアルタイム反映
+
+### Phase 5-3-a 範囲
+
+- `src/app/(app)/layout.tsx`: server component、session + userId 二重 guard、`TopBar` + `Sidebar` + main slot
+- `src/app/(app)/_components/top-bar.tsx`: 「迷羊苑 / 営業 二十二時 — 翌五時」固定表示
+- `src/app/(app)/_components/sidebar.tsx`: 軒先 / 手紙 / 己 の 3 リンク
+- `src/app/(app)/chats/page.tsx`: server component で `listConversations({ userId })` → list UI
+- `src/app/(app)/chats/[conversationId]/page.tsx`: server component、`listConversations` で participant check（unknown は `notFound()`）→ `listMessages` → `ThreadView` に渡す
+- `src/app/(app)/chats/[conversationId]/thread-view.tsx`: client、messages 表示 + composer。送信は server action 経由で即時 `setMessages`
+- `src/app/(app)/chats/[conversationId]/actions.ts`: `sendMessageAction` → DI の `sendMessage` を呼び ISO 化した `MessageDto` を返す
+
+### 設計判断
+
+- **Server action ベースで先に動かす**: Socket.IO 結線を待たずに DM の「送れる/読める」を確認できる。Phase 5-3-b で Socket.IO リアルタイムを上に被せる
+- **Date は ISO で client へ渡す**: Server Component / Client Component 境界で Date instance を渡すと serialization warning が出るため `MessageDto` で全部 string 化
+- **layout の二重 guard**: middleware が auth + business hours を担うが、layout 側でも `session.userId === undefined` のときの redirect を明示
+- **`/chats/[conversationId]` の participant check**: use case `listMessages` も participant 検証するが、UI で 404 を返したいので `listConversations` で事前確認
+
+### TDD cycle 記録（Phase 5-3-a）
+
+UI ユニットテストは書かず、typecheck で締める。
+
+- `pnpm -F @me-me-en/web typecheck`: 緑
+
+次: **Phase 5-3-b (Socket.IO 結線でリアルタイム化)**
