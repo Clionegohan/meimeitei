@@ -82,6 +82,24 @@ DATA_STORE=prisma pnpm -F @me-me-en/web dev
 pnpm --filter @me-me-en/infrastructure exec prisma migrate dev --schema=prisma/schema.prisma --name <description>
 ```
 
+### Integration test
+
+実 Postgres に対する Prisma adapter のテスト:
+
+```bash
+# Postgres を起動 (docker compose)
+docker compose up -d
+
+# DATABASE_URL を環境変数で渡して integration test
+DATABASE_URL=postgresql://meimeitei:meimeitei@localhost:5432/meimeitei?schema=public \
+  pnpm --filter @me-me-en/infrastructure test:integration
+
+# 後片付け
+docker compose down -v
+```
+
+CI では GitHub Actions の `services.postgres` 経由で同じテストを走らせる（`verify` job が緑になった後に `integration` job が回る）。
+
 ### Migration
 
 - `packages/infrastructure/prisma/migrations/0_init/migration.sql` が initial schema を作る

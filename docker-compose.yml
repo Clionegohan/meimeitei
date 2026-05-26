@@ -1,0 +1,27 @@
+# Local Postgres for development & integration tests.
+#
+#   docker compose up -d         # start Postgres on port 5432
+#   docker compose down -v       # stop and remove the volume
+#
+# DATABASE_URL=postgresql://meimeitei:meimeitei@localhost:5432/meimeitei?schema=public
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: meimeitei-postgres
+    environment:
+      POSTGRES_USER: meimeitei
+      POSTGRES_PASSWORD: meimeitei
+      POSTGRES_DB: meimeitei
+    ports:
+      - '5432:5432'
+    volumes:
+      - meimeitei_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U meimeitei -d meimeitei']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  meimeitei_pgdata:
