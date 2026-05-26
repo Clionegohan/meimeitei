@@ -1,0 +1,140 @@
+// me-me-en MVPβ Postgres schema.
+// branded ID 型 (UserId / PostId 等) はすべて `String` で持つ — domain layer の
+// branding は TypeScript 内で完結する。Prisma 側で再現する必要はない。
+//
+// 揮発系の Presence / Typing (TTL 内のみ意味がある) はスキーマに含めない。
+// in-memory のまま運用する。Redis 等の KV を導入する判断は β-5 完了後。
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "./generated"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── User ────────────────────────────────────────────────────────────────
+model User {
+  id                 String   @id
+  nickname           String
+  bio                String   @default("")
+  tone               String
+  presenceVisibility String // 'visible' | 'invisible'
+  currentSigns       String[] // SignTag[] (snake_case enum)
+  joinedAt           DateTime
+
+  @@map("users")
+}
+
+// auth provider (Google etc.) → me-me-en User.id の bridge。
+// MVPα の in-memory bridge (apps/web/src/server/auth/session-bridge.ts) を
+// β-5-c で本テーブルに移行する。本 phase ではスキーマだけ用意。
+model UserAuthIdentity {
+  provider   String // 'google' | future providers
+  providerId String // sub (Google) や equivalent
+  email      String?
+  userId     String
+
+  @@id([provider, providerId])
+  @@index([userId])
+  @@map("user_auth_identities")
+}
+
+// ─── Conversation ────────────────────────────────────────────────────────
+// participants は lex-asc に正規化された (a, b) ペア。
+// (participantAId, participantBId, rootPostId) の unique で R1/R2 invariant を表現:
+//   R1: rootPostId が同じなら 1 つだけ
+//   R2: rootPostId が NULL の direct conversation はペアごとに 1 つだけ
+//        (Postgres は NULL を distinct とみなすため、ここは追加制約が必要 ↓)
+model Conversation {
+  id             String   @id
+  participantAId String
+  participantBId String
+  rootPostId     String?
+  openedAt       DateTime
+
+  // R2 enforcement: rootPostId IS NULL の場合のペア unique。
+  // Prisma では partial unique index を直接表現できないので、migration で
+  // 手書きする。本ファイルは形だけ宣言。
+  @@unique([participantAId, participantBId, rootPostId])
+  @@index([participantAId])
+  @@index([participantBId])
+  @@map("conversations")
+}
+
+// ─── Message ─────────────────────────────────────────────────────────────
+model Message {
+  id             String    @id
+  conversationId String
+  senderId       String
+  body           String
+  sentAt         DateTime
+  readByIds      String[]
+  deletedAt      DateTime?
+
+  @@index([conversationId, sentAt])
+  @@map("messages")
+}
+
+// ─── Post ────────────────────────────────────────────────────────────────
+model Post {
+  id        String    @id
+  authorId  String
+  body      String
+  postedAt  DateTime
+  nightId   String // YYYY-MM-DD
+  deletedAt DateTime?
+
+  @@index([nightId, postedAt])
+  @@index([authorId])
+  @@map("posts")
+}
+
+// ─── Like ────────────────────────────────────────────────────────────────
+model Like {
+  id        String   @id
+  postId    String
+  userId    String
+  createdAt DateTime
+
+  @@unique([postId, userId])
+  @@index([userId])
+  @@map("likes")
+}
+
+// ─── Block ───────────────────────────────────────────────────────────────
+model Block {
+  id        String   @id
+  blockerId String
+  blockedId String
+  createdAt DateTime
+
+  @@unique([blockerId, blockedId])
+  @@index([blockedId])
+  @@map("blocks")
+}
+
+// ─── LoginHistory ────────────────────────────────────────────────────────
+// 「夜単位」で重複排除した来店記録。複合 PK で自然に idempotent。
+model LoginHistory {
+  userId      String
+  nightId     String
+  firstSeenAt DateTime
+
+  @@id([userId, nightId])
+  @@map("login_history")
+}
+
+// ─── PresenceEvent ───────────────────────────────────────────────────────
+// append-only event log。30 日窓で集計、それ以前は trim 運用に出す。
+model PresenceEvent {
+  id         BigInt   @id @default(autoincrement())
+  userId     String
+  type       String // 'online' | 'offline'
+  occurredAt DateTime
+
+  @@index([userId, occurredAt])
+  @@map("presence_events")
+}

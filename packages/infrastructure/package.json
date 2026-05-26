@@ -15,10 +15,12 @@
   },
   "dependencies": {
     "@me-me-en/application": "workspace:*",
-    "@me-me-en/domain": "workspace:*"
+    "@me-me-en/domain": "workspace:*",
+    "@prisma/client": "^5.22.0"
   },
   "devDependencies": {
     "@me-me-en/config": "workspace:*",
+    "prisma": "^5.22.0",
     "typescript": "^5.7.2",
     "vitest": "^2.1.8"
   }
