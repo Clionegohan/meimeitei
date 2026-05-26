@@ -59,8 +59,23 @@ pnpm -F @me-me-en/web dev   # custom server を tsx watch で起動
 MVPα（コア体験）完了:
 - 入店 / ご記帳 / 閉店中 / 軒先（投稿・Like・Reply）/ 手紙（DM realtime）/ 己（profile）
 
-MVPβ（次フェーズ、未着手）:
-- 来店帳統計（入店した夜・連続来店・在席チャート・親しい羊）に必要な event log 集計
-- SheepBrush SVG / Moon / 装飾要素
+MVPβ（進行中）:
+- β-1〜β-4: 来店帳統計 / 在席チャート / 親しい羊 / SheepBrush SVG / Moon / Block-aware broadcast 完了
+- β-5 進行中: Prisma + Postgres adapter
+  - β-5-a: schema + User pilot adapter（完）
+  - β-5-b 以降: 他 entity の adapter / DI 完全切替 / Render Postgres provision
 
 仕様の正本は `docs/spec/product-spec.md`、各 Phase の作業ログは `docs/dev-log/`。
+
+## Prisma (β-5)
+
+```bash
+# 初回 generate（postinstall でも走らせるか検討中）
+pnpm --filter @me-me-en/infrastructure exec prisma generate --schema=prisma/schema.prisma
+
+# Postgres を立ち上げ、DATABASE_URL を .env.local に設定後、migration を実行
+pnpm --filter @me-me-en/infrastructure exec prisma migrate dev --schema=prisma/schema.prisma --name init
+
+# DATA_STORE=prisma で起動すると User entity だけ Postgres に永続化
+DATA_STORE=prisma pnpm -F @me-me-en/web dev
+```

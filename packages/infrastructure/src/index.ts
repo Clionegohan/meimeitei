@@ -8,3 +8,8 @@ export { createInMemoryPresenceRepository } from './in-memory/presence-repositor
 export { createInMemoryTypingRepository } from './in-memory/typing-repository'
 export { createInMemoryLoginHistoryRepository } from './in-memory/login-history-repository'
 export { createInMemoryPresenceEventRepository } from './in-memory/presence-event-repository'
+
+// Prisma (Postgres) adapters — pilot phase (β-5-a): User のみ。
+// 他 entity は順次追加していく予定。
+export { prisma } from './prisma/client'
+export { createPrismaUserRepository } from './prisma/user-repository'
