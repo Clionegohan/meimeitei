@@ -169,3 +169,10 @@ export type {
   HourlyPresenceBucket,
 } from './use-cases/profile/get-hourly-presence-chart'
 export { createGetHourlyPresenceChart } from './use-cases/profile/get-hourly-presence-chart'
+export type {
+  GetCloseSheep,
+  GetCloseSheepInput,
+  GetCloseSheepDeps,
+  CloseSheep,
+} from './use-cases/profile/get-close-sheep'
+export { createGetCloseSheep } from './use-cases/profile/get-close-sheep'

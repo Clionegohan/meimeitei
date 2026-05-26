@@ -4,6 +4,7 @@ import {
   createClearTyping,
   createCreatePost,
   createDeletePost,
+  createGetCloseSheep,
   createGetHourlyPresenceChart,
   createGetProfileStats,
   createLikePost,
@@ -194,6 +195,13 @@ export const getProfileStats = createGetProfileStats({
 })
 export const getHourlyPresenceChart = createGetHourlyPresenceChart({
   presenceEventRepository,
+  clock,
+  businessHoursGuard,
+})
+export const getCloseSheep = createGetCloseSheep({
+  conversationRepository,
+  messageRepository,
+  blockRepository,
   clock,
   businessHoursGuard,
 })

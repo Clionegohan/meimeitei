@@ -155,3 +155,58 @@ domain + infrastructure の event log 基盤を application 層から呼ぶた�
 - β-2: profile UI への wire-up（placeholder 置換、ヒートマップ描画）
 - β-3 以降: SheepBrush、Block-aware broadcast、Prisma 切替
 
+## β-1-c 範囲（親しい羊 集計）
+
+spec L50: 「**直近 30 日の DM メッセージ数 Top 3**（自動算出、手動指定なし）。同じ相手で複数 conversation がある場合は **メッセージ数を合算**して 1 ユーザーとしてカウント」
+
+### 追加した API
+
+| 層 | 追加 | 内容 |
+| --- | --- | --- |
+| domain | `MessageRepository.countByConversationsInWindow(ids, from, to)` | 半開区間 `[from, to)` の会話別メッセージ件数を bulk Map で返す |
+| infrastructure | in-memory adapter 実装 | id Set / 半開区間 filter で集計 |
+| application | `createGetCloseSheep` | spec L50 を実装する use case |
+| DI | `getCloseSheep` 結線 | conversation / message / block / clock / businessHoursGuard を resolve |
+
+### `getCloseSheep` flow
+
+1. `businessHoursGuard.ensureOpen()`
+2. `now = clock.now()`、`from = now - 30d`
+3. `conversationRepository.listByUser(userId)` → 自分が属する会話一覧
+4. `messageRepository.countByConversationsInWindow(ids, from, now)` で会話別件数を一括取得
+5. 会話 → 相手 peer を引いて per-peer 合算（同じ peer の複数 conversation は合算される）
+6. `blockRepository.existsBetween(self, peer)` で無向 block 除外
+7. `messageCount > 0` のみ残し、降順 sort、`slice(0, 3)`
+
+### 設計判断
+
+- **bulk count シグネチャ**: 会話数 N に対して `N` 回 round trip するより、Postgres で `WHERE conversation_id = ANY($ids) AND sent_at >= $from AND sent_at < $to GROUP BY conversation_id` 1 発の方が速い。in-memory ではどちらでも良いが、port シグネチャを bulk に揃えておくと adapter 差し替え時に application を直さずに済む
+- **block の無向除外**: `listConversations` と同じ流儀（`existsBetween`）。spec L51「親しい羊は本人のみ可視」は presentation 層の責務で、use case は本人視点での出力に専念
+- **`messageCount === 0` を除外**: 「絡まなかった会話の相手」を Top に出す意味はない。spec の「直近 30 日 DM 数」のニュアンスにも合致
+- **集計の対象**: `Conversation.participantIds` 2 人ペアの「相手」を peer とする（自分宛て・他人宛て両方向の DM を 1 つの会話のカウントに含める）。spec の「DM メッセージ数」が「自分が出したか受けたか」を区別していないため、合算でカウント
+
+### TDD cycle 記録（β-1-c）
+
+#### 1. RED
+
+- domain interface を先に拡張 → 既存 fakes / in-memory adapter で「method missing」error
+- `get-close-sheep.test.ts` 6 件を Write:
+  - 空入力 / Top 3 cap / 複数 conv 合算 / block 除外 / 30 日窓 / count==0 除外
+
+#### 2. GREEN
+
+- in-memory adapter（`packages/infrastructure/src/in-memory/message-repository.ts`）と fakes に同じロジックを実装
+- `packages/application/src/use-cases/profile/get-close-sheep.ts` impl
+- `packages/application/src/index.ts` に export 追加
+- `apps/web/src/server/di/use-cases.ts` に `getCloseSheep` を結線
+- `pnpm -r test`:
+  - domain: 88 / 88
+  - application: **120 / 120**（既存 114 + 新 6）
+  - infrastructure: 41 / 41
+- `pnpm -r typecheck`: 全 workspace 緑
+
+#### 3. REFACTOR
+
+- 不要。bulk シグネチャに収まる素直な集計
+- 残課題: β-2 で profile UI の「親しい羊」placeholder（3 件のニックネーム表示）を `getCloseSheep` で置換
+
