@@ -19,3 +19,23 @@ export type {
   UpdateProfileDeps,
 } from './use-cases/user/update-profile'
 export { createUpdateProfile } from './use-cases/user/update-profile'
+
+// Use cases — Conversation
+export type {
+  StartConversationByPost,
+  StartConversationByPostInput,
+  StartConversationByPostDeps,
+} from './use-cases/conversation/start-conversation-by-post'
+export { createStartConversationByPost } from './use-cases/conversation/start-conversation-by-post'
+export type {
+  StartConversationDirect,
+  StartConversationDirectInput,
+  StartConversationDirectDeps,
+} from './use-cases/conversation/start-conversation-direct'
+export { createStartConversationDirect } from './use-cases/conversation/start-conversation-direct'
+export type {
+  ListConversations,
+  ListConversationsInput,
+  ListConversationsDeps,
+} from './use-cases/conversation/list-conversations'
+export { createListConversations } from './use-cases/conversation/list-conversations'
