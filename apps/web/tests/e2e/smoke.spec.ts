@@ -22,7 +22,9 @@ test.describe('public surface (smoke)', () => {
     // Either /login itself or the closed page took us here.
     const url = page.url()
     if (/\/closed$/.test(url)) {
-      await expect(page.getByText(/閉店/)).toBeVisible()
+      // closed page は <h1>閉 店</h1> (全角スペース入り) を render するため
+      // /閉.?店/ で両表記を許容する。
+      await expect(page.getByText(/閉.?店/)).toBeVisible()
     } else {
       await expect(page.getByRole('heading', { name: '迷羊苑' })).toBeVisible()
       await expect(page.getByRole('button', { name: '暖簾をくぐる' })).toBeVisible()
