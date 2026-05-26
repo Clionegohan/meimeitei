@@ -339,3 +339,52 @@ Post 系（PR #21）+ Like 系（本 PR）の 6 use case 全てが実装済。
 
 - 累計 application test: **79 / 79**
 - 次フェーズ: **Phase 3-4 (Block + Presence + Typing use cases)**
+
+---
+
+## Phase 3-4 — Block + Presence + Typing use cases
+
+予定 6 use case を 2 PR に分割:
+- **Phase 3-4-a**（本 PR）: Block 2 件
+  - `blockUser`
+  - `unblockUser`
+- **Phase 3-4-b**（次 PR）: Presence + Typing 4 件
+  - `updatePresence`
+  - `listOnlineUsers`
+  - `updateTyping`
+  - `clearTyping`
+
+### Phase 3-4-a 設計
+
+#### `blockUser`
+- 入力: `{ blockerId, blockedId }`
+- 挙動: `ensureOpen` → `findBy(blockerId, blockedId)` で既存確認 → あれば idempotent return → なければ `createBlock` factory（self-block は ValidationError）+ save → return
+
+#### `unblockUser`
+- 入力: `{ blockerId, blockedId }`
+- 挙動: `ensureOpen` → `findBy` → あれば `delete` → no-op（idempotent）
+
+### TDD cycle 記録（Phase 3-4-a）
+
+#### 1. RED
+
+- `block-user.test.ts` 4 件、`unblock-user.test.ts` 3 件 = 7 件先行 Write
+- `pnpm test`: 2 file failed
+- 既存 79 件は緑のまま
+
+#### 2. GREEN
+
+- `block-user.ts`: ensureOpen → `findBy(blocker, blocked)` で idempotent → なければ `createBlock` factory（self-block reject）+ save
+- `unblock-user.ts`: ensureOpen → `findBy` → あれば `delete`（idempotent）
+- `index.ts` 公開 API 更新
+
+```
+Test Files  18 passed (18)
+     Tests  86 passed (86)
+```
+
+typecheck 緑。
+
+#### 3. REFACTOR
+
+不要。block / unblock の idempotent pattern は like / unlike と同じ流儀。

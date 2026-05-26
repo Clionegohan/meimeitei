@@ -99,3 +99,17 @@ export type {
   UnlikePostDeps,
 } from './use-cases/like/unlike-post'
 export { createUnlikePost } from './use-cases/like/unlike-post'
+
+// Use cases — Block
+export type {
+  BlockUser,
+  BlockUserInput,
+  BlockUserDeps,
+} from './use-cases/block/block-user'
+export { createBlockUser } from './use-cases/block/block-user'
+export type {
+  UnblockUser,
+  UnblockUserInput,
+  UnblockUserDeps,
+} from './use-cases/block/unblock-user'
+export { createUnblockUser } from './use-cases/block/unblock-user'
