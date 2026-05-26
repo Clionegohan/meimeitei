@@ -39,3 +39,23 @@ export type {
   ListConversationsDeps,
 } from './use-cases/conversation/list-conversations'
 export { createListConversations } from './use-cases/conversation/list-conversations'
+
+// Use cases — Message
+export type {
+  SendMessage,
+  SendMessageInput,
+  SendMessageDeps,
+} from './use-cases/message/send-message'
+export { createSendMessage } from './use-cases/message/send-message'
+export type {
+  MarkAsRead,
+  MarkAsReadInput,
+  MarkAsReadDeps,
+} from './use-cases/message/mark-as-read'
+export { createMarkAsRead } from './use-cases/message/mark-as-read'
+export type {
+  ListMessages,
+  ListMessagesInput,
+  ListMessagesDeps,
+} from './use-cases/message/list-messages'
+export { createListMessages } from './use-cases/message/list-messages'

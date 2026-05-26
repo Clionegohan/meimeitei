@@ -167,3 +167,64 @@ typecheck 緑。
 #### 3. REFACTOR
 
 不要。**「ensureOpen → 関連 entity 探索 → block check → repository operation」** の use case パターンが確立。Phase 3-2-b 以降も踏襲する。
+
+---
+
+## Phase 3-2-b — Message use cases
+
+### 範囲
+
+- `sendMessage`
+- `markAsRead`
+- `listMessages`
+
+### 設計
+
+#### `sendMessage`
+- 入力: `{ senderId, conversationId, body }`
+- 挙動: `ensureOpen` → `ConversationRepository.findById` [`NotFoundError`] → sender が participant か（[`ForbiddenError`]）→ 相手とブロック関係なら [`ForbiddenError`] → `createMessage` factory（body validation）→ `MessageRepository.save` → return
+- 「夜を跨いで残る手紙」(spec D) として永続化されるのは MessageRepository 実装の責務
+
+#### `markAsRead`
+- 入力: `{ readerId, messageId }`（`readAt` は clock）
+- 挙動: `ensureOpen` → `findById(messageId)` [`NotFoundError`] → 当該 conversation を fetch して reader が participant か（[`ForbiddenError`]）→ `markAsRead(msg, clock.now())` で idempotent 更新 → save → return
+
+#### `listMessages`
+- 入力: `{ viewerId, conversationId, before?, limit? }`
+- 挙動: `ensureOpen` → `findById(conv)` [`NotFoundError`] → viewer が participant か → `listByConversation(query)` で取得 → return
+
+### TDD cycle 記録（Phase 3-2-b）
+
+#### 1. RED
+
+- `fakes.ts` に `inMemoryMessageRepo` を追加（asc by sentAt、`before` で cursor フィルタ）
+- `send-message.test.ts` 6 件、`mark-as-read.test.ts` 5 件、`list-messages.test.ts` 5 件を先行 Write
+- `pnpm test`: 3 file failed（`Cannot find module ...`）
+- 既存 36 件は緑のまま
+
+#### 2. GREEN
+
+- `send-message.ts`: ensureOpen → `findById(conv)` [`NotFoundError`] → participant check [`ForbiddenError`] → counterpart block check → `createMessage` factory → save
+- `mark-as-read.ts`: ensureOpen → `findById(message)` → `findById(conv)` → reader が participant か → `markAsRead` entity helper（idempotent）→ 変化時のみ save
+- `list-messages.ts`: ensureOpen → conv 探索 → viewer participant check → `listByConversation` cursor pagination
+- `index.ts` 公開 API 更新
+
+```
+Test Files  10 passed (10)
+     Tests  52 passed (52)
+```
+
+typecheck 緑。
+
+#### 3. REFACTOR
+
+不要。「ensureOpen → 関連 entity 探索 → participant/block guard → entity op → repo op」 のパターンが完全に固まった。
+
+---
+
+## Phase 3-2 完了
+
+Conversation 系（PR #19）+ Message 系（本 PR）の 6 use case 全てが実装済。
+
+- 累計 application test: **52 / 52**
+- 次フェーズ: **Phase 3-3 (Post + Like use cases)**

@@ -121,6 +121,35 @@ export const inMemoryPostRepo = (): {
   return { repo, state }
 }
 
+// In-memory MessageRepository.
+export const inMemoryMessageRepo = (): {
+  repo: import('@me-me-en/domain').MessageRepository
+  state: import('@me-me-en/domain').Message[]
+} => {
+  type M = import('@me-me-en/domain').Message
+  const state: M[] = []
+  const repo: import('@me-me-en/domain').MessageRepository = {
+    findById: async (id) => state.find((m) => m.id === id) ?? null,
+    save: async (msg) => {
+      const idx = state.findIndex((m) => m.id === msg.id)
+      if (idx >= 0) state[idx] = msg
+      else state.push(msg)
+    },
+    listByConversation: async (q) => {
+      const byConv = state.filter((m) => m.conversationId === q.conversationId)
+      const beforeFiltered = q.before
+        ? byConv.filter((m) => m.sentAt.getTime() < q.before!.getTime())
+        : byConv
+      // ascending by sentAt (chat convention)
+      const sorted = [...beforeFiltered].sort(
+        (a, b) => a.sentAt.getTime() - b.sentAt.getTime(),
+      )
+      return q.limit ? sorted.slice(0, q.limit) : sorted
+    },
+  }
+  return { repo, state }
+}
+
 // In-memory BlockRepository — supports existsBetween (undirected).
 export const inMemoryBlockRepo = (): {
   repo: import('@me-me-en/domain').BlockRepository
