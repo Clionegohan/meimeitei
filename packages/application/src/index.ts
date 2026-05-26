@@ -176,3 +176,6 @@ export type {
   CloseSheep,
 } from './use-cases/profile/get-close-sheep'
 export { createGetCloseSheep } from './use-cases/profile/get-close-sheep'
+
+// Presentation utilities (pure, no business state)
+export { getMoonPhase } from './utils/moon-phase'
