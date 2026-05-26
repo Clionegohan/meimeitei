@@ -1,11 +1,18 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useEffect, useRef, useState, useTransition } from 'react'
 import { sendMessageAction, type MessageDto } from './actions'
+import { getSocket } from '@/lib/socket-client'
 import type { ConversationId, UserId } from '@me-me-en/domain'
 
 const formatTime = (iso: string): string =>
   new Date(iso).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })
+
+type TypingEvent = {
+  conversationId: string
+  userId: UserId
+  isTyping: boolean
+}
 
 export function ThreadView({
   conversationId,
@@ -20,6 +27,58 @@ export function ThreadView({
   const [draft, setDraft] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
+  const [typingUsers, setTypingUsers] = useState<readonly UserId[]>([])
+  const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    const socket = getSocket(myUserId)
+    socket.emit('conversation:join', conversationId)
+
+    const onMessageNew = (msg: MessageDto) => {
+      if (msg.conversationId !== conversationId) return
+      setMessages((prev) =>
+        prev.some((m) => m.id === msg.id) ? prev : [...prev, msg],
+      )
+    }
+
+    const onTypingUpdate = (event: TypingEvent) => {
+      if (event.conversationId !== conversationId) return
+      if (event.userId === myUserId) return
+      setTypingUsers((prev) => {
+        const has = prev.includes(event.userId)
+        if (event.isTyping && !has) return [...prev, event.userId]
+        if (!event.isTyping && has) return prev.filter((u) => u !== event.userId)
+        return prev
+      })
+    }
+
+    socket.on('message:new', onMessageNew)
+    socket.on('typing:update', onTypingUpdate)
+
+    return () => {
+      socket.emit('conversation:leave', conversationId)
+      socket.off('message:new', onMessageNew)
+      socket.off('typing:update', onTypingUpdate)
+    }
+  }, [conversationId, myUserId])
+
+  const handleDraftChange = (value: string) => {
+    setDraft(value)
+    const socket = getSocket(myUserId)
+    if (value.trim().length > 0) {
+      socket.emit('typing:start', conversationId)
+      if (typingTimerRef.current !== null) clearTimeout(typingTimerRef.current)
+      typingTimerRef.current = setTimeout(() => {
+        socket.emit('typing:stop', conversationId)
+      }, 3_000)
+    } else {
+      socket.emit('typing:stop', conversationId)
+      if (typingTimerRef.current !== null) {
+        clearTimeout(typingTimerRef.current)
+        typingTimerRef.current = null
+      }
+    }
+  }
 
   const send = () => {
     const body = draft.trim()
@@ -28,8 +87,12 @@ export function ThreadView({
     startTransition(async () => {
       const result = await sendMessageAction({ conversationId, body })
       if (result.ok) {
-        setMessages((prev) => [...prev, result.message])
+        setMessages((prev) =>
+          prev.some((m) => m.id === result.message.id) ? prev : [...prev, result.message],
+        )
         setDraft('')
+        const socket = getSocket(myUserId)
+        socket.emit('typing:stop', conversationId)
       } else {
         setError(result.error)
       }
@@ -69,6 +132,13 @@ export function ThreadView({
             </div>
           )
         })}
+        {typingUsers.length > 0 && (
+          <div className="flex justify-start mt-2 items-center gap-3">
+            <span className="text-xs text-[#5E5A4F] tracking-widest">
+              筆を執っています…
+            </span>
+          </div>
+        )}
       </div>
 
       <div className="border-t border-[#1F2533] p-4 bg-[#0C1018]">
@@ -81,7 +151,7 @@ export function ThreadView({
         >
           <textarea
             value={draft}
-            onChange={(e) => setDraft(e.target.value)}
+            onChange={(e) => handleDraftChange(e.target.value)}
             maxLength={280}
             rows={2}
             placeholder="そっと、文字を置く…"
