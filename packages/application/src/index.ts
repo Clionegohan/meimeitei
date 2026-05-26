@@ -85,3 +85,17 @@ export type {
   ListOwnPostsDeps,
 } from './use-cases/post/list-own-posts'
 export { createListOwnPosts } from './use-cases/post/list-own-posts'
+
+// Use cases — Like
+export type {
+  LikePost,
+  LikePostInput,
+  LikePostDeps,
+} from './use-cases/like/like-post'
+export { createLikePost } from './use-cases/like/like-post'
+export type {
+  UnlikePost,
+  UnlikePostInput,
+  UnlikePostDeps,
+} from './use-cases/like/unlike-post'
+export { createUnlikePost } from './use-cases/like/unlike-post'

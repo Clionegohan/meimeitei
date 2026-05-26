@@ -161,6 +161,35 @@ export const inMemoryMessageRepo = (): {
   return { repo, state }
 }
 
+// In-memory LikeRepository.
+// Note: countReceivedByUser returns 0 in this fake — it would require
+// cross-repo knowledge of post authors. Use cases that depend on it
+// (来店帳統計) are tested separately when needed.
+export const inMemoryLikeRepo = (): {
+  repo: import('@me-me-en/domain').LikeRepository
+  state: import('@me-me-en/domain').Like[]
+} => {
+  type L = import('@me-me-en/domain').Like
+  const state: L[] = []
+  const repo: import('@me-me-en/domain').LikeRepository = {
+    findById: async (id) => state.find((l) => l.id === id) ?? null,
+    findByPostAndUser: async (postId, userId) =>
+      state.find((l) => l.postId === postId && l.userId === userId) ?? null,
+    save: async (like) => {
+      const idx = state.findIndex((l) => l.id === like.id)
+      if (idx >= 0) state[idx] = like
+      else state.push(like)
+    },
+    delete: async (id) => {
+      const idx = state.findIndex((l) => l.id === id)
+      if (idx >= 0) state.splice(idx, 1)
+    },
+    countByPost: async (postId) => state.filter((l) => l.postId === postId).length,
+    countReceivedByUser: async () => 0,
+  }
+  return { repo, state }
+}
+
 // In-memory BlockRepository — supports existsBetween (undirected).
 export const inMemoryBlockRepo = (): {
   repo: import('@me-me-en/domain').BlockRepository
