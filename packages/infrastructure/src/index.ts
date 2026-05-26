@@ -1,2 +1,4 @@
-// Adapters will be added in Phase 1 (in-memory repos) and Phase 2 (socket.io event bus).
-export {}
+export { createInMemoryUserRepository } from './in-memory/user-repository'
+export { createInMemoryConversationRepository } from './in-memory/conversation-repository'
+export { createInMemoryMessageRepository } from './in-memory/message-repository'
+export { createInMemoryBlockRepository } from './in-memory/block-repository'
