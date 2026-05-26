@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Render の build phase と揃えるため、CI も Node 20 / pnpm 9.15 / Prisma 5.x で動かす。
+# Prisma 7 系は Node 22+ を要求するため避ける。
+
+jobs:
+  verify:
+    name: lint / typecheck / test / build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      # next-auth v5 は build 時に AUTH_SECRET を読むことがあるため dummy を渡す。
+      # 本物の値は Render dashboard で sync: false で設定される。
+      AUTH_SECRET: ci-only-do-not-use-in-prod
+      NEXT_TELEMETRY_DISABLED: '1'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+          run_install: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Prisma generate
+        run: pnpm --filter @me-me-en/infrastructure exec prisma generate --schema=prisma/schema.prisma
+
+      - name: ESLint (boundary rules)
+        run: pnpm lint
+
+      - name: TypeScript (all workspaces)
+        run: pnpm -r typecheck
+
+      - name: Vitest (all workspaces)
+        run: pnpm -r test
+
+      - name: Next.js build
+        run: pnpm -F @me-me-en/web build
