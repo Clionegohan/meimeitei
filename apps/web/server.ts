@@ -87,7 +87,6 @@ void app.prepare().then(() => {
   })
 
   httpServer.listen(port, () => {
-    // eslint-disable-next-line no-console
     console.log(`me-me-en listening on http://localhost:${port} (dev=${dev})`)
   })
 })
