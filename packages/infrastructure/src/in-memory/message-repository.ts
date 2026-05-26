@@ -24,5 +24,19 @@ export const createInMemoryMessageRepository = (): MessageRepository => {
       result.sort((a, b) => a.sentAt.getTime() - b.sentAt.getTime())
       return q.limit ? result.slice(0, q.limit) : result
     },
+    countByConversationsInWindow: async (ids, from, to) => {
+      const idSet = new Set(ids)
+      const counts = new Map<typeof ids[number], number>()
+      for (const id of ids) counts.set(id, 0)
+      const fromMs = from.getTime()
+      const toMs = to.getTime()
+      for (const m of store.values()) {
+        if (!idSet.has(m.conversationId)) continue
+        const t = m.sentAt.getTime()
+        if (t < fromMs || t >= toMs) continue
+        counts.set(m.conversationId, (counts.get(m.conversationId) ?? 0) + 1)
+      }
+      return counts
+    },
   }
 }
