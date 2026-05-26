@@ -4,6 +4,8 @@ import {
   createClearTyping,
   createCreatePost,
   createDeletePost,
+  createGetHourlyPresenceChart,
+  createGetProfileStats,
   createLikePost,
   createListConversations,
   createListMessages,
@@ -11,6 +13,8 @@ import {
   createListOwnPosts,
   createListTimeline,
   createMarkAsRead,
+  createRecordLogin,
+  createRecordPresenceEvent,
   createRegisterUser,
   createSendMessage,
   createStartConversationByPost,
@@ -27,8 +31,10 @@ import {
   blockRepository,
   conversationRepository,
   likeRepository,
+  loginHistoryRepository,
   messageRepository,
   postRepository,
+  presenceEventRepository,
   presenceRepository,
   typingRepository,
   userRepository,
@@ -167,5 +173,27 @@ export const updateTyping = createUpdateTyping({
 })
 export const clearTyping = createClearTyping({
   typingRepository,
+  businessHoursGuard,
+})
+
+// Login history / Presence event log / Profile stats (β-1)
+export const recordLogin = createRecordLogin({
+  loginHistoryRepository,
+  clock,
+  businessHoursGuard,
+})
+export const recordPresenceEvent = createRecordPresenceEvent({
+  presenceEventRepository,
+  clock,
+})
+export const getProfileStats = createGetProfileStats({
+  loginHistoryRepository,
+  postRepository,
+  likeRepository,
+  businessHoursGuard,
+})
+export const getHourlyPresenceChart = createGetHourlyPresenceChart({
+  presenceEventRepository,
+  clock,
   businessHoursGuard,
 })

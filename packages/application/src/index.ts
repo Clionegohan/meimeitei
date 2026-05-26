@@ -141,3 +141,31 @@ export type {
   ClearTypingDeps,
 } from './use-cases/typing/clear-typing'
 export { createClearTyping } from './use-cases/typing/clear-typing'
+
+// Use cases — Login history / Presence event log / Profile stats (β-1)
+export type {
+  RecordLogin,
+  RecordLoginInput,
+  RecordLoginDeps,
+} from './use-cases/login-history/record-login'
+export { createRecordLogin } from './use-cases/login-history/record-login'
+export type {
+  RecordPresenceEvent,
+  RecordPresenceEventInput,
+  RecordPresenceEventDeps,
+} from './use-cases/presence-event/record-presence-event'
+export { createRecordPresenceEvent } from './use-cases/presence-event/record-presence-event'
+export type {
+  GetProfileStats,
+  GetProfileStatsInput,
+  GetProfileStatsDeps,
+  ProfileStats,
+} from './use-cases/profile/get-profile-stats'
+export { createGetProfileStats } from './use-cases/profile/get-profile-stats'
+export type {
+  GetHourlyPresenceChart,
+  GetHourlyPresenceChartInput,
+  GetHourlyPresenceChartDeps,
+  HourlyPresenceBucket,
+} from './use-cases/profile/get-hourly-presence-chart'
+export { createGetHourlyPresenceChart } from './use-cases/profile/get-hourly-presence-chart'

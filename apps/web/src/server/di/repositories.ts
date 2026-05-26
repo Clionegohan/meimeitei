@@ -2,8 +2,10 @@ import {
   createInMemoryBlockRepository,
   createInMemoryConversationRepository,
   createInMemoryLikeRepository,
+  createInMemoryLoginHistoryRepository,
   createInMemoryMessageRepository,
   createInMemoryPostRepository,
+  createInMemoryPresenceEventRepository,
   createInMemoryPresenceRepository,
   createInMemoryTypingRepository,
   createInMemoryUserRepository,
@@ -20,3 +22,5 @@ export const postRepository = createInMemoryPostRepository()
 export const likeRepository = createInMemoryLikeRepository(postRepository)
 export const presenceRepository = createInMemoryPresenceRepository()
 export const typingRepository = createInMemoryTypingRepository()
+export const loginHistoryRepository = createInMemoryLoginHistoryRepository()
+export const presenceEventRepository = createInMemoryPresenceEventRepository()

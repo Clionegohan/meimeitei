@@ -268,3 +268,56 @@ export const inMemoryTypingRepo = (): {
   }
   return { repo, state }
 }
+
+// In-memory LoginHistoryRepository for use case tests.
+export const inMemoryLoginHistoryRepo = (): {
+  repo: import('@me-me-en/domain').LoginHistoryRepository
+  state: Map<UserId, Map<import('@me-me-en/domain').NightId, Date>>
+} => {
+  const state = new Map<
+    UserId,
+    Map<import('@me-me-en/domain').NightId, Date>
+  >()
+  const repo: import('@me-me-en/domain').LoginHistoryRepository = {
+    recordIfFirstOfNight: async (userId, nightId, at) => {
+      let nights = state.get(userId)
+      if (nights === undefined) {
+        nights = new Map()
+        state.set(userId, nights)
+      }
+      if (!nights.has(nightId)) nights.set(nightId, at)
+    },
+    listNightsByUser: async (userId) => {
+      const nights = state.get(userId)
+      if (nights === undefined) return []
+      return Array.from(nights.keys()).sort((a, b) => (a < b ? 1 : a > b ? -1 : 0))
+    },
+  }
+  return { repo, state }
+}
+
+// In-memory PresenceEventRepository for use case tests.
+export const inMemoryPresenceEventRepo = (): {
+  repo: import('@me-me-en/domain').PresenceEventRepository
+  state: import('@me-me-en/domain').PresenceEvent[]
+} => {
+  const state: import('@me-me-en/domain').PresenceEvent[] = []
+  const repo: import('@me-me-en/domain').PresenceEventRepository = {
+    record: async (event) => {
+      state.push(event)
+    },
+    listByUserInWindow: async (userId, from, to) => {
+      const fromMs = from.getTime()
+      const toMs = to.getTime()
+      return state
+        .filter(
+          (e) =>
+            e.userId === userId &&
+            e.occurredAt.getTime() >= fromMs &&
+            e.occurredAt.getTime() < toMs,
+        )
+        .sort((a, b) => a.occurredAt.getTime() - b.occurredAt.getTime())
+    },
+  }
+  return { repo, state }
+}
