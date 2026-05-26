@@ -34,5 +34,12 @@ export const createInMemoryBlockRepository = (): BlockRepository => {
       }
       return result
     },
+    listBlockersOf: async (blockedId) => {
+      const result: UserId[] = []
+      for (const b of store.values()) {
+        if (b.blockedId === blockedId) result.push(b.blockerId)
+      }
+      return result
+    },
   }
 }

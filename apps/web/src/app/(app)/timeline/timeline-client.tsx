@@ -1,5 +1,6 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { getSocket } from '@/lib/socket-client'
 import { PostCard, type PostDto } from './post-card'
@@ -12,6 +13,7 @@ export function TimelineClient({
   myUserId: string
 }) {
   const [posts, setPosts] = useState<PostDto[]>([...initialPosts])
+  const router = useRouter()
 
   useEffect(() => {
     const socket = getSocket(myUserId)
@@ -20,11 +22,17 @@ export function TimelineClient({
         prev.some((p) => p.id === newPost.id) ? prev : [newPost, ...prev],
       )
     }
+    // presence:update は trigger-only。SSR で OnlineSheepList を revalidate する。
+    const onPresenceUpdate = () => {
+      router.refresh()
+    }
     socket.on('post:new', onPostNew)
+    socket.on('presence:update', onPresenceUpdate)
     return () => {
       socket.off('post:new', onPostNew)
+      socket.off('presence:update', onPresenceUpdate)
     }
-  }, [myUserId])
+  }, [myUserId, router])
 
   if (posts.length === 0) {
     return (

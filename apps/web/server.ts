@@ -3,7 +3,7 @@ import next from 'next'
 import { Server as SocketIOServer } from 'socket.io'
 import type { UserId } from '@me-me-en/domain'
 import { recordPresenceEvent } from './src/server/di'
-import { setIoServer } from './src/server/realtime/io-bridge'
+import { broadcastToAll, setIoServer } from './src/server/realtime/io-bridge'
 
 // Custom server hosting Next.js + Socket.IO on the same HTTP port.
 
@@ -43,6 +43,10 @@ void app.prepare().then(() => {
     // 「在席の刻」集計用 event log。複数タブ接続でも online を毎回積む
     // 近似で十分（hourly chart は max 正規化で吸収する）。
     void recordPresenceEvent({ userId: userId as UserId, type: 'online' })
+    // presence:update は trigger-only。client は受信したら router.refresh() で
+    // 灯ともる羊リストを revalidate する。payload に userId は載せない:
+    // 「誰が変わったか」をリークさせず block / visibility は SSR 側で再評価される。
+    broadcastToAll('presence:update', { type: 'changed' })
 
     socket.on('conversation:join', (conversationId: string) => {
       if (typeof conversationId !== 'string' || conversationId.length === 0) return
@@ -78,6 +82,7 @@ void app.prepare().then(() => {
       // recordPresenceEvent は意図的に BusinessHoursGuard を外しているので、
       // 05:00 force-disconnect 時にも offline を記録できる。
       void recordPresenceEvent({ userId: userId as UserId, type: 'offline' })
+      broadcastToAll('presence:update', { type: 'changed' })
     })
   })
 

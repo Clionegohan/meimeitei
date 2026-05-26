@@ -33,10 +33,26 @@ export const broadcastToUser = (
   ioRef.to(`user:${userId}`).emit(event, payload)
 }
 
-// Broadcast to every connected socket. Used for the public timeline
-// (`post:new`); the client may still filter (e.g. by block, which the
-// server can't reflect without a heavier room scheme in MVPα).
+// Broadcast to every connected socket. Used for trigger-only signals like
+// `presence:update` where the client revalidates SSR state on receipt.
 export const broadcastToAll = (event: string, payload: unknown): void => {
   if (ioRef === null) return
   ioRef.emit(event, payload)
+}
+
+// Broadcast to every connected socket EXCEPT sockets in `user:{userId}`
+// rooms for the given user ids. Used for block-aware `post:new` where the
+// author's blockers / blocked users must not receive the post.
+export const broadcastToAllExcept = (
+  excludeUserIds: readonly string[],
+  event: string,
+  payload: unknown,
+): void => {
+  if (ioRef === null) return
+  if (excludeUserIds.length === 0) {
+    ioRef.emit(event, payload)
+    return
+  }
+  const rooms = excludeUserIds.map((uid) => `user:${uid}`)
+  ioRef.except(rooms).emit(event, payload)
 }

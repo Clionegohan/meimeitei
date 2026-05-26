@@ -2,12 +2,13 @@
 
 import { auth } from '@/auth'
 import {
+  blockRepository,
   createPost,
   likePost,
   startConversationByPost,
   unlikePost,
 } from '@/server/di'
-import { broadcastToAll } from '@/server/realtime/io-bridge'
+import { broadcastToAllExcept } from '@/server/realtime/io-bridge'
 import type { PostId } from '@me-me-en/domain'
 
 export type PostDto = {
@@ -40,8 +41,14 @@ export const createPostAction = async (input: {
       nightId: post.nightId,
       iLiked: false,
     }
-    // Realtime fan-out to every connected socket. Receiving clients dedupe by id.
-    broadcastToAll('post:new', dto)
+    // Block-aware fan-out: 著者を block している人 / 著者が block した人を除外する。
+    // listConversations / listTimeline と同じ無向 block ポリシーに揃える。
+    const [blockedByAuthor, blockersOfAuthor] = await Promise.all([
+      blockRepository.listBlockedBy(post.authorId),
+      blockRepository.listBlockersOf(post.authorId),
+    ])
+    const exclude = Array.from(new Set([...blockedByAuthor, ...blockersOfAuthor]))
+    broadcastToAllExcept(exclude, 'post:new', dto)
     return { ok: true, post: dto }
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : '不明なエラー' }
