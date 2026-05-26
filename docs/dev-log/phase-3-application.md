@@ -228,3 +228,64 @@ Conversation 系（PR #19）+ Message 系（本 PR）の 6 use case 全てが実
 
 - 累計 application test: **52 / 52**
 - 次フェーズ: **Phase 3-3 (Post + Like use cases)**
+
+---
+
+## Phase 3-3 — Post + Like use cases
+
+予定 use case は 6 件、Phase 3-2 同様に 2 PR に分割:
+- **Phase 3-3-a**（本 PR）: Post 系 4 件
+  - `createPost`
+  - `deletePost`
+  - `listTimeline`
+  - `listOwnPosts`
+- **Phase 3-3-b**: Like 系 2 件（次 PR）
+  - `likePost`
+  - `unlikePost`
+
+### 設計（Phase 3-3-a）
+
+#### `createPost`
+- 入力: `{ authorId, body }`
+- 挙動: `ensureOpen` → `createPost` factory（`postedAt = clock.now()` から `nightIdOf` で nightId 導出。営業時間外なら domain が `ValidationError`、二重防御）→ `save` → return
+
+#### `deletePost`
+- 入力: `{ actorId, postId }`
+- 挙動: `ensureOpen` → `findById` [`NotFoundError`] → `actor !== authorId` なら [`ForbiddenError`] → `markPostAsDeleted`（idempotent）→ 変化時のみ save → return
+- spec で「Post 削除時、関連 R1 conv は orphan として残す」 — cascade なし
+
+#### `listTimeline`
+- 入力: `{ viewerId, nightId? }`
+- 挙動: `ensureOpen` → `nightId` 未指定なら `currentNightId(clock.now())`（営業時間外なら ensureOpen で先に弾かれているので必ず非 null）→ `PostRepository.list({ nightId })` → block filter（viewer-author 間に block 関係があるものを除外）+ `deletedAt = null` の post のみ → return
+
+#### `listOwnPosts`
+- 入力: `{ authorId }`
+- 挙動: `ensureOpen` → `PostRepository.list({ authorId })` → `deletedAt = null` のみ → return（spec C: 自分の過去 post を閲覧可、ただし削除済は履歴からも消える）
+
+### TDD cycle 記録（Phase 3-3-a）
+
+#### 1. RED
+
+- `fakes.ts`: `inMemoryPostRepo` を `nightId` / `authorId` / `before` / `limit` 対応に拡張（desc by postedAt）
+- `create-post.test.ts` 4 件、`delete-post.test.ts` 5 件、`list-timeline.test.ts` 5 件、`list-own-posts.test.ts` 4 件 = **18 件先行 Write**
+- `pnpm test`: 4 file failed（`Cannot find module ...`）
+- 既存 52 件は緑のまま
+
+#### 2. GREEN
+
+- `create-post.ts`: ensureOpen → `createPost` factory（domain で nightId 導出 + body validation を強制）→ save
+- `delete-post.ts`: ensureOpen → `findById` [`NotFoundError`] → author check [`ForbiddenError`] → `markPostAsDeleted`（idempotent）→ 変化時のみ save
+- `list-timeline.ts`: ensureOpen → `nightId` 解決（input 優先、なければ `currentNightId(clock.now())`）→ `list({ nightId })` → `deletedAt = null` + block filter
+- `list-own-posts.ts`: ensureOpen → `list({ authorId })` → `deletedAt = null` filter
+- `index.ts` 公開 API 更新
+
+```
+Test Files  14 passed (14)
+     Tests  70 passed (70)
+```
+
+typecheck 緑。
+
+#### 3. REFACTOR
+
+不要。pattern 通り。`createPost` は domain factory が営業時間（`nightIdOf`）+ body validation を強制してくれるので use case は薄い。
