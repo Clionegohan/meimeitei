@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { isOpen } from '@me-me-en/domain'
-import { auth } from '@/auth'
+import { auth } from '@/auth.edge'
 
 // Combined gate: business hours + authentication.
 //
