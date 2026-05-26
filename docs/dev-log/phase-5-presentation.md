@@ -158,3 +158,38 @@ UI ユニットテストは書かず、typecheck で締める。
 - `pnpm -F @me-me-en/web typecheck`: 緑
 
 次: **Phase 5-3-b (Socket.IO 結線でリアルタイム化)**
+
+---
+
+## Phase 5-3-b — Socket.IO によるリアルタイム DM
+
+### 範囲
+
+- `apps/web/package.json`: `socket.io-client@^4.8.1` 追加
+- `src/server/realtime/io-bridge.ts`: process-wide な `SocketIOServer` ref を保持し、`broadcastToConversation` / `broadcastToUser` を提供
+- `server.ts`: io を生成して `setIoServer(io)`。`io.use` で `handshake.auth.userId` の最小認証（MVPα 用）。`socket.data.userId` に保存。以下のイベントを実装:
+  - `conversation:join` / `conversation:leave`（room 管理）
+  - `typing:start` / `typing:stop` → `typing:update` を room broadcast（TypingRepository は経由せず transport-only）
+  - `user:{userId}` room には接続時に自動 join
+- `src/lib/socket-client.ts`: client side singleton `getSocket(userId)`
+- `src/app/(app)/chats/[conversationId]/thread-view.tsx`:
+  - `useEffect` で `conversation:join` → `message:new` / `typing:update` を購読
+  - 入力時に typing 開始、3s idle で typing 停止（debounce）
+  - 送信成功時に同じ id の重複追加を弾く（自分の broadcast を受けてしまう前提）
+- `src/app/(app)/chats/[conversationId]/actions.ts`: `sendMessageAction` 内で `broadcastToConversation(convId, 'message:new', dto)` を呼ぶ
+
+### 設計判断
+
+- **transport-only な typing**: MVPα では TypingRepository を経由せず Socket.IO で broadcast のみ。サーバ再起動で消えてもユーザー体験への影響は実質ゼロ。Phase 3-4 の use case はそのまま温存
+- **broadcast 単位は `conv:{conversationId}` room**: メッセージ送信は当該 conv の参加 socket のみへ。`user:{userId}` room は presence 通知用に確保（Phase 5-4 で使う）
+- **client-side 認証は handshake の `userId` 直渡し**: production 化のときは cookie / JWT 検証に置換予定（Auth.js セッションを server.ts 側で parse する）
+- **`io-bridge.ts` の module-level singleton**: tsx + custom server で同一 Node プロセス内なので、server action から module import で参照できる。Next.js の HMR は server.ts を再 evaluate しないので dev でも安定
+
+### TDD cycle 記録（Phase 5-3-b）
+
+UI ユニットテストは書かず、typecheck で締める。E2E（2 タブで送受信 / typing 表示）は Phase 6 で扱う。
+
+- `pnpm install`: 緑（socket.io-client 追加）
+- `pnpm -F @me-me-en/web typecheck`: 緑
+
+次フェーズ: **Phase 5-4 (軒先 / Timeline end-to-end)**
