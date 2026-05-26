@@ -92,3 +92,35 @@ UI 直接の unit test は書かず、typecheck を緑にして締める（E2E �
 - `pnpm -F @me-me-en/web typecheck`: 緑
 
 次フェーズ: **Phase 5-2 (閉店中画面 + 営業時間 middleware)**
+
+---
+
+## Phase 5-2 — 閉店中画面 + 営業時間 middleware
+
+### 範囲
+
+- `src/app/(auth)/closed/page.tsx`: 営業時間外画面（server component）
+  - 「閉店」大見出し
+  - 「日が沈む頃、暖簾を出します。/ 月の昇る刻、またここでお会いしましょう。」
+  - defensive redirect: `isOpen(new Date())` なら `/chats` に転送
+- `src/app/(auth)/closed/closed-countdown.tsx`: 開店までのカウントダウン（client）
+  - 1 秒ごとに残時間を再計算
+  - 22:00 になったら `router.replace('/chats')`
+- `src/middleware.ts`: business hours gate を auth より**先**に追加
+  - 営業時間外 → `/closed`（`/closed`, `/api/auth`, `/api/health` を除く）
+  - 営業時間内に `/closed` → `/chats`
+
+### 設計判断
+
+- **business hours gate を auth より前に**: 閉店中は誰も入れない（spec の「夜限定」コンセプト）。auth 状態に関わらず `/closed` へ
+- **`/closed` 自体は public route**: 営業時間外でも表示可能、auth 不要
+- **カウントダウンの基準時刻**: client 側で `new Date()` → JST 換算 → 当日 22:00 JST までの差分
+- **server-side defensive redirect**: middleware で十分だが、`/closed` page 内でも `isOpen(now)` を確認して redirect（middleware を bypass される稀ケースへの保険）
+
+### TDD cycle 記録（Phase 5-2）
+
+UI レベルの unit test は書かず、typecheck を緑にして締める。E2E（営業時間外 → /closed redirect、22:00 跨ぎでの遷移）は Phase 6 で扱う。
+
+- `pnpm -F @me-me-en/web typecheck`: 緑
+
+次フェーズ: **Phase 5-3 (手紙 / DM end-to-end)**
