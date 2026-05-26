@@ -113,3 +113,31 @@ export type {
   UnblockUserDeps,
 } from './use-cases/block/unblock-user'
 export { createUnblockUser } from './use-cases/block/unblock-user'
+
+// Use cases — Presence
+export type {
+  UpdatePresence,
+  UpdatePresenceInput,
+  UpdatePresenceDeps,
+} from './use-cases/presence/update-presence'
+export { createUpdatePresence } from './use-cases/presence/update-presence'
+export type {
+  ListOnlineUsers,
+  ListOnlineUsersInput,
+  ListOnlineUsersDeps,
+} from './use-cases/presence/list-online-users'
+export { createListOnlineUsers } from './use-cases/presence/list-online-users'
+
+// Use cases — Typing
+export type {
+  UpdateTyping,
+  UpdateTypingInput,
+  UpdateTypingDeps,
+} from './use-cases/typing/update-typing'
+export { createUpdateTyping } from './use-cases/typing/update-typing'
+export type {
+  ClearTyping,
+  ClearTypingInput,
+  ClearTypingDeps,
+} from './use-cases/typing/clear-typing'
+export { createClearTyping } from './use-cases/typing/clear-typing'

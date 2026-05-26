@@ -388,3 +388,28 @@ typecheck 緑。
 #### 3. REFACTOR
 
 不要。block / unblock の idempotent pattern は like / unlike と同じ流儀。
+
+---
+
+### Phase 3-4-b 設計
+
+#### `updatePresence`
+- 入力: `{ userId, status: 'online' | 'offline' }`
+- 挙動: `ensureOpen` → `createPresence` + `set` → return
+- Socket.IO 接続 / 切断 hook から呼ばれる想定
+
+#### `listOnlineUsers`
+- 入力: `{ viewerId }`
+- 挙動: `ensureOpen` → `listOnline` → 各 user の `User.presenceVisibility` を `UserRepository.findById` で取得 → `visibleStatusTo` (entity 関数) で `offline` 判定なら除外 → viewer との block 関係も除外 → return
+
+#### `updateTyping`
+- 入力: `{ conversationId, userId }`
+- 挙動: `ensureOpen` → `ConversationRepository.findById` [`NotFoundError`] → `user` が participant か [`ForbiddenError`] → counterpart との block check → `createTyping` + `set` → return
+
+#### `clearTyping`
+- 入力: `{ conversationId, userId }`
+- 挙動: `ensureOpen` → `clear`（idempotent）
+
+### TDD cycle 記録（Phase 3-4-b）
+
+（実装中に追記）

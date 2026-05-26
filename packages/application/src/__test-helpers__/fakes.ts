@@ -221,3 +221,50 @@ export const inMemoryBlockRepo = (): {
   }
   return { repo, state }
 }
+
+// In-memory PresenceRepository — volatile, keyed by userId.
+export const inMemoryPresenceRepo = (): {
+  repo: import('@me-me-en/domain').PresenceRepository
+  state: Map<import('@me-me-en/domain').UserId, import('@me-me-en/domain').Presence>
+} => {
+  const state = new Map<
+    import('@me-me-en/domain').UserId,
+    import('@me-me-en/domain').Presence
+  >()
+  const repo: import('@me-me-en/domain').PresenceRepository = {
+    findByUser: async (userId) => state.get(userId) ?? null,
+    set: async (presence) => {
+      state.set(presence.userId, presence)
+    },
+    listOnline: async () =>
+      Array.from(state.values()).filter((p) => p.status === 'online'),
+  }
+  return { repo, state }
+}
+
+// In-memory TypingRepository — volatile, keyed by (convId, userId).
+export const inMemoryTypingRepo = (): {
+  repo: import('@me-me-en/domain').TypingRepository
+  state: Map<string, import('@me-me-en/domain').Typing>
+} => {
+  const state = new Map<string, import('@me-me-en/domain').Typing>()
+  const key = (
+    c: import('@me-me-en/domain').ConversationId,
+    u: import('@me-me-en/domain').UserId,
+  ) => `${c}:${u}`
+  const TTL = 5_000
+  const repo: import('@me-me-en/domain').TypingRepository = {
+    findByConversationAndUser: async (c, u) => state.get(key(c, u)) ?? null,
+    set: async (t) => {
+      state.set(key(t.conversationId, t.userId), t)
+    },
+    clear: async (c, u) => {
+      state.delete(key(c, u))
+    },
+    listActiveByConversation: async (c, now) =>
+      Array.from(state.values()).filter(
+        (t) => t.conversationId === c && now.getTime() - t.startedAt.getTime() < TTL,
+      ),
+  }
+  return { repo, state }
+}
