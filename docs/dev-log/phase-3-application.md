@@ -412,4 +412,59 @@ typecheck 緑。
 
 ### TDD cycle 記録（Phase 3-4-b）
 
-（実装中に追記）
+#### 1. RED
+
+- `fakes.ts` に `inMemoryPresenceRepo` / `inMemoryTypingRepo` 追加（Map ベース、Typing は 5s TTL filter 付き）
+- `update-presence.test.ts` 3 件、`list-online-users.test.ts` 4 件、`update-typing.test.ts` 5 件、`clear-typing.test.ts` 3 件 = **15 件先行 Write**
+- `pnpm test`: 4 file failed
+- 既存 86 件は緑のまま
+
+#### 2. GREEN
+
+- `update-presence.ts`: ensureOpen → `createPresence` + `set`
+- `list-online-users.ts`: ensureOpen → `listOnline` → 各 user の `presenceVisibility` を `visibleStatusTo` (entity fn) で評価 → 非対称 stealth filter → block check filter
+- `update-typing.ts`: ensureOpen → conv 探索 [`NotFoundError`] → participant check → counterpart 間の block check → `createTyping` + `set`
+- `clear-typing.ts`: ensureOpen → `clear`（idempotent）
+- `index.ts` 公開 API 更新
+
+```
+Test Files  22 passed (22)
+     Tests  101 passed (101)
+```
+
+typecheck 緑。
+
+#### 3. REFACTOR
+
+不要。pattern 通り。
+
+---
+
+## Phase 3-4 完了
+
+Block（PR #23）+ Presence + Typing（PR #24）の **6 use case** 全てが実装済。
+
+---
+
+## Phase 3 完了
+
+application layer が完成。
+
+| Group | Use cases |
+| --- | --- |
+| User | `registerUser` / `updateProfile` |
+| Conversation | `startConversationByPost` (R1) / `startConversationDirect` (R2) / `listConversations` |
+| Message | `sendMessage` / `markAsRead` / `listMessages` |
+| Post | `createPost` / `deletePost` / `listTimeline` / `listOwnPosts` |
+| Like | `likePost` / `unlikePost` |
+| Block | `blockUser` / `unblockUser` |
+| Presence | `updatePresence` / `listOnlineUsers` |
+| Typing | `updateTyping` / `clearTyping` |
+
+- **合計 19 use case** + 3 ports (`Clock` / `BusinessHoursGuard` / `IdGenerator`)
+- **累計 application test: 101 / 101**、typecheck 緑
+- すべての use case が冒頭で `BusinessHoursGuard.ensureOpen()` を呼ぶ
+- 複数 actor が絡む flow（DM / Like / Timeline / Presence / Typing）はすべて `BlockRepository.existsBetween` で gate
+- 非対称 stealth は `Presence.visibleStatusTo` を `listOnlineUsers` で呼ぶ形で実現
+
+次フェーズ: **Phase 4 (Infrastructure: in-memory repos packaging + Auth.js v5 + Socket.IO event-bus adapter)**
