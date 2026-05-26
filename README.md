@@ -52,30 +52,38 @@ pnpm -F @me-me-en/web dev   # custom server を tsx watch で起動
    - `AUTH_URL` — 公開 URL（例: `https://me-me-en.onrender.com`）
 3. Render Web Service の Custom Domain を設定する場合、Google OAuth の redirect URI に `https://<your-domain>/api/auth/callback/google` を追加
 4. デプロイ後、`https://<your-domain>/api/health` が `{"status":"ok"}` を返せば最低限の死活 OK
-5. **データ永続化**: 現状 `DATA_STORE=memory` のため、Render のインスタンス再起動でデータは消える。Prisma 切替は MVPβ で対応
+5. **データ永続化**: `render.yaml` で Postgres を declarative に作成、`DATABASE_URL` を自動 inject。build phase で `prisma migrate deploy` が実行され、pending migration を自動適用する
 
 ## ステータス
 
 MVPα（コア体験）完了:
 - 入店 / ご記帳 / 閉店中 / 軒先（投稿・Like・Reply）/ 手紙（DM realtime）/ 己（profile）
 
-MVPβ（進行中）:
-- β-1〜β-4: 来店帳統計 / 在席チャート / 親しい羊 / SheepBrush SVG / Moon / Block-aware broadcast 完了
-- β-5 進行中: Prisma + Postgres adapter
-  - β-5-a: schema + User pilot adapter（完）
-  - β-5-b 以降: 他 entity の adapter / DI 完全切替 / Render Postgres provision
+MVPβ 完了:
+- β-1〜β-4: 来店帳統計 / 在席チャート / 親しい羊 / SheepBrush SVG / Moon / Block-aware broadcast
+- β-5: Prisma + Postgres adapter（9 entity 全部 + migration + Render provision）
 
 仕様の正本は `docs/spec/product-spec.md`、各 Phase の作業ログは `docs/dev-log/`。
 
-## Prisma (β-5)
+## Prisma / Postgres 運用
 
 ```bash
-# 初回 generate（postinstall でも走らせるか検討中）
+# 初回: Prisma Client を生成
 pnpm --filter @me-me-en/infrastructure exec prisma generate --schema=prisma/schema.prisma
 
-# Postgres を立ち上げ、DATABASE_URL を .env.local に設定後、migration を実行
-pnpm --filter @me-me-en/infrastructure exec prisma migrate dev --schema=prisma/schema.prisma --name init
+# 開発時: ローカル Postgres を立ち上げ、DATABASE_URL を apps/web/.env.local に設定
+# その後 migration を適用
+pnpm --filter @me-me-en/infrastructure exec prisma migrate deploy --schema=prisma/schema.prisma
 
-# DATA_STORE=prisma で起動すると User entity だけ Postgres に永続化
+# DATA_STORE=prisma で起動すると 9 entity すべて Postgres に永続化される
 DATA_STORE=prisma pnpm -F @me-me-en/web dev
+
+# schema 変更時: 新しい migration を生成（実 DB が必要）
+pnpm --filter @me-me-en/infrastructure exec prisma migrate dev --schema=prisma/schema.prisma --name <description>
 ```
+
+### Migration
+
+- `packages/infrastructure/prisma/migrations/0_init/migration.sql` が initial schema を作る
+- 末尾に `conversations_pair_direct_key` partial unique index を手書きで追加している（`rootPostId IS NULL` の direct conversation を一意化、Prisma が partial unique index を schema で表現できない制限のため）
+- 以降の migration は `prisma migrate dev` で自動生成し、Postgres 固有の制約は同様に手書きで足す
