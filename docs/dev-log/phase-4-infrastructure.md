@@ -118,3 +118,20 @@ typecheck 緑。
 - `DATA_STORE=memory` で全 use case が動く準備が整った
 
 次フェーズ: **Phase 4-b (Auth.js v5 + Google OAuth provider)**
+
+---
+
+## Phase 4-b / 4-c の取り扱い変更（Phase 5 に統合）
+
+ユーザー判断（合議録）: Auth.js v5 と Socket.IO は Next.js custom server / apps/web と密に統合されるため、**Phase 5（Presentation）と一体で扱う**。
+
+- Phase 4 はここで一旦 close（in-memory adapter 8 件が完成）
+- Phase 5 内で:
+  - `apps/web/server.ts`（http.Server + Next + Socket.IO 同居）
+  - `apps/web/auth.ts`（Auth.js v5 + Google provider）
+  - DI composition root（`apps/web/src/server/di`）
+  - Socket.IO handlers
+を扱う
+- 抽象化が必要になれば application 側に Port を切り戻す余地はある（後段の判断）
+
+infrastructure 層は、現状 in-memory adapter 8 件で application を駆動できる状態。`DATA_STORE=memory` のみの想定で当面進む。
