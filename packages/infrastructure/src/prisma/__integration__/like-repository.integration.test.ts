@@ -17,7 +17,7 @@ describe('PrismaLikeRepository (integration)', () => {
       id: 'p1' as PostId,
       authorId: alice,
       body: 'hi',
-      postedAt: new Date('2026-05-25T22:00:00Z'),
+      postedAt: new Date('2026-05-25T13:00:00Z'),
     })
     await postRepo.save(post)
 
@@ -25,7 +25,7 @@ describe('PrismaLikeRepository (integration)', () => {
       id: 'l1' as LikeId,
       postId: post.id,
       userId: bob,
-      addedAt: new Date('2026-05-25T22:01:00Z'),
+      addedAt: new Date('2026-05-25T13:01:00Z'),
     })
     await repo.save(like)
 
@@ -41,7 +41,7 @@ describe('PrismaLikeRepository (integration)', () => {
       id: 'p1' as PostId,
       authorId: alice,
       body: 'hi',
-      postedAt: new Date('2026-05-25T22:00:00Z'),
+      postedAt: new Date('2026-05-25T13:00:00Z'),
     })
     await postRepo.save(post)
 
@@ -58,22 +58,22 @@ describe('PrismaLikeRepository (integration)', () => {
       id: 'p1' as PostId,
       authorId: alice,
       body: 'hi',
-      postedAt: new Date('2026-05-25T22:00:00Z'),
+      postedAt: new Date('2026-05-25T13:00:00Z'),
     })
     const p2 = createPost({
       id: 'p2' as PostId,
       authorId: alice,
       body: 'hi',
-      postedAt: new Date('2026-05-25T22:05:00Z'),
+      postedAt: new Date('2026-05-25T13:05:00Z'),
     })
     const p3Deleted = {
       ...createPost({
         id: 'p3' as PostId,
         authorId: alice,
         body: 'hi',
-        postedAt: new Date('2026-05-25T22:10:00Z'),
+        postedAt: new Date('2026-05-25T13:10:00Z'),
       }),
-      deletedAt: new Date('2026-05-25T22:11:00Z'),
+      deletedAt: new Date('2026-05-25T13:11:00Z'),
     }
     await postRepo.save(p1)
     await postRepo.save(p2)
