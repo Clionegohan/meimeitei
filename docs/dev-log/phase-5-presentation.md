@@ -55,3 +55,40 @@ Phase 5-0 は **構成のみ**のため unit test は書かない（factory 結�
 - Auth.js peer warning は許容（v5 が next 16 対応すれば消える）
 
 次フェーズ: **Phase 5-1 (認証フロー end-to-end)**
+
+---
+
+## Phase 5-1 — 認証フロー end-to-end
+
+### 範囲
+
+- `apps/web/auth.ts` を `apps/web/src/auth.ts` に移動（`@/auth` で参照可能に）
+- callbacks 拡張: `jwt` で `findUserIdByEmail` 解決、`session` callback で `userId` を session に載せる
+- `src/server/auth/session-bridge.ts`: 揮発 `Map<email, UserId>`（DATA_STORE=memory 用）
+- `src/types/next-auth.d.ts`: `Session.userId? : UserId` / `JWT.userId? : UserId` 型 augmentation
+- `src/app/api/auth/[...nextauth]/route.ts`: NextAuth `handlers` を re-export
+- `src/middleware.ts`: 未ログイン→`/login`、ログイン済 + User 未登録→`/onboarding`、登録済が `/login` `/onboarding` 訪問時→`/chats`
+- `src/app/(auth)/login/page.tsx`: 「暖簾をくぐる」server form → `signIn('google', { redirectTo: '/onboarding' })`
+- `src/app/(auth)/onboarding/page.tsx`: server component で session check
+- `src/app/(auth)/onboarding/onboarding-form.tsx`: client, server action 呼び出し
+- `src/app/(auth)/onboarding/actions.ts`: `registerUserAction` で DI の `registerUser` を呼び `bindEmailToUser`
+
+### 設計判断
+
+- **email を bridge key**: User entity を変更せず in-memory map で対応。Postgres 切替時には `User.authProvider` + `User.authSub` + `findByAuthSub` repository method で置換予定
+- **server action から DI を直接 import**: `@/server/di` を読み込む。tRPC や追加 API route を挟まない最短経路
+- **middleware の責務分割**: auth gate のみを本 Phase に入れ、営業時間 redirect は Phase 5-2 に追加
+- **next-auth v5 beta の JWT 型緩み**: callback signature で `token.userId` が `{} | null` に緩む現象あり。`(token as { userId?: UserId }).userId` で局所 cast して回避
+
+### TDD cycle 記録（Phase 5-1）
+
+UI 直接の unit test は書かず、typecheck を緑にして締める（E2E は Phase 6 で Playwright）。
+
+主な躓き:
+1. `@/auth` から `GET / POST` を直接 export しようとして失敗 → `handlers` を介す形に修正
+2. `session.userId = token.userId` で branded type 不一致 → 局所 cast
+
+検証:
+- `pnpm -F @me-me-en/web typecheck`: 緑
+
+次フェーズ: **Phase 5-2 (閉店中画面 + 営業時間 middleware)**
