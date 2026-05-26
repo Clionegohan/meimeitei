@@ -225,3 +225,35 @@ UI ユニットテストは書かず、typecheck で締める。
 - `pnpm -F @me-me-en/web typecheck`: 緑
 
 次: **Phase 5-4-b (Reply + Socket.IO realtime)**
+
+---
+
+## Phase 5-4-b — Reply (post → DM 起動) + Socket.IO リアルタイム
+
+### 範囲
+
+- `src/server/realtime/io-bridge.ts`: `broadcastToAll(event, payload)` を追加（全 connected socket への fan-out）
+- `(app)/timeline/actions.ts`:
+  - `createPostAction` の戻り値を `PostDto` フル化、内部で `broadcastToAll('post:new', dto)` を呼ぶ
+  - `replyToPostAction` 追加。`startConversationByPost` を呼び、戻りの conversationId を返す
+- `(app)/timeline/post-card.tsx`:
+  - 自分の post 以外にのみ「応える」ボタンを表示
+  - クリックで `replyToPostAction` → 成功時 `router.push('/chats/{convId}')`
+  - エラー時はカード内に表示
+- `(app)/timeline/timeline-client.tsx`: 新規 client component。`initialPosts` を state で hold し、`socket.on('post:new', ...)` で新着を prepend（dedupe by id）
+- `(app)/timeline/page.tsx`: `<TimelineClient initialPosts={postDtos} myUserId={userId} />` に切替
+
+### 設計判断
+
+- **`post:new` は全 broadcast**: spec の block filter を厳密に守るには room を user 単位に切る等の重い設計が必要。MVPα では全 broadcast し、block の反映は次回 page refresh 時。リアルタイムでは緩めの整合性
+- **「応える」は自分の post に出さない**: 自分の post に R1 conv を切る意味がないため、`isMine` で button を隠す
+- **`router.push('/chats/{convId}')` で遷移**: server action で conv 作成 → 即 DM 画面へ。新規 conv の場合は init 状態（messages 空）が見える
+- **`createPostAction` 戻り値を `PostDto` フル化**: realtime fan-out 後、sender 自身のタブも broadcast を受信して duplicate しないよう、`id` を含む dto を返す
+
+### TDD cycle 記録（Phase 5-4-b）
+
+UI ユニットテストは書かず、typecheck で締める。E2E は Phase 6。
+
+- `pnpm -F @me-me-en/web typecheck`: 緑
+
+次フェーズ: **Phase 5-5 (己 / Profile)**

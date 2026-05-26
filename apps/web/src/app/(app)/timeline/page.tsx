@@ -1,7 +1,8 @@
 import { auth } from '@/auth'
 import { likeRepository, listTimeline } from '@/server/di'
 import { Composer } from './composer'
-import { PostCard, type PostDto } from './post-card'
+import type { PostDto } from './post-card'
+import { TimelineClient } from './timeline-client'
 
 export default async function TimelinePage() {
   const session = await auth()
@@ -9,8 +10,6 @@ export default async function TimelinePage() {
 
   const posts = await listTimeline({ viewerId: session.userId })
 
-  // For each post: did I like it? (used to render the toggle in iLiked state)
-  // This is a view-model concern resolved at the presentation boundary.
   const userId = session.userId
   const postDtos: PostDto[] = await Promise.all(
     posts.map(async (p) => {
@@ -35,17 +34,7 @@ export default async function TimelinePage() {
 
       <Composer />
 
-      {postDtos.length === 0 ? (
-        <p className="text-sm text-[#9A9484] tracking-wider py-12 text-center">
-          まだ今宵の言葉はありません。
-        </p>
-      ) : (
-        <div>
-          {postDtos.map((p) => (
-            <PostCard key={p.id} post={p} />
-          ))}
-        </div>
-      )}
+      <TimelineClient initialPosts={postDtos} myUserId={userId} />
 
       <div className="mt-10 pt-6 border-t border-[#1F2533] text-center">
         <p className="text-[11px] text-[#9A9484] tracking-[0.35em]">
