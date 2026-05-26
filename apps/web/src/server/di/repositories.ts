@@ -1,4 +1,5 @@
 import {
+  createInMemoryAuthIdentityRepository,
   createInMemoryBlockRepository,
   createInMemoryConversationRepository,
   createInMemoryLikeRepository,
@@ -9,21 +10,24 @@ import {
   createInMemoryPresenceRepository,
   createInMemoryTypingRepository,
   createInMemoryUserRepository,
+  createPrismaAuthIdentityRepository,
   createPrismaBlockRepository,
   createPrismaConversationRepository,
   createPrismaLikeRepository,
+  createPrismaLoginHistoryRepository,
   createPrismaMessageRepository,
   createPrismaPostRepository,
+  createPrismaPresenceEventRepository,
   createPrismaUserRepository,
   prisma,
 } from '@me-me-en/infrastructure'
 
 // Process-scoped singleton repositories.
 // DATA_STORE=memory (default) → in-memory adapters
-// DATA_STORE=prisma → core entity を Postgres に切替:
+// DATA_STORE=prisma → 全 persistent entity を Postgres に切替:
 //   β-5-a: User
 //   β-5-b: Conversation / Message / Post / Like / Block
-// 残り (LoginHistory / PresenceEvent / UserAuthIdentity) は β-5-c で。
+//   β-5-c: LoginHistory / PresenceEvent / AuthIdentity
 // Presence / Typing は揮発のため永続化せず常に in-memory。
 const dataStore = process.env.DATA_STORE === 'prisma' ? 'prisma' : 'memory'
 
@@ -57,10 +61,21 @@ export const blockRepository =
     ? createPrismaBlockRepository(prisma)
     : createInMemoryBlockRepository()
 
-// 揮発系。永続化候補は β-5 完了後の検討事項。
+export const loginHistoryRepository =
+  dataStore === 'prisma'
+    ? createPrismaLoginHistoryRepository(prisma)
+    : createInMemoryLoginHistoryRepository()
+
+export const presenceEventRepository =
+  dataStore === 'prisma'
+    ? createPrismaPresenceEventRepository(prisma)
+    : createInMemoryPresenceEventRepository()
+
+export const authIdentityRepository =
+  dataStore === 'prisma'
+    ? createPrismaAuthIdentityRepository(prisma)
+    : createInMemoryAuthIdentityRepository()
+
+// 揮発系。
 export const presenceRepository = createInMemoryPresenceRepository()
 export const typingRepository = createInMemoryTypingRepository()
-
-// β-5-c で Prisma adapter に切替予定。
-export const loginHistoryRepository = createInMemoryLoginHistoryRepository()
-export const presenceEventRepository = createInMemoryPresenceEventRepository()

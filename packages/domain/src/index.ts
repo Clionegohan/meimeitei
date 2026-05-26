@@ -58,3 +58,5 @@ export type {
 } from './presence-event/presence-event'
 export { createPresenceEvent } from './presence-event/presence-event'
 export type { PresenceEventRepository } from './presence-event/repository'
+export type { AuthIdentity } from './auth-identity/auth-identity'
+export type { AuthIdentityRepository } from './auth-identity/repository'

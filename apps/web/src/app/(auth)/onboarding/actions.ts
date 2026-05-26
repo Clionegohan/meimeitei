@@ -19,7 +19,7 @@ export const registerUserAction = async (input: {
 
   try {
     const user = await registerUser({ nickname: input.nickname })
-    bindEmailToUser(email, user.id)
+    await bindEmailToUser(email, user.id)
     return { ok: true }
   } catch (e) {
     if (e instanceof Error) return { ok: false, error: e.message }
