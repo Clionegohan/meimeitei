@@ -51,3 +51,10 @@ export type { TypingRepository } from './typing/repository'
 export type { LoginRecord, CreateLoginRecordInput } from './login-history/login-history'
 export { createLoginRecord } from './login-history/login-history'
 export type { LoginHistoryRepository } from './login-history/repository'
+export type {
+  PresenceEvent,
+  PresenceEventType,
+  CreatePresenceEventInput,
+} from './presence-event/presence-event'
+export { createPresenceEvent } from './presence-event/presence-event'
+export type { PresenceEventRepository } from './presence-event/repository'
