@@ -193,3 +193,35 @@ UI ユニットテストは書かず、typecheck で締める。E2E（2 タブ�
 - `pnpm -F @me-me-en/web typecheck`: 緑
 
 次フェーズ: **Phase 5-4 (軒先 / Timeline end-to-end)**
+
+---
+
+## Phase 5-4 — 軒先（Timeline）UI
+
+Phase 5-3 と同様に 2 PR に分割:
+
+- **Phase 5-4-a**（本 PR）: Timeline UI + 投稿 + Like（server action）
+- **Phase 5-4-b**: Reply (post → DM 起動 R1) + Socket.IO `post:new` リアルタイム反映
+
+### Phase 5-4-a 範囲
+
+- `src/app/(app)/timeline/page.tsx`: server component。`listTimeline({ viewerId })` で「今宵」の post を取得し、各 post について `likeRepository.findByPostAndUser` で `iLiked` を解決
+- `src/app/(app)/timeline/composer.tsx`: client。`createPostAction` 呼び出し後 `router.refresh()` で server component 再 fetch
+- `src/app/(app)/timeline/post-card.tsx`: client。like toggle ボタン（optimistic update + 失敗 rollback）
+- `src/app/(app)/timeline/actions.ts`: `createPostAction` / `likePostAction` / `unlikePostAction`
+- フィード末尾に「ここから 今宵 が 始まりました」マーカー（spec C 行）
+
+### 設計判断
+
+- **`iLiked` 解決は presentation 層で `likeRepository` 直叩き**: 「post + 自分が like 済か」の view-model を返す use case は domain に無く、application 層に追加するか、apps/web で組み立てるかの選択。MVPα では後者で済ませ、必要なら application に `listTimelineWithMyLikes` を切り出す
+- **like の optimistic update**: ボタン押下時に即座に UI を反転、サーバ失敗時のみ rollback。「カウント他者非公開」仕様により他人の状態を待つ必要がないので素直に動く
+- **`router.refresh()` で server component を更新**: WebSocket でリアルタイム化するのは Phase 5-4-b。それまでは投稿フォーム submit 後の手動再 fetch
+- **「応える」ボタンは Phase 5-4-b 持ち越し**: post → R1 DM 起動 use case を呼ぶ + `/chats/[newConvId]` に遷移、という多段フローのため別 PR で扱う
+
+### TDD cycle 記録（Phase 5-4-a）
+
+UI ユニットテストは書かず、typecheck で締める。
+
+- `pnpm -F @me-me-en/web typecheck`: 緑
+
+次: **Phase 5-4-b (Reply + Socket.IO realtime)**
