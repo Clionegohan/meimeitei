@@ -187,3 +187,18 @@ J Timeline 内 reply / L お席（グループトーク）/ P 通知・未読バ
 | Q ご記帳（新規登録）詳細 | 採用、詳細未定 |
 | MVP 範囲外の明示化 | 未着手 |
 | 開発フロー再定義 | 未着手 |
+
+---
+
+## 10. MVPβ Phase 計画
+
+MVPα コアの上に積む統計・装飾・データ永続化。
+
+- **Phase β-1**: 来店帳統計の event log 基盤 + 集計 use case
+  - β-1-a: `LoginHistory` domain（本 PR）
+  - β-1-b: `PresenceEvent` log + 集計 use case（在席チャート、連続来店）
+  - β-1-c: `親しい羊` 集計（MessageRepository に集計 query 追加）
+- **Phase β-2**: profile UI に統計を反映（placeholder の置換）
+- **Phase β-3**: SheepBrush / Moon SVG 装飾
+- **Phase β-4**: block-aware realtime broadcast（`post:new` を room ベースで安全に）
+- **Phase β-5**: Prisma + PostgreSQL adapter（`DATA_STORE=prisma` で in-memory を置換）
