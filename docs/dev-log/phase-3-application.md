@@ -109,3 +109,61 @@ typecheck 緑。
 #### 3. REFACTOR
 
 不要。`updateProfile` の「patch + `createUser` 再構築」パターンは domain factory の全 validation をそのまま再利用できるので簡潔。他の use case でも同じパターンを踏襲予定。
+
+---
+
+## Phase 3-2 — Conversation + Message use cases
+
+予定の use case が 6 個（startConversationByPost / startConversationDirect / listConversations / sendMessage / markAsRead / listMessages）と多いため、**Phase 3-2-a（Conversation 系 3 件）** と **Phase 3-2-b（Message 系 3 件）** に分割して PR を立てる。
+
+### Phase 3-2-a 範囲
+
+- `startConversationByPost`（R1）
+- `startConversationDirect`（R2）
+- `listConversations`
+
+新規 test helpers: `inMemoryConversationRepo`、`inMemoryPostRepo`、`inMemoryBlockRepo`。
+
+### 設計
+
+#### `startConversationByPost`（R1）
+- 入力: `{ initiatorId, postId }`
+- 挙動: `ensureOpen` → `PostRepository.findById(postId)` [`NotFoundError`] → ブロック関係チェック [`ForbiddenError`] → `ConversationRepository.findByPair([initiatorId, post.authorId], postId)` で**既存再利用** → 無ければ `createConversation` + `save`
+- spec R: 投稿ごとに別 conversation
+
+#### `startConversationDirect`（R2）
+- 入力: `{ initiatorId, partnerId }`
+- 挙動: `ensureOpen` → `UserRepository.findById(partnerId)` [`NotFoundError`] → ブロック関係チェック [`ForbiddenError`] → `findByPair([initiatorId, partnerId], null)` で**既存再利用** → 無ければ `createConversation` + `save`
+- self-DM は `createConversation` factory が `ValidationError` を投げる
+- spec R: 同じ相手で R2 は 1 conversation のみ
+
+#### `listConversations`
+- 入力: `{ userId }`
+- 挙動: `ensureOpen` → `listByUser(userId)` → ブロック関係（相手側 / 自分側いずれかの方向に block があるもの）を除外 → 返却
+
+### TDD cycle 記録（Phase 3-2-a）
+
+#### 1. RED
+
+- `fakes.ts` に `inMemoryConversationRepo` / `inMemoryPostRepo` / `inMemoryBlockRepo` を追加
+- `start-conversation-by-post.test.ts` 5 件、`start-conversation-direct.test.ts` 6 件、`list-conversations.test.ts` 4 件を先行 Write
+- `pnpm test`: 3 file failed（`Cannot find module ...`）
+- 既存 21 件は緑のまま
+
+#### 2. GREEN
+
+- `start-conversation-by-post.ts`: ensureOpen → `PostRepository.findById` [`NotFoundError`] → `BlockRepository.existsBetween` [`ForbiddenError`] → `findByPair([initiator, postAuthor], postId)` で既存再利用 → なければ `createConversation` + `save`
+- `start-conversation-direct.ts`: ensureOpen → `UserRepository.findById(partner)` [`NotFoundError`] → block check → `findByPair([initiator, partner], null)` で既存再利用 → なければ create（self-DM は factory が `ValidationError`）
+- `list-conversations.ts`: ensureOpen → `listByUser` → 相手側との block 関係を順次 filter
+- `index.ts` 公開 API 更新
+
+```
+Test Files  7 passed (7)
+     Tests  36 passed (36)
+```
+
+typecheck 緑。
+
+#### 3. REFACTOR
+
+不要。**「ensureOpen → 関連 entity 探索 → block check → repository operation」** の use case パターンが確立。Phase 3-2-b 以降も踏襲する。
