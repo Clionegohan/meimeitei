@@ -96,3 +96,84 @@ jobs:
 
       - name: Integration tests (Prisma adapters)
         run: pnpm --filter @me-me-en/infrastructure test:integration
+
+  e2e:
+    name: e2e smoke (Playwright)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: verify
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: meimeitei
+          POSTGRES_PASSWORD: meimeitei
+          POSTGRES_DB: meimeitei
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U meimeitei -d meimeitei"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://meimeitei:meimeitei@localhost:5432/meimeitei?schema=public
+      DATA_STORE: prisma
+      AUTH_SECRET: e2e-smoke-secret-do-not-use-in-prod
+      AUTH_URL: http://localhost:3000
+      NEXT_TELEMETRY_DISABLED: '1'
+      PLAYWRIGHT_BASE_URL: http://localhost:3000
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+          run_install: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Prisma generate + migrate deploy
+        run: |
+          pnpm --filter @me-me-en/infrastructure exec prisma generate --schema=prisma/schema.prisma
+          pnpm --filter @me-me-en/infrastructure exec prisma migrate deploy --schema=prisma/schema.prisma
+
+      - name: Install Playwright browsers (chromium)
+        run: pnpm --filter @me-me-en/web exec playwright install --with-deps chromium
+
+      - name: Build Next.js
+        run: pnpm --filter @me-me-en/web build
+
+      - name: Start server in background
+        run: |
+          pnpm --filter @me-me-en/web start &
+          # ヘルスチェックで起動完了を待つ。60s で諦め。
+          for i in $(seq 1 60); do
+            if curl -sf http://localhost:3000/api/health > /dev/null; then
+              echo "server ready"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "server failed to start within 60s"
+          exit 1
+
+      - name: Playwright tests
+        run: pnpm --filter @me-me-en/web e2e
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: apps/web/playwright-report/
+          retention-days: 7
