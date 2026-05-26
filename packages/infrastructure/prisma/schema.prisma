@@ -65,13 +65,14 @@ model Conversation {
 }
 
 // ─── Message ─────────────────────────────────────────────────────────────
+// DM 1on1 のため readByIds[] は不要、相手が読んだ時刻 readAt? の単一値で十分。
 model Message {
   id             String    @id
   conversationId String
   senderId       String
   body           String
   sentAt         DateTime
-  readByIds      String[]
+  readAt         DateTime?
   deletedAt      DateTime?
 
   @@index([conversationId, sentAt])
@@ -94,10 +95,10 @@ model Post {
 
 // ─── Like ────────────────────────────────────────────────────────────────
 model Like {
-  id        String   @id
-  postId    String
-  userId    String
-  createdAt DateTime
+  id      String   @id
+  postId  String
+  userId  String
+  addedAt DateTime
 
   @@unique([postId, userId])
   @@index([userId])
