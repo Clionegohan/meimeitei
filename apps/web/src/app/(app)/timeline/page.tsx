@@ -1,5 +1,7 @@
+import { getMoonPhase } from '@me-me-en/application'
 import { auth } from '@/auth'
 import { likeRepository, listTimeline } from '@/server/di'
+import { MoonSvg } from '../_components/moon-svg'
 import { Composer } from './composer'
 import type { PostDto } from './post-card'
 import { TimelineClient } from './timeline-client'
@@ -25,9 +27,16 @@ export default async function TimelinePage() {
     }),
   )
 
+  const moonPhase = getMoonPhase(new Date())
+
   return (
     <div className="p-10 max-w-3xl">
-      <h2 className="text-2xl tracking-[0.2em] font-light mb-2">軒先のつぶやき</h2>
+      <div className="flex items-start justify-between mb-2">
+        <h2 className="text-2xl tracking-[0.2em] font-light">軒先のつぶやき</h2>
+        <div className="opacity-90 mt-[-6px]">
+          <MoonSvg size={56} phase={moonPhase} />
+        </div>
+      </div>
       <p className="text-[11px] text-[#5E5A4F] tracking-[0.25em] mb-8">
         ぽつり、ぽつりと、皆の独り言が並ぶところ。
       </p>
