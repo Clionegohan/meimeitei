@@ -257,3 +257,59 @@ UI ユニットテストは書かず、typecheck で締める。E2E は Phase 6�
 - `pnpm -F @me-me-en/web typecheck`: 緑
 
 次フェーズ: **Phase 5-5 (己 / Profile)**
+
+---
+
+## Phase 5-5 — 己（Profile）
+
+### 範囲
+
+- `(app)/profile/actions.ts`: `updateProfileAction`（DI の `updateProfile` をラップ、`exactOptionalPropertyTypes` のため patch を条件付き build）+ `startDirectMessageAction`（R2 DM 起動）
+- `(app)/profile/_components/sheep-avatar.tsx`: 簡素 avatar（円形 + tone カラー + 「羊」グリフ）
+- `(app)/profile/profile-editor.tsx`: client。表示モード / 編集モード切替。編集 form:
+  - nickname (1–20)、bio (0–200)
+  - tone（6 色から 1 つ選択）
+  - presenceVisibility（visible / invisible のラジオ）
+  - currentSigns（8 種類トグル、複数選択可）
+- `(app)/profile/page.tsx`: server component、自身の User を取得して `ProfileEditor` に渡し、来店帳統計（**置いた文** / **寄せられた燭** の 2 指標のみ）を表示。`入店した夜` / `連続来店` / `在席の刻 chart` / `親しい羊` は計算ロジック未実装のため「集計中…」プレースホルダ
+- `(app)/profile/[userId]/page.tsx`: server component、対象 User を取得。`presence.visibleStatusTo` で非対称 stealth を反映、`OtherProfile` に渡す。自分の userId なら `/profile` へ redirect
+- `(app)/profile/[userId]/other-profile.tsx`: client、他者表示 + 「直接話しかける」ボタン → `startDirectMessageAction` → `/chats/{convId}` 遷移
+
+### 設計判断
+
+- **profile 公開範囲**: spec の通り、他者表示では `avatar / nickname / bio / しるし / presence` のみ。来店帳・在席チャート・親しい羊は本人のみ
+- **profile editor の表示/編集 toggle**: 1 画面で「整える」ボタンで切替。編集中は inputs を提示、「やめる」で破棄
+- **R2 DM 起動**: 自分の userId と一致するなら `/profile/[id]` から `/profile` に redirect、それ以外は他者表示。`startConversationDirect` は既存会話があれば再利用するので、何度押しても同じ conv に飛ぶ
+- **avatar は簡素実装**: spec の SheepBrush SVG はキメラ。MVPα では円形 + tone カラーで代用。SheepBrush の SVG 化は post-MVPα
+- **patch を条件付き build**: `exactOptionalPropertyTypes` 配慮で、undefined を直接 set せず key を omit する形
+
+### 集計未実装の指標（MVPβ 候補）
+
+- **入店した夜** / **連続来店**: ログイン履歴のイベントログが必要。in-memory adapter は履歴 store を持たないため、event log を別途設けるか、`User.loginNights: Date[]` を追加するか。MVPβ で `LoginHistoryRepository` を新設する想定
+- **在席の刻 chart（O）**: presence の online/offline 切替イベントを time-series で持つ必要。同じく event store が必要
+- **親しい羊（M）**: `MessageRepository` に「直近 30 日の sender 別件数集計」query を追加すれば計算可能（spec の通り）。次フェーズで実装
+
+### TDD cycle 記録（Phase 5-5）
+
+UI ユニットテストは書かず、typecheck で締める。E2E は Phase 6。
+
+- `pnpm -F @me-me-en/web typecheck`: 緑
+
+---
+
+## Phase 5 完了
+
+| 章 | 内容 |
+| --- | --- |
+| Phase 5-0 | custom server + Auth.js + DI composition root |
+| Phase 5-1 | 認証フロー end-to-end（login / onboarding / middleware）|
+| Phase 5-2 | 閉店中 + 営業時間 middleware |
+| Phase 5-3 | DM UI + Socket.IO リアルタイム |
+| Phase 5-4 | Timeline UI + Reply (R1) + Socket.IO リアルタイム |
+| Phase 5-5 | Profile（自分 + 他者 + R2 起動） |
+
+- `apps/web` 全 route が型整合
+- `pnpm -F @me-me-en/web typecheck`: 緑
+- 集計系統計（来店夜数・在席チャート・親しい羊）は MVPβ 移行
+
+次フェーズ: **Phase 6 (Render デプロイ + Playwright E2E)**
