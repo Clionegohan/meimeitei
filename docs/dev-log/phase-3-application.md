@@ -289,3 +289,53 @@ typecheck 緑。
 #### 3. REFACTOR
 
 不要。pattern 通り。`createPost` は domain factory が営業時間（`nightIdOf`）+ body validation を強制してくれるので use case は薄い。
+
+---
+
+### Phase 3-3-b 設計
+
+#### `likePost`
+- 入力: `{ userId, postId }`
+- 挙動: `ensureOpen` → `findById(post)` [`NotFoundError`] → `post.deletedAt != null` なら [`ForbiddenError`]（defensive、UI からは到達しない）→ block check (post.authorId との間) → `findByPostAndUser(postId, userId)` で **既存があれば idempotent に return** → なければ `createLike` + `save` → return
+- 戻り値: `Like`
+
+#### `unlikePost`
+- 入力: `{ userId, postId }`
+- 挙動: `ensureOpen` → `findByPostAndUser` → あれば `delete` → なければ no-op（idempotent）
+- 戻り値: `void`
+- `deletedAt != null` の post でも unlike は許容（過去に付けた like を整理する用途）
+
+### TDD cycle 記録（Phase 3-3-b）
+
+#### 1. RED
+
+- `fakes.ts` に `inMemoryLikeRepo` 追加（`countReceivedByUser` は cross-repo 依存のため 0 を返す簡素実装、コメントで明記）
+- `like-post.test.ts` 6 件、`unlike-post.test.ts` 3 件 = 9 件先行 Write
+- `pnpm test`: 2 file failed
+- 既存 70 件は緑のまま
+
+#### 2. GREEN
+
+- `like-post.ts`: ensureOpen → `findById(post)` [`NotFoundError`] → `post.deletedAt != null` [`ForbiddenError`] → block check → `findByPostAndUser` で idempotent → なければ `createLike` + save
+- `unlike-post.ts`: ensureOpen → `findByPostAndUser` → あれば `delete` → no-op（idempotent）
+- `index.ts` 公開 API 更新
+
+```
+Test Files  16 passed (16)
+     Tests  79 passed (79)
+```
+
+typecheck 緑。
+
+#### 3. REFACTOR
+
+不要。idempotent pattern は markAsRead / markPostAsDeleted と同じ流儀。
+
+---
+
+## Phase 3-3 完了
+
+Post 系（PR #21）+ Like 系（本 PR）の 6 use case 全てが実装済。
+
+- 累計 application test: **79 / 79**
+- 次フェーズ: **Phase 3-4 (Block + Presence + Typing use cases)**
