@@ -4,12 +4,19 @@ import { auth } from '@/auth.edge'
 
 // Combined gate: business hours + authentication.
 //
+// middleware は edge runtime で動き、auth.edge は callbacks を持たない (Prisma を
+// edge bundle に持ち込まないため)。したがって session.userId は常に undefined。
+// 「me-me-en User 登録済かどうか」を必要とする redirect は server component
+// (apps/web/src/app/(app)/layout.tsx 等) に集約する。middleware は最小限の
+// gate (営業時間 + 未認証ブロック) のみを担う。
+//
 // 1. Outside business hours (22:00-05:00 JST) -> /closed
 //    Public exceptions: /closed itself, /api/auth/*, /api/health.
 // 2. Inside business hours visiting /closed -> /chats
 // 3. Unauthenticated -> /login (except public routes)
-// 4. Authenticated without me-me-en User -> /onboarding
-// 5. Authenticated with User visiting /login or /onboarding -> /chats
+// 4. (削除) "Auth but no User" の判定は middleware では行えない。
+//    server component layer の (app)/layout.tsx と onboarding/page.tsx が
+//    session.userId === undefined を見て onboarding / chats に振り分ける
 export default auth((req) => {
   const { nextUrl } = req
   const session = req.auth
@@ -17,7 +24,6 @@ export default auth((req) => {
 
   const isAuthApi = path.startsWith('/api/auth')
   const isLoginPage = path === '/login'
-  const isOnboardingPage = path === '/onboarding'
   const isClosedPage = path === '/closed'
   const isHealth = path === '/api/health'
   const isPublic = isAuthApi || isLoginPage || isHealth || isClosedPage
@@ -47,19 +53,16 @@ export default auth((req) => {
     return NextResponse.redirect(url)
   }
 
-  // (4) Auth but no User -> onboarding
-  if (session.userId === undefined && !isOnboardingPage && !isPublic) {
-    const url = nextUrl.clone()
-    url.pathname = '/onboarding'
-    return NextResponse.redirect(url)
-  }
-
-  // (5) Auth + User on /login or /onboarding -> /chats
-  if (session.userId !== undefined && (isLoginPage || isOnboardingPage)) {
+  // 認証済 + /login: middleware から /chats へ進める (server side で再評価して
+  // onboarding 未完なら /onboarding へ rebounce する)
+  if (isLoginPage) {
     const url = nextUrl.clone()
     url.pathname = '/chats'
     return NextResponse.redirect(url)
   }
+
+  // 認証済 + /onboarding: middleware は通す。onboarding/page.tsx が
+  // session.userId !== undefined を見て /chats に redirect する。
 
   return NextResponse.next()
 })
