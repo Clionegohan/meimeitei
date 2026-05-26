@@ -50,3 +50,49 @@ jobs:
 
       - name: Next.js build
         run: pnpm -F @me-me-en/web build
+
+  integration:
+    name: integration (Postgres)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: verify
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: meimeitei
+          POSTGRES_PASSWORD: meimeitei
+          POSTGRES_DB: meimeitei
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U meimeitei -d meimeitei"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://meimeitei:meimeitei@localhost:5432/meimeitei?schema=public
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+          run_install: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Prisma generate
+        run: pnpm --filter @me-me-en/infrastructure exec prisma generate --schema=prisma/schema.prisma
+
+      - name: Integration tests (Prisma adapters)
+        run: pnpm --filter @me-me-en/infrastructure test:integration
