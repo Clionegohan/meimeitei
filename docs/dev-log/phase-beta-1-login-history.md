@@ -98,3 +98,60 @@ typecheck 緑。
 #### 3. REFACTOR
 
 不要。Phase β-1-b 続き or β-1-c で application 層 use case（`recordLogin`, `recordPresenceEvent`, `getProfileStats`, `getHourlyPresenceChart`）を追加する。
+
+## β-1 application use cases 範囲
+
+domain + infrastructure の event log 基盤を application 層から呼ぶための use case を追加する。UI への結線（profile placeholder の置き換え）は β-2 で扱う。
+
+### 追加した use case
+
+| Use case | 入力 | 出力 | 主な責務 |
+| --- | --- | --- | --- |
+| `recordLogin` | `{ userId }` | `void` | businessHoursGuard 通過後、`currentNightId(clock.now())` を解決し `LoginHistoryRepository.recordIfFirstOfNight` を呼ぶ。同じ夜に複数回呼んでも no-op |
+| `recordPresenceEvent` | `{ userId, type: 'online' \| 'offline' }` | `void` | 営業時間外でも呼べる（05:00 force-disconnect で offline を記録する必要があるため、`BusinessHoursGuard` は意図的に外す） |
+| `getProfileStats` | `{ userId }` | `ProfileStats` | `totalLoginNights` / `consecutiveLoginNights` / `postCount` / `candleReceivedCount` を返す。post は `deletedAt === null` のみカウント |
+| `getHourlyPresenceChart` | `{ userId }` | `HourlyPresenceBucket[]`（22, 23, 0..5 JST の 8 個） | 過去 30 日の `online` イベントを JST 時間でビン分け、ピーク基準で 0..1 正規化 |
+
+### 設計判断
+
+- **`recordPresenceEvent` だけ BusinessHoursGuard を外す**: 05:00 JST の close edge でサーバー側が socket を切る際、その offline を必ず記録するため。営業時間外でログを生やす唯一の正当パス。他 use case は基本通り guard する
+- **`consecutiveLoginNights` の判定は ISO date 差で**: NightId を `YYYY-MM-DD`（lex desc == 時系列 desc）として並べてもらった配列を頭から走査、隣接 2 つの UTC ms 差が ちょうど 24h なら連続。文字列パースは `Date.parse(`${nightId}T00:00:00Z`)` で副作用なし
+- **過去 30 日窓**: spec で「直近 30 日」を明示。`now - 30d` から `now` の `[from, to)` 半開区間で event log を取り、JST 時間に変換してバケットに加算
+- **「online イベント数 ≒ intensity」の近似**: 厳密な滞在時間集計は online/offline ペアリングと socket 切断を含めた複雑な状態機械が要る。MVPβ では online イベントの頻度を強度に転写する近似で十分。Postgres 化時に窓関数で集計に差し替え可能
+- **`max` ベース正規化**: 全 0 でも `Math.max(1, ...)` で割って NaN を防ぐ
+
+### 配線（DI composition root）
+
+- `apps/web/src/server/di/repositories.ts`: `loginHistoryRepository` / `presenceEventRepository` を singleton として追加
+- `apps/web/src/server/di/use-cases.ts`: 4 use case を結線。`getProfileStats` は `postRepository` / `likeRepository` も共有
+
+### TDD cycle 記録（β-1 application）
+
+#### 1. RED
+
+- `packages/application/src/__test-helpers__/fakes.ts` に `inMemoryLoginHistoryRepo` / `inMemoryPresenceEventRepo` の helper を追加
+- 4 test file を先行 Write:
+  - `use-cases/login-history/record-login.test.ts`（3 件）
+  - `use-cases/presence-event/record-presence-event.test.ts`（2 件）
+  - `use-cases/profile/get-profile-stats.test.ts`（4 件）
+  - `use-cases/profile/get-hourly-presence-chart.test.ts`（4 件）
+- `pnpm -F @me-me-en/application test` で fail を確認
+
+#### 2. GREEN
+
+- impl 4 file を Write
+- `packages/application/src/index.ts` に export 追加
+- `pnpm -F @me-me-en/application test`: **114 / 114 passed**（既存 101 + 新 13）
+- `pnpm -F @me-me-en/application typecheck`: 緑
+
+#### 3. REFACTOR
+
+- 不要。共通 helper を fakes.ts に集約済み
+- 残課題: β-2 で profile page の placeholder を `getProfileStats` / `getHourlyPresenceChart` の値に差し替える
+
+### 残課題
+
+- β-1-c: 親しい羊 集計（`MessageRepository` への query 追加 + use case）
+- β-2: profile UI への wire-up（placeholder 置換、ヒートマップ描画）
+- β-3 以降: SheepBrush、Block-aware broadcast、Prisma 切替
+
