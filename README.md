@@ -4,20 +4,19 @@
 
 ## 概要
 
-- **DM**: 1対1のリアルタイムメッセージング（typing / 既読 / オンライン状態）
-- **タイムライン**: 営業日中のみ公開、営業日終了で他者からは非表示。自分の過去投稿は閲覧可
-- **営業時間**: 22:00 - 翌05:00 のみログイン・利用可能
-- **プレゼンス**: 表示・秘匿の切替可能
+- **DM（手紙）**: 1対1のリアルタイムメッセージング（typing / 既読 / オンライン状態）
+- **タイムライン（軒先）**: 営業日中のみ公開、営業日終了で他者からは非表示。自分の過去投稿は閲覧可
+- **営業時間**: 22:00 - 翌05:00 JST のみログイン・利用可能
+- **プレゼンス**: 表示・秘匿の切替可能（非対称 stealth）
 
-## 技術スタック（採用予定）
+## 技術スタック（採用）
 
-- TypeScript / Node.js 22 LTS
-- Next.js 15 (App Router) + React 19
-- Socket.IO v4（Next.js Custom Server に同居）
-- Tailwind CSS + shadcn/ui
-- Zod / Vitest / Playwright
+- TypeScript / Node.js 20 LTS
+- Next.js 16 (App Router) + React 19 + Tailwind 4
+- Custom server (`server.ts`) で Next.js と Socket.IO v4 を同居
+- Auth.js v5 + Google OAuth
 - pnpm workspaces + Turborepo
-- リポジトリ抽象 + In-Memory adapter から開始（後に Prisma + PostgreSQL）
+- リポジトリ抽象 + In-Memory adapter（`DATA_STORE=memory`）、後に Prisma + PostgreSQL
 - Render Web Service へデプロイ
 
 ## アーキテクチャ
@@ -25,14 +24,43 @@
 クリーンアーキテクチャ。依存方向は外→内のみ。
 
 ```
-apps/web                   ← Next.js + Socket.IO Custom Server
+apps/web                   ← Next.js + Socket.IO custom server
 packages/
-  contracts                ← クライアント・サーバ共有スキーマ（Zod）
-  infrastructure           ← DB / Realtime adapters
+  contracts                ← クライアント・サーバ共有スキーマ
+  infrastructure           ← in-memory adapter (将来 Prisma adapter)
   application              ← Use Cases / Ports
   domain                   ← Entities / Value Objects / Repository IF
 ```
 
+## 開発
+
+```bash
+pnpm install
+pnpm -F @me-me-en/web dev   # custom server を tsx watch で起動
+```
+
+- `pnpm -r typecheck` で全 workspace を型検査
+- `pnpm -r test` で domain / application / infrastructure の Vitest
+- `pnpm -F @me-me-en/web e2e` で Playwright E2E smoke（要 `pnpm exec playwright install` を一度実行）
+
+## デプロイ（Render）
+
+1. `render.yaml` を main にマージすれば Render が拾う
+2. Render dashboard で env vars を設定（`sync: false` のもの）:
+   - `AUTH_SECRET` — `openssl rand -hex 32` などで生成
+   - `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET` — Google Cloud Console で OAuth クライアントを発行
+   - `AUTH_URL` — 公開 URL（例: `https://me-me-en.onrender.com`）
+3. Render Web Service の Custom Domain を設定する場合、Google OAuth の redirect URI に `https://<your-domain>/api/auth/callback/google` を追加
+4. デプロイ後、`https://<your-domain>/api/health` が `{"status":"ok"}` を返せば最低限の死活 OK
+5. **データ永続化**: 現状 `DATA_STORE=memory` のため、Render のインスタンス再起動でデータは消える。Prisma 切替は MVPβ で対応
+
 ## ステータス
 
-初期セットアップ中。実装フェーズは `/Users/chiba_haruta/.claude/plans/purrfect-honking-lemur.md` の Plan を参照。
+MVPα（コア体験）完了:
+- 入店 / ご記帳 / 閉店中 / 軒先（投稿・Like・Reply）/ 手紙（DM realtime）/ 己（profile）
+
+MVPβ（次フェーズ、未着手）:
+- 来店帳統計（入店した夜・連続来店・在席チャート・親しい羊）に必要な event log 集計
+- SheepBrush SVG / Moon / 装飾要素
+
+仕様の正本は `docs/spec/product-spec.md`、各 Phase の作業ログは `docs/dev-log/`。
