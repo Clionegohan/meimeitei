@@ -59,3 +59,29 @@ export type {
   ListMessagesDeps,
 } from './use-cases/message/list-messages'
 export { createListMessages } from './use-cases/message/list-messages'
+
+// Use cases — Post
+export type {
+  CreatePost,
+  CreatePostInput,
+  CreatePostDeps,
+} from './use-cases/post/create-post'
+export { createCreatePost } from './use-cases/post/create-post'
+export type {
+  DeletePost,
+  DeletePostInput,
+  DeletePostDeps,
+} from './use-cases/post/delete-post'
+export { createDeletePost } from './use-cases/post/delete-post'
+export type {
+  ListTimeline,
+  ListTimelineInput,
+  ListTimelineDeps,
+} from './use-cases/post/list-timeline'
+export { createListTimeline } from './use-cases/post/list-timeline'
+export type {
+  ListOwnPosts,
+  ListOwnPostsInput,
+  ListOwnPostsDeps,
+} from './use-cases/post/list-own-posts'
+export { createListOwnPosts } from './use-cases/post/list-own-posts'

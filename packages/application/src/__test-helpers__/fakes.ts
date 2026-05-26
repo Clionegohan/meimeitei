@@ -102,7 +102,8 @@ export const inMemoryConversationRepo = (): {
   return { repo, state }
 }
 
-// In-memory PostRepository — only what conversation use cases need.
+// In-memory PostRepository — supports nightId / authorId / before / limit.
+// Order: descending by postedAt (spec C, newest first).
 export const inMemoryPostRepo = (): {
   repo: import('@me-me-en/domain').PostRepository
   state: import('@me-me-en/domain').Post[]
@@ -116,7 +117,17 @@ export const inMemoryPostRepo = (): {
       if (idx >= 0) state[idx] = post
       else state.push(post)
     },
-    list: async () => state,
+    list: async (q) => {
+      let result = state.slice()
+      if (q.nightId !== undefined) result = result.filter((p) => p.nightId === q.nightId)
+      if (q.authorId !== undefined) result = result.filter((p) => p.authorId === q.authorId)
+      if (q.before !== undefined) {
+        const before = q.before
+        result = result.filter((p) => p.postedAt.getTime() < before.getTime())
+      }
+      result.sort((a, b) => b.postedAt.getTime() - a.postedAt.getTime())
+      return q.limit ? result.slice(0, q.limit) : result
+    },
   }
   return { repo, state }
 }
