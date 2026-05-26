@@ -32,3 +32,11 @@ export const broadcastToUser = (
   if (ioRef === null) return
   ioRef.to(`user:${userId}`).emit(event, payload)
 }
+
+// Broadcast to every connected socket. Used for the public timeline
+// (`post:new`); the client may still filter (e.g. by block, which the
+// server can't reflect without a heavier room scheme in MVPα).
+export const broadcastToAll = (event: string, payload: unknown): void => {
+  if (ioRef === null) return
+  ioRef.emit(event, payload)
+}

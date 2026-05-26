@@ -1,34 +1,56 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
-import { likePostAction, unlikePostAction } from './actions'
+import {
+  likePostAction,
+  replyToPostAction,
+  unlikePostAction,
+  type PostDto,
+} from './actions'
 
-export type PostDto = {
-  id: string
-  authorId: string
-  body: string
-  postedAt: string
-  nightId: string
-  iLiked: boolean
-}
+export type { PostDto } from './actions'
 
 const formatTime = (iso: string): string =>
   new Date(iso).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })
 
-export function PostCard({ post }: { post: PostDto }) {
+export function PostCard({
+  post,
+  myUserId,
+}: {
+  post: PostDto
+  myUserId: string
+}) {
   const [iLiked, setILiked] = useState(post.iLiked)
-  const [pending, startTransition] = useTransition()
+  const [likePending, startLikeTransition] = useTransition()
+  const [replyPending, startReplyTransition] = useTransition()
+  const [replyError, setReplyError] = useState<string | null>(null)
+  const router = useRouter()
 
-  const toggle = () => {
-    if (pending) return
-    startTransition(async () => {
+  const isMine = post.authorId === myUserId
+
+  const toggleLike = () => {
+    if (likePending) return
+    startLikeTransition(async () => {
       const prev = iLiked
-      // Optimistic
       setILiked(!prev)
       const result = prev
         ? await unlikePostAction({ postId: post.id })
         : await likePostAction({ postId: post.id })
       if (!result.ok) setILiked(prev)
+    })
+  }
+
+  const startReply = () => {
+    if (replyPending) return
+    setReplyError(null)
+    startReplyTransition(async () => {
+      const result = await replyToPostAction({ postId: post.id })
+      if (result.ok) {
+        router.push(`/chats/${result.conversationId}`)
+      } else {
+        setReplyError(result.error)
+      }
     })
   }
 
@@ -53,20 +75,30 @@ export function PostCard({ post }: { post: PostDto }) {
           {post.body}
         </p>
         <div className="mt-4 flex items-center gap-7">
+          {!isMine && (
+            <button
+              type="button"
+              onClick={startReply}
+              disabled={replyPending}
+              className="text-xs tracking-[0.2em] text-[#9A9484] hover:text-[#ECE6D4] disabled:opacity-50 transition-colors"
+            >
+              {replyPending ? '個室へご案内中…' : '応 え る'}
+            </button>
+          )}
           <button
             type="button"
-            onClick={toggle}
-            disabled={pending}
+            onClick={toggleLike}
+            disabled={likePending}
             className={`text-xs tracking-[0.2em] disabled:opacity-50 transition-colors ${
-              iLiked
-                ? 'text-[#B89B6E]'
-                : 'text-[#9A9484] hover:text-[#B89B6E]'
+              iLiked ? 'text-[#B89B6E]' : 'text-[#9A9484] hover:text-[#B89B6E]'
             }`}
           >
             {iLiked ? '燭を寄せた' : '燭 を 寄 せ る'}
           </button>
-          {/* 「応える」(post → DM) は Phase 5-4-b で追加 */}
         </div>
+        {replyError !== null && (
+          <p className="mt-2 text-sm text-[#A85040] tracking-wider">{replyError}</p>
+        )}
       </div>
     </article>
   )
