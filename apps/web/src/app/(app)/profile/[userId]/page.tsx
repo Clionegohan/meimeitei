@@ -43,7 +43,7 @@ export default async function OtherProfilePage({
       <h2 className="text-2xl tracking-[0.2em] font-light mb-2">
         {user.nickname} さんの席
       </h2>
-      <p className="text-[11px] text-[#5E5A4F] tracking-[0.25em] mb-10">
+      <p className="text-[13px] text-[#5E5A4F] tracking-[0.25em] mb-10">
         御覧いただけるのは、基本のしつらえまで。
       </p>
 

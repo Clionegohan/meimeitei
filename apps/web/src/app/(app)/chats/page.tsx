@@ -11,7 +11,7 @@ export default async function ChatsListPage() {
   return (
     <div className="p-10 max-w-3xl">
       <h2 className="text-2xl tracking-[0.2em] font-light mb-2">手紙 · 個室一覧</h2>
-      <p className="text-[11px] text-[#5E5A4F] tracking-[0.25em] mb-8">
+      <p className="text-[13px] text-[#5E5A4F] tracking-[0.25em] mb-8">
         TEGAMI · PRIVATE ROOMS
       </p>
 
@@ -31,7 +31,7 @@ export default async function ChatsListPage() {
                 >
                   <div className="text-sm tracking-wider text-[#ECE6D4]">{partner}</div>
                   {c.rootPostId !== null && (
-                    <div className="text-[10px] text-[#5E5A4F] tracking-widest mt-1">
+                    <div className="text-[12px] text-[#5E5A4F] tracking-widest mt-1">
                       投稿への返信から始まった
                     </div>
                   )}

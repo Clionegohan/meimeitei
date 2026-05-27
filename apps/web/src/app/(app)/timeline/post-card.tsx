@@ -1,18 +1,33 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useState, useTransition } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 import {
   likePostAction,
   replyToPostAction,
   unlikePostAction,
   type PostDto,
 } from './actions'
+import { SheepAvatar } from '../profile/_components/sheep-avatar'
+import { SumiDivider } from '../_components/sumi-divider'
 
 export type { PostDto } from './actions'
 
+// HH:MM (JST、24h、tabular-nums で揃える)。
 const formatTime = (iso: string): string =>
   new Date(iso).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })
+
+// 「たった今」「8 分前」「3 時間前」「2 日前」。
+const formatDist = (iso: string, now: Date): string => {
+  const diffMs = now.getTime() - new Date(iso).getTime()
+  if (diffMs < 60_000) return 'たった今'
+  if (diffMs < 60 * 60_000) return `${Math.floor(diffMs / 60_000)}分前`
+  if (diffMs < 24 * 60 * 60_000) return `${Math.floor(diffMs / (60 * 60_000))}時間前`
+  return `${Math.floor(diffMs / (24 * 60 * 60_000))}日前`
+}
+
+// 「灯火 (glow)」判定: 直近 5 分以内の投稿を新鮮な灯として扱う。
+const GLOW_THRESHOLD_MS = 5 * 60_000
 
 export function PostCard({
   post,
@@ -27,7 +42,20 @@ export function PostCard({
   const [replyError, setReplyError] = useState<string | null>(null)
   const router = useRouter()
 
+  // dist は時間とともに進むので client side で 30 秒ごとに再評価。
+  const [now, setNow] = useState<Date | null>(null)
+  useEffect(() => {
+    setNow(new Date())
+    const id = setInterval(() => setNow(new Date()), 30_000)
+    return () => clearInterval(id)
+  }, [])
+
   const isMine = post.authorId === myUserId
+  const dist = now === null ? '' : formatDist(post.postedAt, now)
+  const time = formatTime(post.postedAt)
+  const isGlowing =
+    now !== null &&
+    now.getTime() - new Date(post.postedAt).getTime() < GLOW_THRESHOLD_MS
 
   const toggleLike = () => {
     if (likePending) return
@@ -55,50 +83,184 @@ export function PostCard({
   }
 
   return (
-    <article className="py-6 border-b border-[#1F2533] flex gap-5">
-      <div
-        className="w-12 h-12 rounded-full bg-[#10141E] border border-[#1F2533] flex items-center justify-center text-[#9A9484] text-sm tracking-wider shrink-0"
-        aria-hidden
-      >
-        羊
+    <article className="relative flex gap-[18px]" style={{ padding: '24px 4px' }}>
+      {/* Avatar — 48px 円 + SheepBrush 44px + (glow なら) accent dot */}
+      <div className="relative shrink-0">
+        <div
+          className="rounded-full overflow-hidden flex items-center justify-center"
+          style={{
+            width: 48,
+            height: 48,
+            background: '#10141E',
+            border: '1px solid #1F2533',
+          }}
+        >
+          <SheepAvatar tone={post.authorTone} size={44} />
+        </div>
+        {isGlowing && (
+          <span
+            className="absolute rounded-full"
+            aria-hidden
+            style={{
+              bottom: 0,
+              right: 0,
+              width: 10,
+              height: 10,
+              background: '#B89B6E',
+              border: '2px solid #080B12',
+              boxShadow: '0 0 6px #B89B6E',
+            }}
+          />
+        )}
       </div>
+
+      {/* Content */}
       <div className="flex-1 min-w-0">
-        <div className="flex items-baseline gap-3 mb-2">
-          <span className="text-base text-[#ECE6D4] tracking-wider">
-            {post.authorId}
+        {/* meta — nickname + dist + 右端の time */}
+        <div className="flex items-baseline" style={{ gap: 12, marginBottom: 10 }}>
+          <span
+            style={{
+              fontSize: 16,
+              color: '#ECE6D4',
+              letterSpacing: '0.08em',
+            }}
+          >
+            {post.authorNickname}
           </span>
-          <span className="text-[11px] text-[#5E5A4F] tabular-nums tracking-widest">
-            {formatTime(post.postedAt)}
+          <span style={{ color: '#3A382F', fontSize: 11 }}>·</span>
+          <span
+            style={{
+              fontSize: 11,
+              color: '#9A9484',
+              letterSpacing: '0.08em',
+            }}
+          >
+            {dist}
+          </span>
+          <span
+            className="tabular-nums ml-auto"
+            style={{
+              fontSize: 11,
+              color: '#5E5A4F',
+              letterSpacing: '0.1em',
+            }}
+          >
+            {time}
           </span>
         </div>
-        <p className="text-[#D8D2C0] text-sm leading-loose whitespace-pre-line">
+
+        {/* body */}
+        <p
+          className="whitespace-pre-line"
+          style={{
+            fontFamily:
+              'var(--font-gothic), "Noto Sans JP", "Hiragino Sans", system-ui, sans-serif',
+            fontSize: 15,
+            lineHeight: 2,
+            color: '#D8D2C0',
+            letterSpacing: '0.04em',
+          }}
+        >
           {post.body}
         </p>
-        <div className="mt-4 flex items-center gap-7">
+
+        {/* actions — 応える + 燭を寄せる + 右端 ··· */}
+        <div className="flex items-center" style={{ marginTop: 16, gap: 28 }}>
           {!isMine && (
             <button
               type="button"
               onClick={startReply}
               disabled={replyPending}
-              className="text-xs tracking-[0.2em] text-[#9A9484] hover:text-[#ECE6D4] disabled:opacity-50 transition-colors"
+              className="flex items-center disabled:opacity-50 hover:text-[#ECE6D4] transition-colors"
+              style={{
+                gap: 8,
+                color: '#9A9484',
+                fontSize: 12,
+                letterSpacing: '0.2em',
+                background: 'transparent',
+                padding: 0,
+                border: 'none',
+              }}
             >
-              {replyPending ? '個室へご案内中…' : '応 え る'}
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.4"
+                strokeLinejoin="round"
+              >
+                <path d="M21 12 a9 9 0 1 1 -3.5 -7 L21 5 l-1 4 L21 12" />
+              </svg>
+              {replyPending ? '個 室 へ…' : '応 え る'}
             </button>
           )}
+
           <button
             type="button"
             onClick={toggleLike}
             disabled={likePending}
-            className={`text-xs tracking-[0.2em] disabled:opacity-50 transition-colors ${
-              iLiked ? 'text-[#B89B6E]' : 'text-[#9A9484] hover:text-[#B89B6E]'
-            }`}
+            className="flex items-center disabled:opacity-50 transition-colors"
+            style={{
+              gap: 8,
+              color: iLiked ? '#B89B6E' : '#9A9484',
+              fontSize: 12,
+              letterSpacing: '0.2em',
+              background: 'transparent',
+              padding: 0,
+              border: 'none',
+            }}
           >
-            {iLiked ? '燭を寄せた' : '燭 を 寄 せ る'}
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill={iLiked ? '#B89B6E' : '#7A6749'}
+              stroke="none"
+            >
+              <path
+                d="M12 2 C12 6 16 8 16 13 a4 4 0 0 1 -8 0 c0 -5 4 -7 4 -11 z"
+                opacity={iLiked ? '0.9' : '0.6'}
+              />
+            </svg>
+            {iLiked ? '燭 を 寄 せ た' : '燭 を 寄 せ る'}
+          </button>
+
+          <button
+            type="button"
+            className="ml-auto"
+            aria-label="その他"
+            style={{
+              color: '#5E5A4F',
+              fontSize: 14,
+              padding: '0 4px',
+              background: 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+            }}
+          >
+            ···
           </button>
         </div>
+
         {replyError !== null && (
-          <p className="mt-2 text-sm text-[#A85040] tracking-wider">{replyError}</p>
+          <p
+            className="mt-2"
+            style={{ fontSize: 13, color: '#A85040', letterSpacing: '0.05em' }}
+          >
+            {replyError}
+          </p>
         )}
+      </div>
+
+      {/* post 間の SumiDivider (墨流し細線、opacity 0.4) — 末尾は親側で抑制可能 */}
+      <div
+        className="absolute left-0 right-0 pointer-events-none"
+        style={{ bottom: 0 }}
+        aria-hidden
+      >
+        <SumiDivider width={760} opacity={0.4} />
       </div>
     </article>
   )

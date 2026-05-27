@@ -50,12 +50,12 @@ export function OtherProfile({ user }: { user: OtherUserDto }) {
             {user.nickname}
           </h3>
           {user.presenceVisible && (
-            <p className="text-[11px] text-[#B89B6E] tracking-[0.3em] mb-4">
+            <p className="text-[13px] text-[#B89B6E] tracking-[0.3em] mb-4">
               灯ともる
             </p>
           )}
           {user.bio.length > 0 && (
-            <p className="text-sm text-[#D8D2C0] leading-loose whitespace-pre-line max-w-lg">
+            <p className="text-[17px] text-[#D8D2C0] leading-loose whitespace-pre-line max-w-lg">
               {user.bio}
             </p>
           )}

@@ -17,7 +17,7 @@ export default function ClosedPage() {
         月の昇る刻、またここでお会いしましょう。
       </div>
       <ClosedCountdown />
-      <p className="mt-16 text-[10px] text-[#5E5A4F] tracking-[0.3em]">
+      <p className="mt-16 text-[12px] text-[#5E5A4F] tracking-[0.3em]">
         営業 二十二時 — 翌五時
       </p>
     </main>

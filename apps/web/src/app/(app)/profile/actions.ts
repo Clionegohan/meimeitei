@@ -3,6 +3,7 @@
 import { auth } from '@/auth'
 import { startConversationDirect, updateProfile } from '@/server/di'
 import type {
+  FavoriteMoon,
   PresenceVisibility,
   SignTag,
   Tone,
@@ -17,6 +18,8 @@ export const updateProfileAction = async (input: {
   tone?: Tone
   presenceVisibility?: PresenceVisibility
   currentSigns?: readonly SignTag[]
+  // 「好きな月」: null で「未設定に戻す」、未指定 (undefined) で変更なし
+  favoriteMoon?: FavoriteMoon | null
 }): Promise<UpdateProfileResult> => {
   const session = await auth()
   if (session === null || session.userId === undefined) {
@@ -29,6 +32,7 @@ export const updateProfileAction = async (input: {
       tone?: Tone
       presenceVisibility?: PresenceVisibility
       currentSigns?: readonly SignTag[]
+      favoriteMoon?: FavoriteMoon | null
     } = {}
     if (input.nickname !== undefined) patch.nickname = input.nickname
     if (input.bio !== undefined) patch.bio = input.bio
@@ -36,6 +40,7 @@ export const updateProfileAction = async (input: {
     if (input.presenceVisibility !== undefined)
       patch.presenceVisibility = input.presenceVisibility
     if (input.currentSigns !== undefined) patch.currentSigns = input.currentSigns
+    if (input.favoriteMoon !== undefined) patch.favoriteMoon = input.favoriteMoon
     await updateProfile({ userId: session.userId, patch })
     return { ok: true }
   } catch (e) {

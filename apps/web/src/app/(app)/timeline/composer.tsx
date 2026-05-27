@@ -39,10 +39,10 @@ export function Composer() {
           maxLength={280}
           rows={3}
           placeholder="今宵のひとこと、置きませんか。"
-          className="w-full bg-transparent text-[#ECE6D4] text-sm leading-relaxed resize-none focus:outline-none placeholder:text-[#5E5A4F]"
+          className="w-full bg-transparent text-[#ECE6D4] text-[17px] leading-[1.9] resize-none focus:outline-none placeholder:text-[#5E5A4F] placeholder:font-mincho"
         />
         <div className="flex items-center justify-between mt-3 pt-3 border-t border-[#1F2533]">
-          <span className="text-[10px] text-[#5E5A4F] tracking-widest tabular-nums">
+          <span className="text-[12px] text-[#5E5A4F] tracking-widest tabular-nums">
             {body.trim().length} / 280
           </span>
           <button
