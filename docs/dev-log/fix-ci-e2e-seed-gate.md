@@ -39,10 +39,15 @@ CI の e2e job (`.github/workflows/ci.yml`):
 ### apps/web/package.json
 
 ```json
-"start:e2e": "E2E_TEST_ENABLED=true tsx server.ts"
+"start:e2e": "BYPASS_BUSINESS_HOURS=true E2E_TEST_ENABLED=true tsx server.ts"
 ```
 
-`NODE_ENV` を設定しない → `next({ dev: NODE_ENV !== 'production' })` が dev mode で起動。ゲートは `NODE_ENV !== 'production' (true) && E2E_TEST_ENABLED === 'true' (true)` で通る。E2E モードを script に閉じ込め single source of truth とする。
+`NODE_ENV` を設定しない → `next({ dev: NODE_ENV !== 'production' })` が dev mode で起動。E2E モードに必要な 2 つの env を script に閉じ込め single source of truth とする:
+
+- `E2E_TEST_ENABLED=true`: seed ゲート（`NODE_ENV !== 'production' && E2E_TEST_ENABLED`）を通す
+- `BYPASS_BUSINESS_HOURS=true`: **営業時間ゲートを bypass**。CI は任意の時刻に走るため、22:00-05:00 JST 外だと middleware が protected page を `/closed` へ redirect し、`迷 羊 苑` 等のアサーションが落ちる。`isBusinessHoursBypassed()` も `NODE_ENV !== 'production'` を要求するため dev mode 起動が前提
+
+> 第一の修正（E2E_TEST_ENABLED 追加）で seed 403 は解消したが、CI 実行時刻が 19:04 JST（営業時間外）だったため次に `/closed` redirect でアサーションが落ちた。2 つのゲート（seed + 営業時間）を両方 bypass して初めて green になる。
 
 ### .github/workflows/ci.yml（e2e job）
 
@@ -52,15 +57,16 @@ CI の e2e job (`.github/workflows/ci.yml`):
 
 ## 検証
 
-ローカルで dev mode 起動 + seed を実機確認:
+ローカルで dev mode 起動 + 2 ゲート bypass を実機確認:
 
 ```
 PORT=3100 DATA_STORE=memory pnpm start:e2e
-# ready after 3s
-POST /api/test/seed → HTTP 200 {"ok":true}   (従来は 403)
+# ready after 1-3s
+POST /api/test/seed                → HTTP 200 {"ok":true}   (従来は 403)
+GET  /chats (19:06 JST = 営業時間外) → 307 /login            (/closed ではない = bypass 有効)
 ```
 
-ゲートが通り seed が成功することを確認。CI 上の green は push 後の run で確認する。
+seed ゲートと営業時間ゲートの両方が通ることを確認。CI 上の green は push 後の run で確認する。
 
 ## 備考
 
