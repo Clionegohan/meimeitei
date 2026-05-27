@@ -107,7 +107,7 @@ const ItemRow = ({
 export function Sidebar() {
   const pathname = usePathname()
   return (
-    <aside className="hidden md:flex w-60 shrink-0 sticky top-16 h-[calc(100vh-64px)] overflow-y-auto border-r border-[#1F2533] bg-[#0C1018] flex-col">
+    <aside aria-label="サイドバー" className="hidden md:flex w-60 shrink-0 sticky top-16 h-[calc(100vh-64px)] overflow-y-auto border-r border-[#1F2533] bg-[#0C1018] flex-col">
       {/* Compose CTA — 「筆を取る」 */}
       <div className="px-[22px] pt-6 pb-[18px]">
         <button
