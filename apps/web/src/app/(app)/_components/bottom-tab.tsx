@@ -26,6 +26,7 @@ export function BottomTab() {
   const pathname = usePathname()
   return (
     <nav
+      aria-label="下段タブ"
       className="md:hidden fixed bottom-0 left-0 right-0 z-20 flex border-t border-[#1F2533] bg-[rgba(8,11,18,0.95)] backdrop-blur"
       style={{ height: 60 }}
     >
