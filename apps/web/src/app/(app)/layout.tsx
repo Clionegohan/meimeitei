@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { auth } from '@/auth'
 import { recordLogin, userRepository } from '@/server/di'
 import { BottomTab } from './_components/bottom-tab'
+import { SessionWatcher } from './_components/session-watcher'
 import { Sidebar } from './_components/sidebar'
 import { TopBar } from './_components/top-bar'
 
@@ -21,6 +22,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="min-h-screen bg-[#080B12] text-[#ECE6D4]">
+      <SessionWatcher userId={session.userId} />
       <TopBar tone={user?.tone ?? '#E8E2D2'} />
       {/* items-start で sidebar が main の高さに引き伸ばされないようにし、
           sidebar 自身を sticky top-16 (TopBar 高さ 64px) で固定する。

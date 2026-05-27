@@ -10,7 +10,13 @@ export type {
   LikeId,
   BlockId,
 } from './shared/id'
-export { DomainError, NotFoundError, ValidationError, ForbiddenError } from './shared/errors'
+export {
+  DomainError,
+  NotFoundError,
+  ValidationError,
+  ForbiddenError,
+  RateLimitError,
+} from './shared/errors'
 export type { NightId } from './shared/time'
 export {
   isOpen,
@@ -19,6 +25,7 @@ export {
   opensAtOf,
   closesAtOf,
   closedReason,
+  nextCloseAfter,
 } from './shared/time'
 export type {
   User,
