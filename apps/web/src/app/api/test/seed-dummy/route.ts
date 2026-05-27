@@ -147,7 +147,7 @@ export async function GET(req: Request): Promise<NextResponse> {
 
   // ─── 1. Users + AuthIdentity ─────────────────────────────────────
   const joinedBase = jst(2026, 4, 1, 22, 30) // 過去にお店に来ていた人 (令和八年 卯月 一日)
-  for (const u of USERS) {
+  for (const [i, u] of USERS.entries()) {
     await userRepository.save({
       id: u.id,
       nickname: u.nickname,
@@ -156,7 +156,8 @@ export async function GET(req: Request): Promise<NextResponse> {
       presenceVisibility: u.presenceVisible ? 'visible' : 'invisible',
       currentSigns: u.signs,
       favoriteMoon: u.favoriteMoon,
-      joinedAt: joinedBase,
+      // 入店初日を羊ごとにずらし、「いつから来ているか」に変化を持たせる
+      joinedAt: new Date(joinedBase.getTime() - i * 23 * 86_400_000),
     })
     await authIdentityRepository.upsert({
       provider: 'google',
