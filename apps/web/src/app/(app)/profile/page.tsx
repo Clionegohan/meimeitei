@@ -39,11 +39,8 @@ export default async function MyProfilePage() {
   // main (left 240 → right 340) + VisitRecordRail 340 の 2 ペイン構造。
   // 実装は flex で main flex-1 + rail 固定 340。
   return (
-    <div className="flex min-h-[calc(100vh-64px)]">
-      <div
-        className="flex-1 min-w-0 overflow-hidden"
-        style={{ padding: '40px 56px' }}
-      >
+    <div className="flex flex-col md:flex-row min-h-[calc(100vh-64px)]">
+      <div className="flex-1 min-w-0 overflow-hidden px-4 py-6 md:px-14 md:py-10">
         <ProfileEditor
           user={dto}
           closeSheepList={<CloseSheepList sheep={closeSheep} />}

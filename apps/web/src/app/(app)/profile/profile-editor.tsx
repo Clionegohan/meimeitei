@@ -199,16 +199,12 @@ function ProfileDisplay({
         <SumiDivider width={760} opacity={0.5} />
       </div>
 
-      {/* Profile card */}
+      {/* Profile card — SP は縦積み、md で avatar 横並び */}
       <div
-        className="relative overflow-hidden"
+        className="relative overflow-hidden mt-7 flex flex-col md:flex-row gap-6 md:gap-9 p-6 md:px-9 md:py-8"
         style={{
-          marginTop: 28,
-          padding: '32px 36px',
           background: '#10141E',
           border: '1px solid #1F2533',
-          display: 'flex',
-          gap: 36,
         }}
       >
         {/* 装飾月: panel 内に完全に収まる右上配置。淡さ (opacity 0.4) は維持。
@@ -289,16 +285,8 @@ function ProfileDisplay({
             </p>
           )}
 
-          {/* 3 列 meta */}
-          <div
-            className="flex"
-            style={{
-              marginTop: 24,
-              paddingTop: 18,
-              borderTop: '1px solid #1F2533',
-              gap: 36,
-            }}
-          >
+          {/* 3 列 meta — SP は折り返し */}
+          <div className="flex flex-wrap mt-6 pt-[18px] gap-x-9 gap-y-4 border-t border-[#1F2533]">
             <MetaCell label="入店初日" value={joinedAtJa} />
             <MetaCell
               label="好きな月"
@@ -309,9 +297,9 @@ function ProfileDisplay({
         </div>
       </div>
 
-      {/* 今宵のしるし + 親しい羊 横並び */}
-      <div className="flex" style={{ marginTop: 28, gap: 40 }}>
-        <div style={{ flex: 1 }}>
+      {/* 今宵のしるし + 親しい羊 — SP は縦積み、md で横並び */}
+      <div className="flex flex-col md:flex-row mt-7 gap-8 md:gap-10">
+        <div className="flex-1 min-w-0">
           <SectionTitle title="今 宵 の し る し" />
           <SectionSub>同じしるしを掲げる羊と、ふと出会えます。</SectionSub>
           <div className="flex flex-wrap" style={{ gap: 10 }}>
@@ -336,7 +324,7 @@ function ProfileDisplay({
           </div>
         </div>
 
-        <div style={{ width: 280 }}>
+        <div className="w-full md:w-[280px]">
           <SectionTitle title="親 し い 羊" />
           <SectionSub>よく文をやり取りする羊たち。</SectionSub>
           {closeSheepList}
@@ -427,9 +415,9 @@ function EditForm(props: EditFormProps) {
       }}
       className="space-y-8"
     >
-      <div className="flex items-start gap-8">
+      <div className="flex flex-col md:flex-row items-start gap-6 md:gap-8">
         <SheepAvatar tone={props.tone} size={120} />
-        <div className="flex-1 space-y-6">
+        <div className="flex-1 w-full space-y-6">
           <label className="block">
             <span className="text-xs text-[#5E5A4F] tracking-[0.3em] block mb-2">
               羊の名（1–20 文字）

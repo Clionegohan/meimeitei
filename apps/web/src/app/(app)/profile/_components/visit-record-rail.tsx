@@ -24,8 +24,7 @@ const STAT_ROWS: ReadonlyArray<{
 export function VisitRecordRail({ stats, hourly }: VisitRecordRailProps) {
   return (
     <aside
-      className="bg-[#0C1018] border-l border-[#1F2533] shrink-0 relative sticky top-16 h-[calc(100vh-64px)] overflow-y-auto"
-      style={{ width: 340, padding: '32px 28px 100px' }}
+      className="bg-[#0C1018] border-t md:border-t-0 md:border-l border-[#1F2533] shrink-0 relative w-full md:w-[340px] px-5 md:px-7 pt-8 pb-8 md:pb-[100px] md:sticky md:top-16 md:h-[calc(100vh-64px)] md:overflow-y-auto"
     >
       {/* 来店帳 */}
       <div
@@ -92,11 +91,8 @@ export function VisitRecordRail({ stats, hourly }: VisitRecordRailProps) {
         <HourlyPresenceChart buckets={hourly} />
       </div>
 
-      {/* 退店する */}
-      <div
-        className="absolute"
-        style={{ bottom: 28, left: 28, right: 28 }}
-      >
+      {/* 退店する — desktop は底部固定、SP は静的に下へ積む */}
+      <div className="mt-10 md:mt-0 md:absolute md:bottom-7 md:left-7 md:right-7">
         <form
           action={async () => {
             'use server'
