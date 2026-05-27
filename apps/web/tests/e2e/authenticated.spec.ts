@@ -18,8 +18,8 @@ test.describe('authenticated (seed + JWT cookie)', () => {
 
   test('/chats lists conversations (empty state ok)', async ({ page }) => {
     await page.goto('/chats')
-    // sidebar / topbar が出る、または「会話なし」placeholder が出る
-    await expect(page.getByText('迷 羊 苑')).toBeVisible()
+    // TopBar の屋号が出る (γ UI: letter-spacing 表現なので text node は「迷羊苑」)
+    await expect(page.getByText('迷羊苑').first()).toBeVisible()
   })
 
   test('/timeline renders the composer + heading', async ({ page }) => {
@@ -29,7 +29,8 @@ test.describe('authenticated (seed + JWT cookie)', () => {
 
   test('/profile renders the onboarded user nickname and 来店帳', async ({ page }) => {
     await page.goto('/profile')
-    await expect(page.getByRole('heading', { name: 'あなたの席' })).toBeVisible()
+    // γ UI: 「あなたの席」は heading 要素ではなく装飾 div
+    await expect(page.getByText('あなたの席')).toBeVisible()
     await expect(page.getByText('alice (e2e)').first()).toBeVisible()
     await expect(page.getByText('来 店 帳')).toBeVisible()
   })
