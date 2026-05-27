@@ -6,6 +6,7 @@
     "dev": "tsx watch server.ts",
     "build": "next build",
     "start": "NODE_ENV=production tsx server.ts",
+    "start:e2e": "BYPASS_BUSINESS_HOURS=true E2E_TEST_ENABLED=true tsx server.ts",
     "typecheck": "tsc --noEmit",
     "e2e": "playwright test"
   },
