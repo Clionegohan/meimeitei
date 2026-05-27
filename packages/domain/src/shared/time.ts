@@ -75,6 +75,22 @@ export const closesAtOf = (nightId: NightId): Date => {
   return new Date(Date.UTC(y, m - 1, d, CLOSE_HOUR + 24 - 9, 0, 0))
 }
 
+// now より「厳密に後」の直近の閉店時刻 (05:00 JST) を返す。
+// 営業時間内/外を問わず使える純粋関数。05:00 丁度の場合は翌日の 05:00 を返す
+// (閉店処理を二重に走らせないため、境界は「閉店済み」とみなす)。
+// bypass フラグは見ない: スケジュールの境界計算と「閉店を実行するか」の判断は
+// 別関心 (実行可否は呼び出し側が決める)。
+export const nextCloseAfter = (now: Date): Date => {
+  const jst = toJst(now)
+  const y = jst.getUTCFullYear()
+  const m = jst.getUTCMonth()
+  const d = jst.getUTCDate()
+  // 同日 05:00 JST の実 UTC 時刻 (CLOSE_HOUR - 9 の負時は Date.UTC が前日へ正規化)。
+  const todayClose = new Date(Date.UTC(y, m, d, CLOSE_HOUR - 9, 0, 0))
+  if (todayClose.getTime() > now.getTime()) return todayClose
+  return new Date(Date.UTC(y, m, d + 1, CLOSE_HOUR - 9, 0, 0))
+}
+
 // 営業時間外の判定理由を返す（UI で文言を変える用）。
 // 朝〜昼前（5:00-13:59 JST）: 直前の閉店からまだ近い -> after-close
 // 昼過ぎ〜夜（14:00-21:59 JST）: 次の開店が近づく -> before-open

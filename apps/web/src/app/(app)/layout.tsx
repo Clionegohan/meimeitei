@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { auth } from '@/auth'
 import { recordLogin } from '@/server/di'
+import { SessionWatcher } from './_components/session-watcher'
 import { Sidebar } from './_components/sidebar'
 import { TopBar } from './_components/top-bar'
 
@@ -17,6 +18,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="min-h-screen bg-[#080B12] text-[#ECE6D4]">
+      <SessionWatcher userId={session.userId} />
       <TopBar />
       <div className="flex">
         <Sidebar />
