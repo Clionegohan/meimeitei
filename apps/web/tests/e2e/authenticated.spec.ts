@@ -29,8 +29,9 @@ test.describe('authenticated (seed + JWT cookie)', () => {
 
   test('/profile renders the onboarded user nickname and 来店帳', async ({ page }) => {
     await page.goto('/profile')
-    // γ UI: 「あなたの席」は heading 要素ではなく装飾 div
-    await expect(page.getByText('あなたの席')).toBeVisible()
+    // γ UI: 「あなたの席」は heading 要素でなく装飾 div。Sidebar の「己」サブラベルにも
+    // 同テキストがあるため main 配下に絞る (strict mode 違反回避)。
+    await expect(page.getByRole('main').getByText('あなたの席')).toBeVisible()
     await expect(page.getByText('alice (e2e)').first()).toBeVisible()
     await expect(page.getByText('来 店 帳')).toBeVisible()
   })
