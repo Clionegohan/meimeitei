@@ -46,17 +46,19 @@ export const createStartConversationByPost = (
     throw new ForbiddenError('cannot start a conversation with a blocked user')
   }
 
-  // R1 conversation key = (sorted_pair, postId). Reuse if it exists.
+  // DM 統合 (旧 spec R1「投稿ごと新規 conversation」を廃止):
+  // 投稿への返信でも、相手との会話は 1 スレッドに統合する。
+  // → 相手ごと 1 conversation (rootPostId は持たない)。既存があれば再利用。
   const existing = await deps.conversationRepository.findByPair(
     [input.initiatorId, post.authorId],
-    input.postId,
+    null,
   )
   if (existing !== null) return existing
 
   const conv = createConversation({
     id: deps.idGenerator.conversation(),
     participants: [input.initiatorId, post.authorId],
-    rootPostId: input.postId,
+    rootPostId: null,
     openedAt: deps.clock.now(),
   })
   await deps.conversationRepository.save(conv)

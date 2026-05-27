@@ -284,8 +284,6 @@ export function ThreadView({
             gap: 14,
           }}
         >
-          <span style={{ color: '#B89B6E' }}>個室「ふたりの卓」</span>
-          <span style={{ color: '#3A382F' }}>·</span>
           <span>夜を跨いでも、文字は残ります。</span>
         </div>
         <div
@@ -295,7 +293,7 @@ export function ThreadView({
             letterSpacing: '0.25em',
           }}
         >
-          {toKanji(nightsElapsed)}夜目 · お席
+          {toKanji(nightsElapsed)}夜目
         </div>
       </div>
 

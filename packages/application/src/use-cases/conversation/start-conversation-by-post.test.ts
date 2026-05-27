@@ -30,8 +30,8 @@ const seedPost = (id: string, authorId: UserId) =>
     postedAt: jst(2026, 5, 26, 2, 0),
   })
 
-describe('startConversationByPost (R1)', () => {
-  it('creates a new R1 conversation linking initiator and post author', async () => {
+describe('startConversationByPost (DM 統合)', () => {
+  it('creates a conversation (rootPostId=null) linking initiator and post author', async () => {
     const convRepo = inMemoryConversationRepo()
     const postRepo = inMemoryPostRepo()
     const blockRepo = inMemoryBlockRepo()
@@ -48,16 +48,18 @@ describe('startConversationByPost (R1)', () => {
 
     const conv = await start({ initiatorId: initiator, postId: 'p1' as PostId })
 
-    expect(conv.rootPostId).toBe('p1')
+    // 統合後は投稿文脈を conversation に持たない (1 相手 1 スレッド)
+    expect(conv.rootPostId).toBeNull()
     expect(conv.participantIds).toEqual([initiator, author].sort())
     expect(convRepo.state.length).toBe(1)
   })
 
-  it('reuses an existing R1 conversation for the same post', async () => {
+  it('reuses the same conversation even for a different post by the same author', async () => {
     const convRepo = inMemoryConversationRepo()
     const postRepo = inMemoryPostRepo()
     const blockRepo = inMemoryBlockRepo()
     postRepo.state.push(seedPost('p1', author))
+    postRepo.state.push(seedPost('p2', author))
 
     const start = createStartConversationByPost({
       conversationRepository: convRepo.repo,
@@ -68,8 +70,9 @@ describe('startConversationByPost (R1)', () => {
       businessHoursGuard: openGuard,
     })
 
+    // 同じ相手の別投稿に返信しても、DM は 1 スレッドに統合される
     const first = await start({ initiatorId: initiator, postId: 'p1' as PostId })
-    const second = await start({ initiatorId: initiator, postId: 'p1' as PostId })
+    const second = await start({ initiatorId: initiator, postId: 'p2' as PostId })
 
     expect(second.id).toBe(first.id)
     expect(convRepo.state.length).toBe(1)
