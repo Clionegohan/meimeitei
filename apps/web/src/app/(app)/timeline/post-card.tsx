@@ -153,8 +153,6 @@ export function PostCard({
         <p
           className="whitespace-pre-line"
           style={{
-            fontFamily:
-              'var(--font-gothic), "Noto Sans JP", "Hiragino Sans", system-ui, sans-serif',
             fontSize: 15,
             lineHeight: 2,
             color: '#D8D2C0',

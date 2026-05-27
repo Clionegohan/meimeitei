@@ -4,12 +4,19 @@
 const KANJI_DIGITS = ['〇', '一', '二', '三', '四', '五', '六', '七', '八', '九'] as const
 
 // 0-99 のアラビア数字を漢数字に変換。100 以上は半角のまま返す。
+// 略字を使う: 二十 → 廿、三十 → 卅 (sidebar 日付の「廿五日」と統一)。
+//   廿 (20) / 廿一〜廿九 / 卅 (30) / 卅一〜卅九 / それ以外は 四十... と通常表記。
 export const toKanji = (n: number): string => {
   const i = Math.floor(n)
   if (i < 0) return '〇'
   if (i < 10) return KANJI_DIGITS[i] ?? '〇'
   if (i === 10) return '十'
   if (i < 20) return '十' + (KANJI_DIGITS[i - 10] ?? '')
+  // 20 番台は「廿」、30 番台は「卅」を使う
+  if (i === 20) return '廿'
+  if (i < 30) return '廿' + (KANJI_DIGITS[i - 20] ?? '')
+  if (i === 30) return '卅'
+  if (i < 40) return '卅' + (KANJI_DIGITS[i - 30] ?? '')
   if (i < 100) {
     const t = Math.floor(i / 10)
     const o = i % 10

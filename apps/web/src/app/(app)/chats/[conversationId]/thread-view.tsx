@@ -405,8 +405,6 @@ export function ThreadView({
                     background: mine ? '#1A2236' : '#10141E',
                     border: mine ? '1px solid transparent' : '1px solid #1F2533',
                     color: '#ECE6D4',
-                    fontFamily:
-                      'var(--font-gothic), "Noto Sans JP", "Hiragino Sans", system-ui, sans-serif',
                     fontSize: 14,
                     lineHeight: 1.9,
                     letterSpacing: '0.04em',
@@ -524,8 +522,6 @@ export function ThreadView({
                 placeholder="そっと、文字を置く…"
                 className="w-full bg-transparent text-[#ECE6D4] resize-none focus:outline-none placeholder:text-[#5E5A4F]"
                 style={{
-                  fontFamily:
-                    'var(--font-gothic), "Noto Sans JP", "Hiragino Sans", system-ui, sans-serif',
                   fontSize: 14,
                   letterSpacing: '0.05em',
                   lineHeight: 1.9,

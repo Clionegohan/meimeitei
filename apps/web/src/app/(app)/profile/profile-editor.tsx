@@ -271,8 +271,6 @@ function ProfileDisplay({
             <p
               className="whitespace-pre-line"
               style={{
-                fontFamily:
-                  'var(--font-gothic), "Noto Sans JP", "Hiragino Sans", system-ui, sans-serif',
                 fontSize: 14,
                 color: '#D8D2C0',
                 letterSpacing: '0.04em',
