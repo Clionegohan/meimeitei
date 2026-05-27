@@ -49,9 +49,9 @@ export default async function ChatsListPage() {
   )
 
   return (
-    <div className="p-10 max-w-2xl">
-      <h2 className="text-[32px] tracking-[0.2em] font-light leading-tight">手紙</h2>
-      <p className="text-[13px] text-[#5E5A4F] tracking-[0.25em] mt-2 mb-8">
+    <div className="px-4 py-6 md:p-10 max-w-2xl">
+      <h2 className="text-[26px] md:text-[32px] tracking-[0.2em] font-light leading-tight">手紙</h2>
+      <p className="text-[12px] md:text-[13px] text-[#5E5A4F] tracking-[0.25em] mt-2 mb-6 md:mb-8">
         文字だけの、ふたりの語らい。
       </p>
 

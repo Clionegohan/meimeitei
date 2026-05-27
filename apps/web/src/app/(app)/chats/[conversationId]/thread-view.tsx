@@ -143,18 +143,13 @@ export function ThreadView({
 
   return (
     <div
-      className="flex flex-col"
-      style={{ height: 'calc(100vh - 64px)', background: '#080B12' }}
+      className="flex flex-col h-[calc(100vh-124px)] md:h-[calc(100vh-64px)]"
+      style={{ background: '#080B12' }}
     >
       {/* ── Header ─────────────────────────────────────────────────── */}
       <div
-        className="flex items-center"
-        style={{
-          height: 78,
-          padding: '0 40px',
-          gap: 16,
-          borderBottom: '1px solid #1F2533',
-        }}
+        className="flex items-center gap-4 px-4 md:px-10 border-b border-[#1F2533]"
+        style={{ height: 78 }}
       >
         <div className="relative shrink-0">
           <div
@@ -220,8 +215,8 @@ export function ThreadView({
             {statusLabel}
           </div>
         </div>
-        {/* 3 action icons (装飾): 時計 / 虫眼鏡 / 3-dot more */}
-        <div className="flex items-center" style={{ gap: 8 }}>
+        {/* 3 action icons (装飾): 時計 / 虫眼鏡 / 3-dot more。SP では省略。 */}
+        <div className="hidden md:flex items-center" style={{ gap: 8 }}>
           {[
             <g key="clock">
               <circle cx="12" cy="12" r="9" />
@@ -268,15 +263,11 @@ export function ThreadView({
 
       {/* ── Sub-banner ─────────────────────────────────────────────── */}
       <div
-        className="flex items-center justify-between"
-        style={{
-          padding: '10px 40px',
-          background: '#0C1018',
-          borderBottom: '1px solid #1F2533',
-        }}
+        className="flex items-center justify-between px-4 md:px-10 py-2.5 border-b border-[#1F2533]"
+        style={{ background: '#0C1018' }}
       >
         <div
-          className="flex items-center"
+          className="hidden md:flex items-center"
           style={{
             fontSize: 11,
             color: '#9A9484',
@@ -299,8 +290,8 @@ export function ThreadView({
 
       {/* ── Messages ───────────────────────────────────────────────── */}
       <div
-        className="flex-1 overflow-auto flex flex-col"
-        style={{ padding: '24px 80px 16px', gap: 4 }}
+        className="flex-1 overflow-auto flex flex-col px-4 md:px-20 pt-6 pb-4"
+        style={{ gap: 4 }}
       >
         {/* Date divider */}
         {now !== null && (
@@ -390,9 +381,8 @@ export function ThreadView({
               )}
 
               <div
-                className="flex flex-col"
+                className="flex flex-col max-w-[80%] md:max-w-[60%]"
                 style={{
-                  maxWidth: '60%',
                   alignItems: mine ? 'flex-end' : 'flex-start',
                 }}
               >
@@ -489,11 +479,8 @@ export function ThreadView({
 
       {/* ── Composer ───────────────────────────────────────────────── */}
       <div
-        style={{
-          padding: '16px 40px 24px',
-          borderTop: '1px solid #1F2533',
-          background: '#0C1018',
-        }}
+        className="px-4 md:px-10 pt-4 pb-4 md:pb-6 border-t border-[#1F2533]"
+        style={{ background: '#0C1018' }}
       >
         <form
           onSubmit={(e) => {
@@ -547,6 +534,7 @@ export function ThreadView({
                   </span>
                 ))}
                 <span
+                  className="hidden md:inline"
                   style={{
                     marginLeft: 8,
                     fontSize: 10,
