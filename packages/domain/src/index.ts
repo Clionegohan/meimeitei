@@ -20,8 +20,22 @@ export {
   closesAtOf,
   closedReason,
 } from './shared/time'
-export type { User, PresenceVisibility, SignTag, Tone, CreateUserInput } from './user/user'
-export { createUser, isSignTag, SIGN_TAGS, TONES } from './user/user'
+export type {
+  User,
+  PresenceVisibility,
+  SignTag,
+  Tone,
+  FavoriteMoon,
+  CreateUserInput,
+} from './user/user'
+export {
+  createUser,
+  isSignTag,
+  isFavoriteMoon,
+  SIGN_TAGS,
+  TONES,
+  FAVORITE_MOONS,
+} from './user/user'
 export type { UserRepository } from './user/repository'
 export type { Conversation, CreateConversationInput } from './conversation/conversation'
 export { createConversation, normalizeParticipants } from './conversation/conversation'

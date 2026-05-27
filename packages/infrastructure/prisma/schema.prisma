@@ -23,6 +23,7 @@ model User {
   tone               String
   presenceVisibility String // 'visible' | 'invisible'
   currentSigns       String[] // SignTag[] (snake_case enum)
+  favoriteMoon       String? // FavoriteMoon (16 種の和名、null = 未設定)
   joinedAt           DateTime
 
   @@map("users")

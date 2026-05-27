@@ -1,4 +1,5 @@
 import type {
+  FavoriteMoon,
   SignTag,
   Tone,
   User,
@@ -17,6 +18,7 @@ const toUser = (row: {
   tone: string
   presenceVisibility: string
   currentSigns: readonly string[]
+  favoriteMoon: string | null
   joinedAt: Date
 }): User => ({
   id: row.id as UserId,
@@ -25,6 +27,7 @@ const toUser = (row: {
   tone: row.tone as Tone,
   presenceVisibility: row.presenceVisibility as 'visible' | 'invisible',
   currentSigns: [...row.currentSigns] as readonly SignTag[],
+  favoriteMoon: row.favoriteMoon === null ? null : (row.favoriteMoon as FavoriteMoon),
   joinedAt: row.joinedAt,
 })
 
@@ -36,7 +39,6 @@ export const createPrismaUserRepository = (
     return row === null ? null : toUser(row)
   },
   findByNickname: async (nickname) => {
-    // nickname に unique 制約は無い (重複可)。最初の 1 件を返す。
     const row = await prisma.user.findFirst({ where: { nickname } })
     return row === null ? null : toUser(row)
   },
@@ -53,6 +55,7 @@ export const createPrismaUserRepository = (
         tone: user.tone,
         presenceVisibility: user.presenceVisibility,
         currentSigns: [...user.currentSigns],
+        favoriteMoon: user.favoriteMoon,
         joinedAt: user.joinedAt,
       },
       create: {
@@ -62,6 +65,7 @@ export const createPrismaUserRepository = (
         tone: user.tone,
         presenceVisibility: user.presenceVisibility,
         currentSigns: [...user.currentSigns],
+        favoriteMoon: user.favoriteMoon,
         joinedAt: user.joinedAt,
       },
     })

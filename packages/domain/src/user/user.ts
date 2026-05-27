@@ -27,6 +27,32 @@ export const TONES = ['#E8E2D2', '#D8B890', '#D8CFB8', '#C8BFA0', '#B8A480', '#E
 
 export type Tone = (typeof TONES)[number]
 
+// 「好きな月」— 月相の伝統名 16 種から自分で選ぶ flavor 設定。
+// profile card の装飾月相と「3 列 meta · 好きな月」に反映される。
+export const FAVORITE_MOONS = [
+  '朔',
+  '二日月',
+  '三日月',
+  '上弦の月',
+  '十日夜の月',
+  '十三夜',
+  '小望月',
+  '望月',
+  '十六夜',
+  '立待月',
+  '居待月',
+  '寝待月',
+  '下弦の月',
+  '二十六夜',
+  '有明月',
+  '晦月',
+] as const
+
+export type FavoriteMoon = (typeof FAVORITE_MOONS)[number]
+
+export const isFavoriteMoon = (s: string): s is FavoriteMoon =>
+  (FAVORITE_MOONS as readonly string[]).includes(s)
+
 export type User = {
   readonly id: UserId
   readonly nickname: string
@@ -34,6 +60,7 @@ export type User = {
   readonly tone: Tone
   readonly presenceVisibility: PresenceVisibility
   readonly currentSigns: readonly SignTag[]
+  readonly favoriteMoon: FavoriteMoon | null
   readonly joinedAt: Date
 }
 
@@ -44,6 +71,7 @@ export type CreateUserInput = {
   tone?: Tone
   presenceVisibility?: PresenceVisibility
   currentSigns?: readonly SignTag[]
+  favoriteMoon?: FavoriteMoon | null
   joinedAt: Date
 }
 
@@ -71,6 +99,10 @@ export const createUser = (input: CreateUserInput): User => {
   if (!isValidTone(tone)) {
     throw new ValidationError('tone must be one of the predefined palette')
   }
+  const favoriteMoon = input.favoriteMoon ?? null
+  if (favoriteMoon !== null && !isFavoriteMoon(favoriteMoon)) {
+    throw new ValidationError('favoriteMoon must be one of the predefined names')
+  }
   return {
     id: input.id,
     nickname: input.nickname,
@@ -78,6 +110,7 @@ export const createUser = (input: CreateUserInput): User => {
     tone,
     presenceVisibility: input.presenceVisibility ?? 'visible',
     currentSigns: input.currentSigns ?? [],
+    favoriteMoon,
     joinedAt: input.joinedAt,
   }
 }
