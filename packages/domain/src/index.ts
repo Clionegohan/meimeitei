@@ -25,6 +25,7 @@ export {
   opensAtOf,
   closesAtOf,
   closedReason,
+  nextCloseAfter,
 } from './shared/time'
 export type { User, PresenceVisibility, SignTag, Tone, CreateUserInput } from './user/user'
 export { createUser, isSignTag, SIGN_TAGS, TONES } from './user/user'

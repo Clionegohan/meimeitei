@@ -5,6 +5,7 @@ import {
   closesAtOf,
   currentNightId,
   isOpen,
+  nextCloseAfter,
   nightIdOf,
   opensAtOf,
   type NightId,
@@ -112,5 +113,37 @@ describe('closedReason', () => {
   })
   it('after-close at 13:59 JST (boundary)', () => {
     expect(closedReason(jst(2026, 5, 25, 13, 59))).toBe('after-close')
+  })
+})
+
+describe('nextCloseAfter', () => {
+  it('returns today 05:00 JST when before close (open, deep night)', () => {
+    // 02:00 JST 2026-05-26 -> 同日 05:00 JST = 2026-05-25T20:00Z
+    expect(nextCloseAfter(jst(2026, 5, 26, 2, 0)).toISOString()).toBe(
+      '2026-05-25T20:00:00.000Z',
+    )
+  })
+  it('returns next day 05:00 JST when after close (open, evening)', () => {
+    // 23:00 JST 2026-05-26 -> 翌 05:00 JST = 2026-05-26T20:00Z
+    expect(nextCloseAfter(jst(2026, 5, 26, 23, 0)).toISOString()).toBe(
+      '2026-05-26T20:00:00.000Z',
+    )
+  })
+  it('is strictly after now at exactly 05:00 JST (rolls to next day)', () => {
+    // 05:00 JST 丁度 -> 翌 05:00 JST
+    expect(nextCloseAfter(jst(2026, 5, 26, 5, 0)).toISOString()).toBe(
+      '2026-05-26T20:00:00.000Z',
+    )
+  })
+  it('returns next day 05:00 JST when closed (afternoon)', () => {
+    // 12:00 JST -> 翌 05:00 JST
+    expect(nextCloseAfter(jst(2026, 5, 26, 12, 0)).toISOString()).toBe(
+      '2026-05-26T20:00:00.000Z',
+    )
+  })
+  it('returns close one minute later at 04:59 JST', () => {
+    expect(nextCloseAfter(jst(2026, 5, 26, 4, 59)).toISOString()).toBe(
+      '2026-05-25T20:00:00.000Z',
+    )
   })
 })
