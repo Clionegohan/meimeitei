@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { auth } from '@/auth'
 import { recordLogin, userRepository } from '@/server/di'
+import { BottomTab } from './_components/bottom-tab'
 import { Sidebar } from './_components/sidebar'
 import { TopBar } from './_components/top-bar'
 
@@ -26,8 +27,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           → main だけがスクロール、sidebar は常に画面内に残る。 */}
       <div className="flex items-start">
         <Sidebar />
-        <main className="flex-1 min-w-0">{children}</main>
+        {/* SP は bottom tab 分の余白を確保 (pb-[60px])。md 以上は不要。 */}
+        <main className="flex-1 min-w-0 pb-[60px] md:pb-0">{children}</main>
       </div>
+      <BottomTab />
     </div>
   )
 }

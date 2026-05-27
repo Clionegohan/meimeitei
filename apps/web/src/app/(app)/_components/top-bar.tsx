@@ -18,25 +18,13 @@ export function TopBar({ tone }: TopBarProps) {
       className="flex items-center sticky top-0 z-10 border-b border-[#1F2533] bg-[rgba(8,11,18,0.85)] backdrop-blur"
       style={{ height: 64 }}
     >
-      {/* Brand column — 月 + 迷羊苑 */}
+      {/* Brand column — 月 + 迷羊苑。SP は幅自動 (border-right なし)、md で 240px 固定 */}
       <div
-        className="flex items-center"
-        style={{
-          width: 240,
-          height: '100%',
-          padding: '0 28px',
-          borderRight: '1px solid #1F2533',
-          gap: 14,
-        }}
+        className="flex items-center gap-3.5 h-full px-4 md:px-7 md:w-60 md:border-r md:border-[#1F2533]"
       >
         <MoonSvg size={28} phase={0.78} glow={false} />
         <span
-          style={{
-            fontSize: 17,
-            letterSpacing: '0.35em',
-            color: '#ECE6D4',
-            fontWeight: 400,
-          }}
+          className="text-[15px] md:text-[17px] tracking-[0.25em] md:tracking-[0.35em] text-[#ECE6D4] whitespace-nowrap"
         >
           迷羊苑
         </span>
@@ -46,16 +34,18 @@ export function TopBar({ tone }: TopBarProps) {
       <TopBarSection />
 
       {/* Right cluster */}
-      <div className="flex items-center gap-7 pr-8">
-        <TopBarClock />
-
-        <span className="h-9 w-px bg-[#1F2533]" aria-hidden />
+      <div className="flex items-center gap-4 md:gap-7 pr-4 md:pr-8">
+        {/* 時計 + countdown は SP では隠す (情報量が多く狭い画面で崩れる) */}
+        <div className="hidden md:flex items-center gap-7">
+          <TopBarClock />
+          <span className="h-9 w-px bg-[#1F2533]" aria-hidden />
+        </div>
 
         {/* 自分 avatar — クリックで己 (profile) へ */}
         <Link
           href="/profile"
           aria-label="己 (あなたの席)"
-          className="flex items-center justify-center overflow-hidden rounded-full hover:border-[#B89B6E] transition-colors"
+          className="flex items-center justify-center overflow-hidden rounded-full hover:border-[#B89B6E] transition-colors shrink-0"
           style={{
             width: 38,
             height: 38,
