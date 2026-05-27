@@ -29,7 +29,7 @@ export function VisitRecordRail({ stats, hourly }: VisitRecordRailProps) {
       {/* 来店帳 */}
       <div
         style={{
-          fontSize: 11,
+          fontSize: 12,
           color: '#5E5A4F',
           letterSpacing: '0.35em',
           marginBottom: 18,
@@ -52,7 +52,7 @@ export function VisitRecordRail({ stats, hourly }: VisitRecordRailProps) {
             >
               <span
                 style={{
-                  fontSize: 12,
+                  fontSize: 14,
                   color: '#9A9484',
                   letterSpacing: '0.2em',
                 }}
@@ -73,7 +73,7 @@ export function VisitRecordRail({ stats, hourly }: VisitRecordRailProps) {
                 </span>
                 <span
                   style={{
-                    fontSize: 10,
+                    fontSize: 12,
                     color: '#5E5A4F',
                     letterSpacing: '0.25em',
                   }}
@@ -107,7 +107,7 @@ export function VisitRecordRail({ stats, hourly }: VisitRecordRailProps) {
               border: '1px solid #2A3142',
               background: 'transparent',
               color: '#9A9484',
-              fontSize: 12,
+              fontSize: 14,
               letterSpacing: '0.3em',
             }}
           >

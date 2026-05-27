@@ -50,7 +50,7 @@ export function OtherProfile({ user }: { user: OtherUserDto }) {
   }
 
   const joinedAtJa = formatJapaneseDate(new Date(user.joinedAt))
-  const statusLabel = user.presenceVisible ? '灯ともる · 今宵 在席' : '灯 秘匿 もしくは 不在'
+  const statusLabel = user.presenceVisible ? '灯る · 今宵 在席' : '灯 秘匿 もしくは 不在'
   // 装飾月: 好きな月が設定されていればその月相、未設定なら居待月 fallback。
   const moonPhaseForCard = phaseOfFavoriteMoon(user.favoriteMoon) ?? 17 / 29.5305882
 
@@ -66,7 +66,7 @@ export function OtherProfile({ user }: { user: OtherUserDto }) {
             {user.nickname} さんの席
           </div>
           <div
-            style={{ fontSize: 11, color: '#5E5A4F', letterSpacing: '0.25em', marginTop: 6 }}
+            style={{ fontSize: 14, color: '#5E5A4F', letterSpacing: '0.25em', marginTop: 6 }}
           >
             御覧いただける、この羊のしつらえ。
           </div>
@@ -82,7 +82,7 @@ export function OtherProfile({ user }: { user: OtherUserDto }) {
             border: '1px solid #ECE6D4',
             background: 'transparent',
             color: '#ECE6D4',
-            fontSize: 12,
+            fontSize: 14,
             letterSpacing: '0.3em',
           }}
         >
@@ -130,7 +130,7 @@ export function OtherProfile({ user }: { user: OtherUserDto }) {
           <div
             className="flex items-center"
             style={{
-              fontSize: 11,
+              fontSize: 14,
               color: user.presenceVisible ? '#B89B6E' : '#5E5A4F',
               letterSpacing: '0.3em',
               marginBottom: 18,
@@ -150,7 +150,7 @@ export function OtherProfile({ user }: { user: OtherUserDto }) {
           {user.bio.length > 0 && (
             <p
               className="whitespace-pre-line"
-              style={{ fontSize: 14, color: '#D8D2C0', letterSpacing: '0.04em', lineHeight: 2, maxWidth: 480 }}
+              style={{ fontSize: 18, color: '#D8D2C0', letterSpacing: '0.04em', lineHeight: 2, maxWidth: 480 }}
             >
               {user.bio}
             </p>
@@ -169,7 +169,7 @@ export function OtherProfile({ user }: { user: OtherUserDto }) {
       <div className="mt-7">
         <SectionTitle title="今 宵 の し る し" />
         {user.currentSigns.length === 0 ? (
-          <p style={{ fontSize: 12, color: '#5E5A4F', letterSpacing: '0.15em' }}>
+          <p style={{ fontSize: 14, color: '#5E5A4F', letterSpacing: '0.15em' }}>
             今宵は しるしを 掲げていない。
           </p>
         ) : (
@@ -178,11 +178,11 @@ export function OtherProfile({ user }: { user: OtherUserDto }) {
               <span
                 key={s}
                 style={{
-                  padding: '8px 18px',
+                  padding: '9px 20px',
                   border: '1px solid #B89B6E',
                   background: 'rgba(184,155,110,0.08)',
                   color: '#ECE6D4',
-                  fontSize: 12,
+                  fontSize: 16,
                   letterSpacing: '0.2em',
                 }}
               >
@@ -194,7 +194,7 @@ export function OtherProfile({ user }: { user: OtherUserDto }) {
       </div>
 
       {error !== null && (
-        <p className="mt-4" style={{ fontSize: 13, color: '#A85040', letterSpacing: '0.05em' }}>
+        <p className="mt-4" style={{ fontSize: 14, color: '#A85040', letterSpacing: '0.05em' }}>
           {error}
         </p>
       )}
@@ -204,15 +204,15 @@ export function OtherProfile({ user }: { user: OtherUserDto }) {
 
 const MetaCell = ({ label, value }: { label: string; value: string }) => (
   <div>
-    <div style={{ fontSize: 10, color: '#5E5A4F', letterSpacing: '0.25em' }}>{label}</div>
-    <div style={{ fontSize: 14, color: '#ECE6D4', marginTop: 4, letterSpacing: '0.06em' }}>
+    <div style={{ fontSize: 12, color: '#5E5A4F', letterSpacing: '0.25em' }}>{label}</div>
+    <div style={{ fontSize: 18, color: '#ECE6D4', marginTop: 4, letterSpacing: '0.06em' }}>
       {value}
     </div>
   </div>
 )
 
 const SectionTitle = ({ title }: { title: string }) => (
-  <div style={{ fontSize: 14, color: '#ECE6D4', letterSpacing: '0.25em', marginBottom: 14 }}>
+  <div style={{ fontSize: 18, color: '#ECE6D4', letterSpacing: '0.25em', marginBottom: 14 }}>
     {title}
   </div>
 )

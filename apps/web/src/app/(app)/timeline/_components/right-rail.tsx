@@ -24,15 +24,6 @@ const SIGN_TO_MOOD: Record<SignTag, string> = {
   staying_up_late: '夜更かしの口です',
 }
 
-// お席のご案内 — spec で hashtag/tag は未採用、design HTML の sample を fixed 表示。
-// 機能実装時に listSeats() use case に差し替える。
-const SEATS_PLACEHOLDER = [
-  { tag: '眠れぬ夜', count: '十八' },
-  { tag: 'ほうじ茶卓', count: '四' },
-  { tag: '星見の縁台', count: '十二' },
-  { tag: '本を読む', count: '七' },
-  { tag: '夜更けの台所', count: '三' },
-] as const
 
 export async function RightRail({ viewerId }: { viewerId: UserId }) {
   const phase = getMoonPhase(new Date())
@@ -78,7 +69,7 @@ export async function RightRail({ viewerId }: { viewerId: UserId }) {
         <div className="relative" style={{ zIndex: 2 }}>
           <div
             style={{
-              fontSize: 10,
+              fontSize: 12,
               color: '#5E5A4F',
               letterSpacing: '0.35em',
               marginBottom: 12,
@@ -98,7 +89,7 @@ export async function RightRail({ viewerId }: { viewerId: UserId }) {
           </div>
           <div
             style={{
-              fontSize: 11,
+              fontSize: 12,
               color: '#9A9484',
               letterSpacing: '0.15em',
               marginTop: 6,
@@ -122,16 +113,16 @@ export async function RightRail({ viewerId }: { viewerId: UserId }) {
         >
           <div
             style={{
-              fontSize: 11,
+              fontSize: 12,
               color: '#ECE6D4',
               letterSpacing: '0.3em',
             }}
           >
-            灯 と も る 羊
+            灯 る 羊
           </div>
           <div
             style={{
-              fontSize: 10,
+              fontSize: 12,
               color: '#5E5A4F',
               letterSpacing: '0.2em',
             }}
@@ -142,7 +133,7 @@ export async function RightRail({ viewerId }: { viewerId: UserId }) {
         {visible.length === 0 ? (
           <p
             style={{
-              fontSize: 11,
+              fontSize: 12,
               color: '#5E5A4F',
               letterSpacing: '0.15em',
               lineHeight: 1.9,
@@ -177,7 +168,7 @@ export async function RightRail({ viewerId }: { viewerId: UserId }) {
                 <div className="flex-1 min-w-0">
                   <div
                     style={{
-                      fontSize: 13,
+                      fontSize: 14,
                       color: '#ECE6D4',
                       letterSpacing: '0.06em',
                     }}
@@ -187,7 +178,7 @@ export async function RightRail({ viewerId }: { viewerId: UserId }) {
                   <div
                     className="truncate"
                     style={{
-                      fontSize: 10,
+                      fontSize: 12,
                       color: '#5E5A4F',
                       letterSpacing: '0.06em',
                       marginTop: 2,
@@ -202,58 +193,7 @@ export async function RightRail({ viewerId }: { viewerId: UserId }) {
         )}
       </div>
 
-      {/* ── お席のご案内 (placeholder) ─────────────────────────── */}
-      <div
-        style={{
-          padding: '22px 28px',
-          borderTop: '1px solid #1F2533',
-        }}
-      >
-        <div
-          style={{
-            fontSize: 11,
-            color: '#ECE6D4',
-            letterSpacing: '0.3em',
-            marginBottom: 14,
-          }}
-        >
-          お 席 の ご 案 内
-        </div>
-        <div className="flex flex-col">
-          {SEATS_PLACEHOLDER.map((s, i) => (
-            <div
-              key={s.tag}
-              className="flex items-baseline justify-between"
-              style={{
-                padding: '8px 0',
-                borderBottom:
-                  i < SEATS_PLACEHOLDER.length - 1
-                    ? '1px dotted #1F2533'
-                    : 'none',
-              }}
-            >
-              <span
-                style={{
-                  fontSize: 12,
-                  color: '#D8D2C0',
-                  letterSpacing: '0.1em',
-                }}
-              >
-                #{s.tag}
-              </span>
-              <span
-                style={{
-                  fontSize: 10,
-                  color: '#5E5A4F',
-                  letterSpacing: '0.15em',
-                }}
-              >
-                {s.count} 匹
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
+      {/* お席のご案内 は機能未定のため非表示 (listSeats use case 実装時に復活)。 */}
     </aside>
   )
 }

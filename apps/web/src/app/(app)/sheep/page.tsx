@@ -17,12 +17,12 @@ export default async function SheepPage() {
       <h2 className="text-[26px] md:text-[32px] tracking-[0.2em] font-light leading-tight">
         客 帳
       </h2>
-      <p className="text-[12px] md:text-[13px] text-[#5E5A4F] tracking-[0.25em] mt-2 mb-6 md:mb-8">
+      <p className="text-[14px] md:text-[14px] text-[#5E5A4F] tracking-[0.25em] mt-2 mb-6 md:mb-8">
         ここに来た 全ての羊の 帳面。
       </p>
 
       {users.length === 0 ? (
-        <p className="text-[14px] text-[#9A9484] tracking-wider leading-loose">
+        <p className="text-[16px] text-[#9A9484] tracking-wider leading-loose">
           まだ どなたも 記帳しておりません。
         </p>
       ) : (
@@ -56,14 +56,14 @@ export default async function SheepPage() {
                   <div className="flex-1 min-w-0">
                     <div
                       className="truncate"
-                      style={{ fontSize: 16, color: '#ECE6D4', letterSpacing: '0.08em' }}
+                      style={{ fontSize: 18, color: '#ECE6D4', letterSpacing: '0.08em' }}
                     >
                       {u.nickname}
                     </div>
                     <div
                       className="truncate"
                       style={{
-                        fontSize: 12,
+                        fontSize: 14,
                         color: '#5E5A4F',
                         letterSpacing: '0.06em',
                         marginTop: 3,
@@ -76,7 +76,7 @@ export default async function SheepPage() {
                     <span
                       className="shrink-0"
                       style={{
-                        fontSize: 10,
+                        fontSize: 12,
                         color: '#B89B6E',
                         letterSpacing: '0.25em',
                         border: '1px solid #2A3142',

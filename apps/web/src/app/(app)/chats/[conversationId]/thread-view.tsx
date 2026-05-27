@@ -134,7 +134,7 @@ export function ThreadView({
   const partnerNickname = partner?.nickname ?? '名なし'
   const partnerTone = partner?.tone ?? '#E8E2D2'
   const partnerLit = partner?.presenceVisible ?? false
-  const statusLabel = partnerLit ? '灯ともる · 起きています' : '灯 秘匿 もしくは 不在'
+  const statusLabel = partnerLit ? '灯る · 起きています' : '灯 秘匿 もしくは 不在'
 
   const dateDivider =
     now === null
@@ -193,7 +193,7 @@ export function ThreadView({
           <div
             className="flex items-center"
             style={{
-              fontSize: 11,
+              fontSize: 12,
               marginTop: 4,
               letterSpacing: '0.15em',
               color: partnerLit ? '#B89B6E' : '#5E5A4F',
@@ -269,7 +269,7 @@ export function ThreadView({
         <div
           className="hidden md:flex items-center"
           style={{
-            fontSize: 11,
+            fontSize: 12,
             color: '#9A9484',
             letterSpacing: '0.2em',
             gap: 14,
@@ -279,7 +279,7 @@ export function ThreadView({
         </div>
         <div
           style={{
-            fontSize: 10,
+            fontSize: 12,
             color: '#5E5A4F',
             letterSpacing: '0.25em',
           }}
@@ -306,7 +306,7 @@ export function ThreadView({
             <div className="flex-1" style={{ height: 1, background: '#1F2533' }} />
             <span
               style={{
-                fontSize: 11,
+                fontSize: 12,
                 letterSpacing: '0.4em',
               }}
             >
@@ -320,7 +320,7 @@ export function ThreadView({
           <p
             className="text-center"
             style={{
-              fontSize: 13,
+              fontSize: 14,
               color: '#5E5A4F',
               letterSpacing: '0.25em',
               marginTop: 40,
@@ -393,7 +393,7 @@ export function ThreadView({
                     background: mine ? '#1A2236' : '#10141E',
                     border: mine ? '1px solid transparent' : '1px solid #1F2533',
                     color: '#ECE6D4',
-                    fontSize: 14,
+                    fontSize: 16,
                     lineHeight: 1.9,
                     letterSpacing: '0.04em',
                     borderRadius: radius,
@@ -406,7 +406,7 @@ export function ThreadView({
                     className="tabular-nums"
                     style={{
                       marginTop: 4,
-                      fontSize: 10,
+                      fontSize: 12,
                       color: '#5E5A4F',
                       letterSpacing: '0.15em',
                     }}
@@ -466,7 +466,7 @@ export function ThreadView({
             </div>
             <span
               style={{
-                fontSize: 11,
+                fontSize: 12,
                 color: '#5E5A4F',
                 letterSpacing: '0.2em',
               }}
@@ -507,7 +507,7 @@ export function ThreadView({
                 placeholder="そっと、文字を置く…"
                 className="w-full bg-transparent text-[#ECE6D4] resize-none focus:outline-none placeholder:text-[#5E5A4F]"
                 style={{
-                  fontSize: 14,
+                  fontSize: 16,
                   letterSpacing: '0.05em',
                   lineHeight: 1.9,
                   paddingTop: 6,
@@ -526,7 +526,7 @@ export function ThreadView({
                       width: 24,
                       height: 24,
                       color: '#5E5A4F',
-                      fontSize: 14,
+                      fontSize: 16,
                     }}
                     aria-hidden
                   >
@@ -537,7 +537,7 @@ export function ThreadView({
                   className="hidden md:inline"
                   style={{
                     marginLeft: 8,
-                    fontSize: 10,
+                    fontSize: 12,
                     color: '#5E5A4F',
                     letterSpacing: '0.15em',
                   }}
@@ -556,7 +556,7 @@ export function ThreadView({
                 background: 'transparent',
                 border: '1px solid #ECE6D4',
                 color: '#ECE6D4',
-                fontSize: 13,
+                fontSize: 14,
                 letterSpacing: '0.4em',
                 fontWeight: 400,
               }}
@@ -569,7 +569,7 @@ export function ThreadView({
           <p
             className="mt-2"
             style={{
-              fontSize: 13,
+              fontSize: 14,
               color: '#A85040',
               letterSpacing: '0.05em',
             }}

@@ -40,7 +40,7 @@ export default async function TimelinePage() {
           <h2 className="text-[26px] md:text-[32px] tracking-[0.2em] font-light leading-tight">
             軒先のつぶやき
           </h2>
-          <p className="text-[12px] md:text-[13px] text-[#5E5A4F] tracking-[0.25em] mt-2 mb-6 md:mb-8">
+          <p className="text-[14px] md:text-[14px] text-[#5E5A4F] tracking-[0.25em] mt-2 mb-6 md:mb-8">
             ぽつり、ぽつりと、皆の独り言が並ぶところ。
           </p>
 
@@ -49,10 +49,10 @@ export default async function TimelinePage() {
           <TimelineClient initialPosts={postDtos} myUserId={userId} />
 
           <div className="mt-10 pt-6 border-t border-[#1F2533] text-center">
-            <p className="text-[13px] text-[#9A9484] tracking-[0.35em]">
+            <p className="text-[14px] text-[#9A9484] tracking-[0.35em]">
               ここから 今宵 が 始まりました
             </p>
-            <p className="text-[12px] text-[#5E5A4F] tracking-widest mt-3 leading-loose">
+            <p className="text-[14px] text-[#5E5A4F] tracking-widest mt-3 leading-loose">
               昨夜より前の文は、朝とともに片付けられました。
               <br />
               軒先には、今宵の文だけが並びます。

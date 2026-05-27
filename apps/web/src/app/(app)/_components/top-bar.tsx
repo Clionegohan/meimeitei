@@ -24,7 +24,7 @@ export function TopBar({ tone }: TopBarProps) {
       >
         <MoonSvg size={28} phase={0.78} glow={false} />
         <span
-          className="text-[15px] md:text-[17px] tracking-[0.25em] md:tracking-[0.35em] text-[#ECE6D4] whitespace-nowrap"
+          className="text-[16px] md:text-[17px] tracking-[0.25em] md:tracking-[0.35em] text-[#ECE6D4] whitespace-nowrap"
         >
           迷羊苑
         </span>

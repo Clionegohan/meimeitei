@@ -21,7 +21,7 @@ export default function SettingsPage() {
           </div>
           <div
             style={{
-              fontSize: 11,
+              fontSize: 12,
               color: '#5E5A4F',
               letterSpacing: '0.25em',
               marginTop: 6,
@@ -38,7 +38,7 @@ export default function SettingsPage() {
           <div>
             <div
               style={{
-                fontSize: 14,
+                fontSize: 16,
                 color: '#9A9484',
                 letterSpacing: '0.3em',
                 lineHeight: 2.2,
@@ -50,7 +50,7 @@ export default function SettingsPage() {
             </div>
             <div
               style={{
-                fontSize: 11,
+                fontSize: 12,
                 color: '#5E5A4F',
                 letterSpacing: '0.2em',
                 marginTop: 18,

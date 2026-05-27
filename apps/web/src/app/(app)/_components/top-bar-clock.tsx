@@ -35,7 +35,7 @@ export function TopBarClock() {
       <div className="text-right">
         <div
           style={{
-            fontSize: 11,
+            fontSize: 12,
             color: '#9A9484',
             letterSpacing: '0.18em',
           }}
@@ -53,7 +53,7 @@ export function TopBarClock() {
           {time}
           <span
             className="ml-2.5"
-            style={{ fontSize: 10, color: '#5E5A4F', letterSpacing: '0.25em' }}
+            style={{ fontSize: 12, color: '#5E5A4F', letterSpacing: '0.25em' }}
           >
             {branch}
           </span>
@@ -78,7 +78,7 @@ export function TopBarClock() {
         <div>
           <div
             style={{
-              fontSize: 10,
+              fontSize: 12,
               color: '#5E5A4F',
               letterSpacing: '0.25em',
             }}
@@ -87,7 +87,7 @@ export function TopBarClock() {
           </div>
           <div
             style={{
-              fontSize: 13,
+              fontSize: 14,
               color: '#ECE6D4',
               letterSpacing: '0.08em',
             }}

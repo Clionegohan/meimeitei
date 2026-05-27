@@ -45,7 +45,7 @@ export function BottomTab() {
             }}
           >
             <Icon size={20} color={color} />
-            <span style={{ fontSize: 10, letterSpacing: '0.18em' }}>{t.label}</span>
+            <span style={{ fontSize: 12, letterSpacing: '0.18em' }}>{t.label}</span>
           </Link>
         )
       })}

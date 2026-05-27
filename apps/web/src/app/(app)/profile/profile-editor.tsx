@@ -146,7 +146,7 @@ function ProfileDisplay({
 }) {
   const joinedAtJa = formatJapaneseDate(new Date(user.joinedAt))
   const statusLabel =
-    user.presenceVisibility === 'visible' ? '灯ともる · 今宵 在席' : '灯 秘匿'
+    user.presenceVisibility === 'visible' ? '灯る · 今宵 在席' : '灯 秘匿'
   // profile card の装飾月。「好きな月」が未設定なら 居待月 (phase 0.58) を fallback。
   const favoriteMoonPhase = phaseOfFavoriteMoon(user.favoriteMoon)
   const moonPhaseForCard = favoriteMoonPhase ?? 17 / 29.5305882
@@ -168,7 +168,7 @@ function ProfileDisplay({
           </div>
           <div
             style={{
-              fontSize: 11,
+              fontSize: 14,
               color: '#5E5A4F',
               letterSpacing: '0.25em',
               marginTop: 6,
@@ -187,7 +187,7 @@ function ProfileDisplay({
             border: '1px solid #2A3142',
             background: 'transparent',
             color: '#ECE6D4',
-            fontSize: 12,
+            fontSize: 14,
             letterSpacing: '0.3em',
           }}
         >
@@ -250,7 +250,7 @@ function ProfileDisplay({
           <div
             className="flex items-center"
             style={{
-              fontSize: 11,
+              fontSize: 14,
               color: '#B89B6E',
               letterSpacing: '0.3em',
               marginBottom: 18,
@@ -274,7 +274,7 @@ function ProfileDisplay({
             <p
               className="whitespace-pre-line"
               style={{
-                fontSize: 14,
+                fontSize: 18,
                 color: '#D8D2C0',
                 letterSpacing: '0.04em',
                 lineHeight: 2,
@@ -309,11 +309,11 @@ function ProfileDisplay({
                 <span
                   key={s}
                   style={{
-                    padding: '8px 18px',
+                    padding: '9px 20px',
                     border: `1px solid ${active ? '#B89B6E' : '#2A3142'}`,
                     background: active ? 'rgba(184,155,110,0.08)' : 'transparent',
                     color: active ? '#ECE6D4' : '#9A9484',
-                    fontSize: 12,
+                    fontSize: 16,
                     letterSpacing: '0.2em',
                   }}
                 >
@@ -338,7 +338,7 @@ const MetaCell = ({ label, value }: { label: string; value: string }) => (
   <div>
     <div
       style={{
-        fontSize: 10,
+        fontSize: 12,
         color: '#5E5A4F',
         letterSpacing: '0.25em',
       }}
@@ -347,7 +347,7 @@ const MetaCell = ({ label, value }: { label: string; value: string }) => (
     </div>
     <div
       style={{
-        fontSize: 14,
+        fontSize: 18,
         color: '#ECE6D4',
         marginTop: 4,
         letterSpacing: '0.06em',
@@ -361,7 +361,7 @@ const MetaCell = ({ label, value }: { label: string; value: string }) => (
 const SectionTitle = ({ title }: { title: string }) => (
   <div
     style={{
-      fontSize: 14,
+      fontSize: 18,
       color: '#ECE6D4',
       letterSpacing: '0.25em',
       marginBottom: 14,
@@ -374,7 +374,7 @@ const SectionTitle = ({ title }: { title: string }) => (
 const SectionSub = ({ children }: { children: React.ReactNode }) => (
   <div
     style={{
-      fontSize: 10,
+      fontSize: 12,
       color: '#5E5A4F',
       letterSpacing: '0.15em',
       marginBottom: 14,
@@ -419,7 +419,7 @@ function EditForm(props: EditFormProps) {
         <SheepAvatar tone={props.tone} size={120} />
         <div className="flex-1 w-full space-y-6">
           <label className="block">
-            <span className="text-xs text-[#5E5A4F] tracking-[0.3em] block mb-2">
+            <span className="text-[14px] text-[#5E5A4F] tracking-[0.3em] block mb-2">
               羊の名（1–20 文字）
             </span>
             <input
@@ -433,7 +433,7 @@ function EditForm(props: EditFormProps) {
           </label>
 
           <label className="block">
-            <span className="text-xs text-[#5E5A4F] tracking-[0.3em] block mb-2">
+            <span className="text-[14px] text-[#5E5A4F] tracking-[0.3em] block mb-2">
               自己紹介（0–200 文字）
             </span>
             <textarea
@@ -448,7 +448,7 @@ function EditForm(props: EditFormProps) {
       </div>
 
       <fieldset>
-        <legend className="text-xs text-[#5E5A4F] tracking-[0.3em] mb-3">
+        <legend className="text-[14px] text-[#5E5A4F] tracking-[0.3em] mb-3">
           毛色（tone）
         </legend>
         <div className="flex gap-3">
@@ -468,7 +468,7 @@ function EditForm(props: EditFormProps) {
       </fieldset>
 
       <fieldset>
-        <legend className="text-xs text-[#5E5A4F] tracking-[0.3em] mb-3">
+        <legend className="text-[14px] text-[#5E5A4F] tracking-[0.3em] mb-3">
           今宵のしるし
         </legend>
         <div className="flex flex-wrap gap-2">
@@ -479,7 +479,7 @@ function EditForm(props: EditFormProps) {
                 key={s}
                 type="button"
                 onClick={() => props.onToggleSign(s)}
-                className={`px-4 py-2 text-xs tracking-[0.2em] border ${
+                className={`px-4 py-2 text-[14px] tracking-[0.2em] border ${
                   on
                     ? 'border-[#B89B6E] bg-[rgba(184,155,110,0.08)] text-[#ECE6D4]'
                     : 'border-[#2A3142] text-[#9A9484] hover:border-[#3A4252]'
@@ -493,14 +493,14 @@ function EditForm(props: EditFormProps) {
       </fieldset>
 
       <fieldset>
-        <legend className="text-xs text-[#5E5A4F] tracking-[0.3em] mb-3">
+        <legend className="text-[14px] text-[#5E5A4F] tracking-[0.3em] mb-3">
           好きな月
         </legend>
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
             onClick={() => props.onChangeFavoriteMoon(null)}
-            className={`px-4 py-2 text-xs tracking-[0.2em] border ${
+            className={`px-4 py-2 text-[14px] tracking-[0.2em] border ${
               props.favoriteMoon === null
                 ? 'border-[#B89B6E] bg-[rgba(184,155,110,0.08)] text-[#ECE6D4]'
                 : 'border-[#2A3142] text-[#9A9484] hover:border-[#3A4252]'
@@ -515,7 +515,7 @@ function EditForm(props: EditFormProps) {
                 key={m}
                 type="button"
                 onClick={() => props.onChangeFavoriteMoon(m)}
-                className={`px-4 py-2 text-xs tracking-[0.2em] border ${
+                className={`px-4 py-2 text-[14px] tracking-[0.2em] border ${
                   on
                     ? 'border-[#B89B6E] bg-[rgba(184,155,110,0.08)] text-[#ECE6D4]'
                     : 'border-[#2A3142] text-[#9A9484] hover:border-[#3A4252]'
@@ -529,8 +529,8 @@ function EditForm(props: EditFormProps) {
       </fieldset>
 
       <fieldset>
-        <legend className="text-xs text-[#5E5A4F] tracking-[0.3em] mb-3">
-          灯ともる の見え方
+        <legend className="text-[14px] text-[#5E5A4F] tracking-[0.3em] mb-3">
+          灯る の見え方
         </legend>
         <div className="flex gap-3">
           <label className="flex items-center gap-2 cursor-pointer">

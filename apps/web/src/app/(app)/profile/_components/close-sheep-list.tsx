@@ -17,7 +17,7 @@ export async function CloseSheepList({
     return (
       <p
         style={{
-          fontSize: 11,
+          fontSize: 12,
           color: '#5E5A4F',
           letterSpacing: '0.15em',
           lineHeight: 1.9,
@@ -72,7 +72,7 @@ export async function CloseSheepList({
               <div
                 className="truncate"
                 style={{
-                  fontSize: 13,
+                  fontSize: 14,
                   color: '#ECE6D4',
                   letterSpacing: '0.06em',
                 }}
@@ -82,7 +82,7 @@ export async function CloseSheepList({
               <div
                 className="tabular-nums"
                 style={{
-                  fontSize: 10,
+                  fontSize: 12,
                   color: '#5E5A4F',
                   letterSpacing: '0.15em',
                   marginTop: 2,
