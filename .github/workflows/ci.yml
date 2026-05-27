@@ -150,21 +150,22 @@ jobs:
       - name: Install Playwright browsers (chromium)
         run: pnpm --filter @me-me-en/web exec playwright install --with-deps chromium
 
-      - name: Build Next.js
-        run: pnpm --filter @me-me-en/web build
-
-      - name: Start server in background
+      - name: Start server in background (dev mode + E2E seed enabled)
+        # e2e smoke は dev server (NODE_ENV != production) で起動する。
+        # seed endpoint のゲートが NODE_ENV !== 'production' && E2E_TEST_ENABLED を
+        # 要求するため、prod 起動 (pnpm start) だと seed が 403 になり全テストが
+        # 落ちる。prod ビルドの動作確認は verify / integration ジョブが担保する。
         run: |
-          pnpm --filter @me-me-en/web start &
-          # ヘルスチェックで起動完了を待つ。60s で諦め。
-          for i in $(seq 1 60); do
+          pnpm --filter @me-me-en/web start:e2e &
+          # dev サーバはオンデマンドでコンパイルするため起動がやや遅い。120s で諦め。
+          for i in $(seq 1 120); do
             if curl -sf http://localhost:3000/api/health > /dev/null; then
               echo "server ready"
               exit 0
             fi
             sleep 1
           done
-          echo "server failed to start within 60s"
+          echo "server failed to start within 120s"
           exit 1
 
       - name: Playwright tests
