@@ -1,26 +1,69 @@
 @import "tailwindcss";
 
+/* Direction A 「月夜の墨」: palette と font は docs/design/extracted-shared.jsx 由来。
+   背景は深い夜、文字は古い和紙の白。墨色アクセントは accent (#B89B6E aged paper gold) と
+   vermilion (#A85040 朱印赤) を要所だけに。
+
+   design HTML の使い分け (再点検結果):
+   - 明朝 (Shippori Mincho) が **支配的**。見出し / 装飾コピー / 数字ラベル / 短い和文すべて
+   - ゴシック (Zen Kaku Gothic) は **本文を読ませる箇所のみ**: bio / post body / message bubble / placeholder の長文
+*/
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #080B12;
+  --foreground: #ECE6D4;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* default sans/serif の意味は逆転させない (Tailwind utility 互換) が、
+     body と utility class で明朝を主軸にする。 */
+  --font-sans: var(--font-gothic);
+  --font-serif: var(--font-mincho);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  /* 明朝を主軸に。bubble / bio などは .font-gothic で override する。 */
+  font-family: var(--font-mincho), 'Noto Serif JP', 'Hiragino Mincho ProN', serif;
+  font-weight: 400;
+  /* base 17px。和文の明朝は 16〜18px が読みやすい。design HTML より少し大きめ。 */
+  font-size: 17px;
+  line-height: 1.95;
+  letter-spacing: 0.03em;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-mincho), 'Noto Serif JP', 'Hiragino Mincho ProN', serif;
+  font-weight: 400;
+}
+
+/* 本文を読ませる箇所だけゴシックに切替えるための utility。 */
+.font-gothic {
+  font-family: var(--font-gothic), 'Noto Sans JP', 'Hiragino Sans', system-ui, sans-serif;
+}
+
+/* 明朝を明示的に当てたいときに使う (基本は body default で OK)。 */
+.font-mincho {
+  font-family: var(--font-mincho), 'Noto Serif JP', 'Hiragino Mincho ProN', serif;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* DM thread の typing indicator (3 dot) アニメーション。
+   design HTML (extracted-dm.jsx, line 346) の `tdot` を移植。
+   3 つの dot が 0.2s ずつズレて上下に揺れる。 */
+@keyframes tdot {
+  0%, 100% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
 }

@@ -38,16 +38,16 @@ WIP（作成中）。ユーザーと 1 件ずつ合意しながら追記する�
 | F | プレゼンス（灯ともる、秘匿可） | — | 採用 | `User.presenceVisibility = 'visible' \| 'invisible'`（永続）。**完全非対称**: 秘匿者本人は他者の online を見られるが、他者からは秘匿者は常に offline と見える |
 | G | typing 表示 | DM | 採用 | — |
 | H | 既読 | DM | 採用 | — |
-| R | **DM 起動（2 経路）** | タイムライン × DM | 採用 | (R1) **Post → DM**: 投稿への「返信」操作はタイムライン内 reply ではなく、その投稿を文脈に乗せた **DM の起動**。**投稿ごとに新規 conversation が作られる**（同じ相手の投稿 A・B にそれぞれ返信したら DM スレッドは 2 つ別個）。(R2) **相手指定 → DM**: 相手の profile や一覧から直接話しかけて DM を始める。**R2 は同じ相手で 1 conversation のみ**（既存があれば再利用） |
-| — | Conversation の不変条件 | DM domain | — | `Conversation` は `(participantIds の正規化ペア, rootPostId)` で一意。`rootPostId = null` の R2 conversation は同ペアで 1 つだけ。`rootPostId = postX` の R1 conversation は post ごとに別個 |
-| — | Post 削除の cascade | Post × DM | — | Post 削除時、関連 R1 DM conversation は **残す**（orphan、表示は「取り下げられた投稿への返信」placeholder）。当該 Post への like は累計から取り消し（来店帳の `寄せられた燭` から減算） |
+| R | **DM 起動（2 経路）** | タイムライン × DM | 採用 | （γ で改訂：**1 相手 = 1 スレッド**に統合）(R1) **Post → DM**: 投稿への「返信」操作はタイムライン内 reply ではなく **DM の起動**。**その相手との既存スレッドに合流**（投稿ごとの新規 conversation は作らない）。(R2) **相手指定 → DM**: 相手の profile や一覧から直接話しかけて DM を始める。**R1 / R2 とも同じ相手で 1 conversation のみ**（既存があれば再利用） |
+| — | Conversation の不変条件 | DM domain | — | （γ で改訂）`Conversation` は **`participantIds の正規化ペア` で一意**（1 相手 = 1 スレッド）。全 conversation が `rootPostId = null` の direct conversation。〔旧仕様の `rootPostId = postX` per-post conversation は廃止〕 |
+| — | Post 削除の cascade | Post × DM | — | （γ で改訂）DM は per-pair で post に紐付かないため、Post 削除は conversation に影響しない。当該 Post への like は累計から取り消し（来店帳の `寄せられた燭` から減算） |
 | S | DM 一覧と相手の検索経路 | DM 起点 | 採用 | (a) タイムライン right rail の「灯ともる羊」リスト → profile → DM、(b) profile の「親しい羊」リスト経由、(c) 全体ユーザー一覧（客帳）を sidebar 経由でアクセス |
 | J | タイムライン内 reply スレッド | タイムライン | **不採用** | 公開 reply は持たない。深い会話はすべて DM に流れる |
 | I | Like（軽い反応） | タイムライン | 採用、**カウント他者非公開** | 投稿への like 操作は可能。他者は他人の like 総数を見られない。自分が受け取った like の累計は、自身のプロフィール（来店帳）でのみ可視 |
 | K | しるし（mood tag） | プロフィール | 採用、**profile のみ** | profile に複数掲げる（今夜の気分を表す）。投稿には付けない。`眠れない` `読書中` `お茶を一杯` `月を眺める` 等を enum で持つ |
 | N | 来店帳統計 | プロフィール | 採用 | 入店した夜 / 連続来店 / 置いた文 / 寄せられた like の 4 指標。derived (read model)、原データから集計 |
 | O | 在席の刻 chart | プロフィール | 採用 | 過去 30 日の時刻別在席頻度（22, 23, 0, 1, 2, 3, 4, 5 の 8 帯）。presence のイベント集計を要する |
-| M | 親しい羊 | プロフィール | 採用 | **直近 30 日の DM メッセージ数 Top 3**（自動算出、手動指定なし）。同じ相手で複数 conversation がある場合は **メッセージ数を合算**して 1 ユーザーとしてカウント |
+| M | 親しい羊 | プロフィール | 採用 | **直近 30 日の DM メッセージ数 Top 3**（自動算出、手動指定なし）。（γ で改訂）1 相手 = 1 スレッドのため、複数 conversation の合算は不要 |
 | — | Profile 公開範囲 | プロフィール | — | 他者からは `avatar / nickname / bio / しるし / presence` のみ可視。**来店帳 N / 在席チャート O / 親しい羊 M は本人のみ可視** |
 | T | ブロック | 安全機能 | 採用 | (1) 互いに DM 不可（既存 conversation も読込/送信不可）、(2) 互いの post を Timeline 上で非表示、(3) 互いの presence 不可視。ミュート・通報は不採用 |
 
@@ -151,7 +151,7 @@ J Timeline 内 reply / L お席（グループトーク）/ P 通知・未読バ
 | --- | --- | --- |
 | 1 — Domain core | `packages/domain` | User refactor / Conversation / Message / Post |
 | 2 — Domain extras | `packages/domain` | Like / Block / Presence / Typing |
-| 3 — Application | `packages/application` | registerUser / updateProfile / blockUser / sendMessage / markAsRead / updateTyping / createPost / deletePost / likePost / unlikePost / startConversationByPost (R1) / startConversationDirect (R2) / updatePresence / listTimeline / listConversations / listMessages（各 use case に `BusinessHoursGuard` 適用） |
+| 3 — Application | `packages/application` | registerUser / updateProfile / blockUser / sendMessage / markAsRead / updateTyping / createPost / deletePost / likePost / unlikePost / startConversationByPost (R1, 相手スレッドへ合流) / startConversationDirect (R2) / updatePresence / listTimeline / listConversations / listMessages（各 use case に `BusinessHoursGuard` 適用） |
 | 4 — Infrastructure | `packages/infrastructure` | In-memory repositories (all) / Auth.js v5 + Google OAuth / Socket.IO event-bus adapter |
 | 5 — Presentation | `apps/web` | routes (`/login`, `/onboarding`, `/chats`, `/chats/[id]`, `/profile`, `/closed`) / TopBar / Sidebar / RightRail / Socket.IO client |
 | 6 — Deploy + polish | infra | Render Web Service デプロイ / `/api/health` 動作確認 / Playwright E2E（2 ユーザーで DM 動作） / README 更新 |

@@ -7,6 +7,7 @@ import {
   likePost,
   startConversationByPost,
   unlikePost,
+  userRepository,
 } from '@/server/di'
 import { broadcastToAllExcept } from '@/server/realtime/io-bridge'
 import type { PostId } from '@me-me-en/domain'
@@ -14,6 +15,8 @@ import type { PostId } from '@me-me-en/domain'
 export type PostDto = {
   id: string
   authorId: string
+  authorNickname: string
+  authorTone: string
   body: string
   postedAt: string
   nightId: string
@@ -33,9 +36,12 @@ export const createPostAction = async (input: {
   }
   try {
     const post = await createPost({ authorId: session.userId, body: input.body })
+    const author = await userRepository.findById(post.authorId)
     const dto: PostDto = {
       id: post.id,
       authorId: post.authorId,
+      authorNickname: author?.nickname ?? '名なし',
+      authorTone: author?.tone ?? '#E8E2D2',
       body: post.body,
       postedAt: post.postedAt.toISOString(),
       nightId: post.nightId,

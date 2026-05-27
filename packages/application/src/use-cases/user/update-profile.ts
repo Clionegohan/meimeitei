@@ -2,6 +2,7 @@ import {
   createUser,
   NotFoundError,
   ValidationError,
+  type FavoriteMoon,
   type PresenceVisibility,
   type SignTag,
   type Tone,
@@ -17,6 +18,8 @@ export type UpdateProfilePatch = {
   tone?: Tone
   presenceVisibility?: PresenceVisibility
   currentSigns?: readonly SignTag[]
+  // null で「指定しない」、未定義で「変更なし」を表現する。
+  favoriteMoon?: FavoriteMoon | null
 }
 
 export type UpdateProfileDeps = {
@@ -49,6 +52,10 @@ export const createUpdateProfile = (deps: UpdateProfileDeps): UpdateProfile =>
     }
 
     // Reconstruct via createUser to re-run all validations (length, tone, etc.).
+    const nextFavoriteMoon =
+      input.patch.favoriteMoon === undefined
+        ? existing.favoriteMoon
+        : input.patch.favoriteMoon
     const updated = createUser({
       id: existing.id,
       nickname: nextNickname,
@@ -56,6 +63,7 @@ export const createUpdateProfile = (deps: UpdateProfileDeps): UpdateProfile =>
       tone: input.patch.tone ?? existing.tone,
       presenceVisibility: input.patch.presenceVisibility ?? existing.presenceVisibility,
       currentSigns: input.patch.currentSigns ?? existing.currentSigns,
+      favoriteMoon: nextFavoriteMoon,
       joinedAt: existing.joinedAt,
     })
 

@@ -41,6 +41,7 @@ export async function POST(req: Request): Promise<NextResponse> {
     tone: body.user.tone as Tone,
     presenceVisibility: body.user.presenceVisibility ?? 'visible',
     currentSigns: (body.user.currentSigns ?? []) as readonly SignTag[],
+    favoriteMoon: null,
     joinedAt: new Date(body.user.joinedAt ?? Date.now()),
   })
   await authIdentityRepository.upsert({

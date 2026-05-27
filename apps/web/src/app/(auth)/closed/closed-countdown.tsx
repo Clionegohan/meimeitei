@@ -44,7 +44,7 @@ export function ClosedCountdown() {
 
   return (
     <div className="mt-12 inline-flex items-baseline gap-6 px-10 py-5 border border-[#2A3142] bg-[rgba(15,19,28,0.6)]">
-      <span className="text-[10px] text-[#5E5A4F] tracking-[0.4em]">開 店 ま で</span>
+      <span className="text-[12px] text-[#5E5A4F] tracking-[0.4em]">開 店 ま で</span>
       <span className="text-2xl text-[#ECE6D4] tracking-[0.05em] tabular-nums">{text}</span>
     </div>
   )
