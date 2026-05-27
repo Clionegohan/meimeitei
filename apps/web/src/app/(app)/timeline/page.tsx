@@ -35,12 +35,12 @@ export default async function TimelinePage() {
   // 実装は flex で main flex-1 + RightRail 固定 340 の構成にする。
   return (
     <div className="flex min-h-[calc(100vh-64px)]">
-      <div className="flex-1 min-w-0 p-10">
+      <div className="flex-1 min-w-0 px-4 py-6 md:p-10">
         <div className="max-w-3xl">
-          <h2 className="text-[32px] tracking-[0.2em] font-light leading-tight">
+          <h2 className="text-[26px] md:text-[32px] tracking-[0.2em] font-light leading-tight">
             軒先のつぶやき
           </h2>
-          <p className="text-[13px] text-[#5E5A4F] tracking-[0.25em] mt-2 mb-8">
+          <p className="text-[12px] md:text-[13px] text-[#5E5A4F] tracking-[0.25em] mt-2 mb-6 md:mb-8">
             ぽつり、ぽつりと、皆の独り言が並ぶところ。
           </p>
 

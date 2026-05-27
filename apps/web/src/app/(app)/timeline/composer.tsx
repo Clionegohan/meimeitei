@@ -26,7 +26,7 @@ export function Composer() {
   }
 
   return (
-    <div className="border border-[#2A3142] bg-[#10141E] p-6 mb-8">
+    <div className="border border-[#2A3142] bg-[#10141E] p-4 md:p-6 mb-6 md:mb-8">
       <form
         onSubmit={(e) => {
           e.preventDefault()

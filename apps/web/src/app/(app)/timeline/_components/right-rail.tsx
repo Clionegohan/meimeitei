@@ -62,7 +62,7 @@ export async function RightRail({ viewerId }: { viewerId: UserId }) {
 
   return (
     <aside
-      className="bg-[#0C1018] border-l border-[#1F2533] shrink-0 sticky top-16 h-[calc(100vh-64px)] overflow-y-auto"
+      className="hidden md:block bg-[#0C1018] border-l border-[#1F2533] shrink-0 sticky top-16 h-[calc(100vh-64px)] overflow-y-auto"
       style={{ width: 340 }}
     >
       {/* ── 今宵の月 panel ─────────────────────────────────────── */}

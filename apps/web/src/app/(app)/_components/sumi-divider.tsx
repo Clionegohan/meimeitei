@@ -15,7 +15,7 @@ export const SumiDivider = ({
     viewBox={`0 0 ${width} 8`}
     width={width}
     height={8}
-    style={{ opacity, display: 'block' }}
+    style={{ opacity, display: 'block', maxWidth: '100%' }}
     preserveAspectRatio="none"
   >
     <path
