@@ -11,6 +11,7 @@ import {
   createListConversations,
   createListMessages,
   createListOnlineUsers,
+  createListUsers,
   createListOwnPosts,
   createListTimeline,
   createMarkAsRead,
@@ -55,6 +56,11 @@ export const registerUser = createRegisterUser({
 })
 export const updateProfile = createUpdateProfile({
   userRepository,
+  businessHoursGuard,
+})
+export const listUsers = createListUsers({
+  userRepository,
+  blockRepository,
   businessHoursGuard,
 })
 

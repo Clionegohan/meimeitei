@@ -19,6 +19,12 @@ export type {
   UpdateProfileDeps,
 } from './use-cases/user/update-profile'
 export { createUpdateProfile } from './use-cases/user/update-profile'
+export type {
+  ListUsers,
+  ListUsersInput,
+  ListUsersDeps,
+} from './use-cases/user/list-users'
+export { createListUsers } from './use-cases/user/list-users'
 
 // Use cases — Conversation
 export type {
