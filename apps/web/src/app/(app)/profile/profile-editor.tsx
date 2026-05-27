@@ -1,5 +1,6 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
 import {
   FAVORITE_MOONS,
@@ -48,6 +49,7 @@ export function ProfileEditor({
   user: ProfileEditorDto
   closeSheepList: React.ReactNode
 }) {
+  const router = useRouter()
   const [editing, setEditing] = useState(false)
   const [nickname, setNickname] = useState(user.nickname)
   const [bio, setBio] = useState(user.bio)
@@ -78,8 +80,13 @@ export function ProfileEditor({
         currentSigns: signs,
         favoriteMoon,
       })
-      if (result.ok) setEditing(false)
-      else setError(result.error)
+      if (result.ok) {
+        setEditing(false)
+        // server component を再取得して display を即更新 (reload 不要)。
+        router.refresh()
+      } else {
+        setError(result.error)
+      }
     })
   }
 
