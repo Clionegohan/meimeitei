@@ -27,16 +27,19 @@ export default auth((req) => {
   // NODE_ENV !== 'production' && E2E_TEST_ENABLED === 'true' を要求するので、
   // middleware では public 扱いにして素通しする。
   const isTestApi = path.startsWith('/api/test')
+  // /dev/* は dev 用の確認 page。page 側で NODE_ENV !== 'production' を強制。
+  const isDevPage = path.startsWith('/dev')
   const isLoginPage = path === '/login'
   const isClosedPage = path === '/closed'
   const isHealth = path === '/api/health'
-  const isPublic = isAuthApi || isTestApi || isLoginPage || isHealth || isClosedPage
+  const isPublic =
+    isAuthApi || isTestApi || isDevPage || isLoginPage || isHealth || isClosedPage
 
   const businessHoursOpen = isOpen(new Date())
 
   // (1) Business hours gate
   if (!businessHoursOpen) {
-    if (isClosedPage || isAuthApi || isTestApi || isHealth) return NextResponse.next()
+    if (isClosedPage || isAuthApi || isTestApi || isDevPage || isHealth) return NextResponse.next()
     const url = nextUrl.clone()
     url.pathname = '/closed'
     return NextResponse.redirect(url)
