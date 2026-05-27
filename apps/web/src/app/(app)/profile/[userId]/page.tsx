@@ -35,18 +35,16 @@ export default async function OtherProfilePage({
     bio: user.bio,
     tone: user.tone,
     currentSigns: user.currentSigns,
+    favoriteMoon: user.favoriteMoon,
+    joinedAt: user.joinedAt.toISOString(),
     presenceVisible: visibleStatus === 'online',
   }
 
+  // 公開範囲 (spec 51): 他者からは avatar / nickname / bio / しるし / 好きな月 /
+  // 入店初日 まで。来店帳 N / 在席チャート O / 親しい羊 M は本人のみ — ここでは
+  // そもそも取得も DTO 化もしない (BE レベルで秘匿)。
   return (
-    <div className="p-10 max-w-3xl">
-      <h2 className="text-2xl tracking-[0.2em] font-light mb-2">
-        {user.nickname} さんの席
-      </h2>
-      <p className="text-[13px] text-[#5E5A4F] tracking-[0.25em] mb-10">
-        御覧いただけるのは、基本のしつらえまで。
-      </p>
-
+    <div className="px-4 py-6 md:px-14 md:py-10 max-w-3xl">
       <OtherProfile user={dto} />
     </div>
   )
