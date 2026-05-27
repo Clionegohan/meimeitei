@@ -51,12 +51,12 @@ export default async function ChatsListPage() {
   return (
     <div className="px-4 py-6 md:p-10 max-w-2xl">
       <h2 className="text-[26px] md:text-[32px] tracking-[0.2em] font-light leading-tight">手紙</h2>
-      <p className="text-[12px] md:text-[13px] text-[#5E5A4F] tracking-[0.25em] mt-2 mb-6 md:mb-8">
+      <p className="text-[14px] md:text-[14px] text-[#5E5A4F] tracking-[0.25em] mt-2 mb-6 md:mb-8">
         文字だけの、ふたりの語らい。
       </p>
 
       {rows.length === 0 ? (
-        <p className="text-[14px] text-[#9A9484] tracking-wider leading-loose">
+        <p className="text-[16px] text-[#9A9484] tracking-wider leading-loose">
           まだ 文を交わした 相手は おりません。
           <br />
           軒先の誰かに応えるか、客帳から話しかけてみてください。
@@ -98,7 +98,7 @@ export default async function ChatsListPage() {
                     <div
                       className="truncate"
                       style={{
-                        fontSize: 16,
+                        fontSize: 18,
                         color: '#ECE6D4',
                         letterSpacing: '0.08em',
                       }}
@@ -108,7 +108,7 @@ export default async function ChatsListPage() {
                     <div
                       className="truncate"
                       style={{
-                        fontSize: 13,
+                        fontSize: 14,
                         color: unread > 0 ? '#D8D2C0' : '#5E5A4F',
                         letterSpacing: '0.04em',
                         marginTop: 3,
@@ -124,7 +124,7 @@ export default async function ChatsListPage() {
                       <span
                         className="tabular-nums"
                         style={{
-                          fontSize: 10,
+                          fontSize: 12,
                           color: '#5E5A4F',
                           letterSpacing: '0.1em',
                         }}
@@ -141,7 +141,7 @@ export default async function ChatsListPage() {
                           padding: '0 5px',
                           background: '#A85040',
                           color: '#F2EAD1',
-                          fontSize: 10,
+                          fontSize: 12,
                           fontWeight: 500,
                           boxShadow: '0 0 8px rgba(168,80,64,0.4)',
                         }}

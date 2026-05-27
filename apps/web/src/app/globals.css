@@ -29,8 +29,8 @@ body {
   /* 明朝を主軸に。bubble / bio などは .font-gothic で override する。 */
   font-family: var(--font-mincho), 'Noto Serif JP', 'Hiragino Mincho ProN', serif;
   font-weight: 400;
-  /* base 17px。和文の明朝は 16〜18px が読みやすい。design HTML より少し大きめ。 */
-  font-size: 17px;
+  /* base 18px。和文の明朝は 16〜18px が読みやすい。design HTML より少し大きめ。 */
+  font-size: 18px;
   line-height: 1.95;
   letter-spacing: 0.03em;
 }

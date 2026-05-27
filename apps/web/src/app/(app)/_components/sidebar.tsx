@@ -71,13 +71,13 @@ const ItemRow = ({
       <span className="flex-1 min-w-0">
         <span
           className="block leading-tight"
-          style={{ fontSize: 16, letterSpacing: '0.18em', color: labelColor }}
+          style={{ fontSize: 18, letterSpacing: '0.18em', color: labelColor }}
         >
           {item.label}
         </span>
         <span
           className="block mt-1"
-          style={{ fontSize: 10, letterSpacing: '0.1em', color: '#5E5A4F' }}
+          style={{ fontSize: 12, letterSpacing: '0.1em', color: '#5E5A4F' }}
         >
           {item.sub}
         </span>
@@ -92,7 +92,7 @@ const ItemRow = ({
             borderRadius: 9,
             background: '#A85040',
             color: '#F2EAD1',
-            fontSize: 10,
+            fontSize: 12,
             fontWeight: 500,
             boxShadow: '0 0 8px rgba(168,80,64,0.4)',
           }}
@@ -113,9 +113,9 @@ export function Sidebar() {
         <button
           type="button"
           className="w-full h-[46px] border border-[#ECE6D4] bg-transparent text-[#ECE6D4] flex items-center justify-center gap-2.5 hover:bg-[#161B27] transition-colors"
-          style={{ fontSize: 13, letterSpacing: '0.4em', fontWeight: 400 }}
+          style={{ fontSize: 14, letterSpacing: '0.4em', fontWeight: 400 }}
         >
-          <span style={{ fontSize: 16 }}>筆</span>
+          <span style={{ fontSize: 18 }}>筆</span>
           筆を取る
         </button>
       </div>
@@ -150,7 +150,7 @@ export function Sidebar() {
         className="border-t border-[#1F2533]"
         style={{
           padding: '14px 22px 18px',
-          fontSize: 10,
+          fontSize: 12,
           color: '#5E5A4F',
           letterSpacing: '0.15em',
           lineHeight: 1.7,

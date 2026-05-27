@@ -43,7 +43,7 @@ export function TopBarSection() {
       </span>
       <span
         style={{
-          fontSize: 10,
+          fontSize: 12,
           color: '#5E5A4F',
           letterSpacing: '0.4em',
         }}

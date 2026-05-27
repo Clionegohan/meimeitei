@@ -40,7 +40,7 @@ export function HourlyPresenceChart({
     return (
       <p
         style={{
-          fontSize: 11,
+          fontSize: 12,
           color: '#5E5A4F',
           letterSpacing: '0.15em',
         }}
@@ -59,7 +59,7 @@ export function HourlyPresenceChart({
       <div className="flex items-baseline justify-between" style={{ marginBottom: 14 }}>
         <div
           style={{
-            fontSize: 11,
+            fontSize: 12,
             color: '#5E5A4F',
             letterSpacing: '0.35em',
           }}
@@ -68,7 +68,7 @@ export function HourlyPresenceChart({
         </div>
         <div
           style={{
-            fontSize: 10,
+            fontSize: 12,
             color: '#5E5A4F',
             letterSpacing: '0.15em',
           }}
@@ -114,7 +114,7 @@ export function HourlyPresenceChart({
             className="text-center"
             style={{
               flex: 1,
-              fontSize: 9,
+              fontSize: 12,
               color: b.hour === peakHour ? '#B89B6E' : '#5E5A4F',
               letterSpacing: '0.05em',
             }}
@@ -127,7 +127,7 @@ export function HourlyPresenceChart({
       <div
         style={{
           marginTop: 14,
-          fontSize: 10,
+          fontSize: 12,
           color: '#9A9484',
           letterSpacing: '0.15em',
           lineHeight: 1.8,

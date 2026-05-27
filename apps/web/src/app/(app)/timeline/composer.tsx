@@ -42,7 +42,7 @@ export function Composer() {
           className="w-full bg-transparent text-[#ECE6D4] text-[17px] leading-[1.9] resize-none focus:outline-none placeholder:text-[#5E5A4F] placeholder:font-mincho"
         />
         <div className="flex items-center justify-between mt-3 pt-3 border-t border-[#1F2533]">
-          <span className="text-[12px] text-[#5E5A4F] tracking-widest tabular-nums">
+          <span className="text-[14px] text-[#5E5A4F] tracking-widest tabular-nums">
             {body.trim().length} / 280
           </span>
           <button

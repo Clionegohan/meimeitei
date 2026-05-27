@@ -120,17 +120,17 @@ export function PostCard({
         <div className="flex items-baseline" style={{ gap: 12, marginBottom: 10 }}>
           <span
             style={{
-              fontSize: 16,
+              fontSize: 18,
               color: '#ECE6D4',
               letterSpacing: '0.08em',
             }}
           >
             {post.authorNickname}
           </span>
-          <span style={{ color: '#3A382F', fontSize: 11 }}>·</span>
+          <span style={{ color: '#3A382F', fontSize: 12 }}>·</span>
           <span
             style={{
-              fontSize: 11,
+              fontSize: 12,
               color: '#9A9484',
               letterSpacing: '0.08em',
             }}
@@ -140,7 +140,7 @@ export function PostCard({
           <span
             className="tabular-nums ml-auto"
             style={{
-              fontSize: 11,
+              fontSize: 12,
               color: '#5E5A4F',
               letterSpacing: '0.1em',
             }}
@@ -153,7 +153,7 @@ export function PostCard({
         <p
           className="whitespace-pre-line"
           style={{
-            fontSize: 15,
+            fontSize: 16,
             lineHeight: 2,
             color: '#D8D2C0',
             letterSpacing: '0.04em',
@@ -173,7 +173,7 @@ export function PostCard({
               style={{
                 gap: 8,
                 color: '#9A9484',
-                fontSize: 12,
+                fontSize: 14,
                 letterSpacing: '0.2em',
                 background: 'transparent',
                 padding: 0,
@@ -203,7 +203,7 @@ export function PostCard({
             style={{
               gap: 8,
               color: iLiked ? '#B89B6E' : '#9A9484',
-              fontSize: 12,
+              fontSize: 14,
               letterSpacing: '0.2em',
               background: 'transparent',
               padding: 0,
@@ -231,7 +231,7 @@ export function PostCard({
             aria-label="その他"
             style={{
               color: '#5E5A4F',
-              fontSize: 14,
+              fontSize: 16,
               padding: '0 4px',
               background: 'transparent',
               border: 'none',
@@ -245,7 +245,7 @@ export function PostCard({
         {replyError !== null && (
           <p
             className="mt-2"
-            style={{ fontSize: 13, color: '#A85040', letterSpacing: '0.05em' }}
+            style={{ fontSize: 14, color: '#A85040', letterSpacing: '0.05em' }}
           >
             {replyError}
           </p>
