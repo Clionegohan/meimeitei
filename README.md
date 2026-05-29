@@ -45,14 +45,58 @@ pnpm -F @me-me-en/web dev   # custom server を tsx watch で起動
 
 ## デプロイ（Render）
 
-1. `render.yaml` を main にマージすれば Render が拾う
-2. Render dashboard で env vars を設定（`sync: false` のもの）:
-   - `AUTH_SECRET` — `openssl rand -hex 32` などで生成
-   - `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET` — Google Cloud Console で OAuth クライアントを発行
-   - `AUTH_URL` — 公開 URL（例: `https://me-me-en.onrender.com`）
-3. Render Web Service の Custom Domain を設定する場合、Google OAuth の redirect URI に `https://<your-domain>/api/auth/callback/google` を追加
-4. デプロイ後、`https://<your-domain>/api/health` が `{"status":"ok"}` を返せば最低限の死活 OK
-5. **データ永続化**: `render.yaml` で Postgres を declarative に作成、`DATABASE_URL` を自動 inject。build phase で `prisma migrate deploy` が実行され、pending migration を自動適用する
+`render.yaml` で Postgres + Web Service が declarative に定義済。コード・設定は揃っており、必要なのは **外部 credential の取得と Render dashboard での env 投入のみ**。
+
+### 1. Google OAuth client を発行
+
+Google Cloud Console → APIs & Services → Credentials → "Create Credentials" → **OAuth client ID**（Application type: Web application）:
+
+- **Authorized JavaScript origins**: `https://<your-app>.onrender.com`（カスタムドメインを使うならそれも）
+- **Authorized redirect URIs**: `https://<your-app>.onrender.com/api/auth/callback/google`
+
+発行された Client ID と Client Secret を控える。
+
+### 2. Render dashboard で env を設定
+
+`render.yaml` で `sync: false` 指定済の 4 件を手動投入:
+
+| key | 値 |
+| --- | --- |
+| `AUTH_SECRET` | `openssl rand -base64 32` で生成 |
+| `AUTH_GOOGLE_ID` | 上記の OAuth Client ID |
+| `AUTH_GOOGLE_SECRET` | 上記の OAuth Client Secret |
+| `AUTH_URL` | 公開 URL（例: `https://me-me-en.onrender.com`、末尾スラッシュ無し） |
+
+`DATABASE_URL` は `render.yaml` の `fromDatabase` で auto-inject、手動設定不要。
+
+### 3. デプロイ
+
+main にマージすると Render が render.yaml を拾って自動 build / deploy。build phase の処理:
+
+1. `pnpm install --frozen-lockfile`
+2. `prisma generate` → `prisma migrate deploy`（`0_init` + `1_add_favorite_moon` を適用）
+3. `pnpm -F @me-me-en/web build`（Next.js 本番ビルド）
+4. start: `pnpm -F @me-me-en/web start`（= `NODE_ENV=production tsx server.ts`）で listen
+
+### 4. 動作確認
+
+- `https://<your-app>.onrender.com/api/health` → `{"status":"ok",...}` を返せば listen OK
+- `/login` で Google OAuth フロー → `/onboarding`（nickname 登録）→ `/timeline` / `/chats` 等が見える
+- 営業時間外（05:00-22:00 JST）にアクセスすると `/closed` へ redirect されることも確認
+
+### ⚠ 本番で「立ててはいけない」env
+
+| key | 立てると |
+| --- | --- |
+| `E2E_TEST_ENABLED` | `/api/test/{login,seed,seed-dummy}` の dev seed/login endpoint が有効化され、誰でも任意ユーザーとしてログイン可能になる |
+| `BYPASS_BUSINESS_HOURS` | 22:00-05:00 JST の営業時間ゲートが無効化される |
+
+両者は内部で `NODE_ENV !== 'production'` の二重ガードを持つが、念のため Render dashboard で**絶対に設定しない**。
+
+### プラン
+
+- **Database**: free（90 日で削除、データ消える）。MVP 検証段階向け。長期運用は starter 以上へ移行
+- **Web**: starter（sleep なし、常時稼働）
 
 ## ステータス
 
