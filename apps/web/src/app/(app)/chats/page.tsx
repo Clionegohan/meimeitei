@@ -1,16 +1,14 @@
 import Link from 'next/link'
 import { auth } from '@/auth'
-import { listConversations, listMessages, userRepository } from '@/server/di'
+import { listConversations, listMessages, listOnlineUsers, userRepository } from '@/server/di'
 import { SheepAvatar } from '../profile/_components/sheep-avatar'
+import { PresenceDot } from '../_components/presence-dot'
 
 // 直近メッセージの時刻を「02:47」/「昨夜」/「一昨夜」風に。
 const formatWhen = (iso: string, now: Date): string => {
   const then = new Date(iso)
-  const diffDays = Math.floor(
-    (now.getTime() - then.getTime()) / (24 * 60 * 60 * 1000),
-  )
-  if (diffDays <= 0)
-    return then.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })
+  const diffDays = Math.floor((now.getTime() - then.getTime()) / (24 * 60 * 60 * 1000))
+  if (diffDays <= 0) return then.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })
   if (diffDays === 1) return '昨夜'
   if (diffDays === 2) return '一昨夜'
   return `${diffDays}日前`
@@ -23,21 +21,20 @@ export default async function ChatsListPage() {
   const now = new Date()
 
   const conversations = await listConversations({ userId })
+  // 在席 (online かつ秘匿でない) の羊 id 集合。秘匿者はそもそも含まれない。
+  const onlinePresences = await listOnlineUsers({ viewerId: userId })
+  const onlineIds = new Set(onlinePresences.map((p) => p.userId))
 
   // 各会話: 相手 / 直近メッセージ / 未読数 を集める
   const rows = await Promise.all(
     conversations.map(async (c) => {
       const partnerId = c.participantIds.find((id) => id !== userId)
       const [partner, messages] = await Promise.all([
-        partnerId === undefined
-          ? Promise.resolve(null)
-          : userRepository.findById(partnerId),
+        partnerId === undefined ? Promise.resolve(null) : userRepository.findById(partnerId),
         listMessages({ viewerId: userId, conversationId: c.id }),
       ])
       const last = messages[messages.length - 1] ?? null
-      const unread = messages.filter(
-        (m) => m.senderId !== userId && m.readAt === null,
-      ).length
+      const unread = messages.filter((m) => m.senderId !== userId && m.readAt === null).length
       return { conv: c, partner, last, unread }
     }),
   )
@@ -80,17 +77,20 @@ export default async function ChatsListPage() {
                     borderBottom: '1px solid #1F2533',
                   }}
                 >
-                  {/* avatar */}
-                  <div
-                    className="rounded-full overflow-hidden flex items-center justify-center shrink-0"
-                    style={{
-                      width: 48,
-                      height: 48,
-                      background: '#10141E',
-                      border: '1px solid #1F2533',
-                    }}
-                  >
-                    <SheepAvatar tone={tone} size={44} />
+                  {/* avatar + 在席マーク */}
+                  <div className="relative shrink-0">
+                    <div
+                      className="rounded-full overflow-hidden flex items-center justify-center"
+                      style={{
+                        width: 48,
+                        height: 48,
+                        background: '#10141E',
+                        border: '1px solid #1F2533',
+                      }}
+                    >
+                      <SheepAvatar tone={tone} size={44} />
+                    </div>
+                    <PresenceDot online={partner !== null && onlineIds.has(partner.id)} />
                   </div>
 
                   {/* nickname + preview */}

@@ -4,12 +4,9 @@ import { useEffect, useRef, useState, useTransition } from 'react'
 import { sendMessageAction, type MessageDto } from './actions'
 import { getSocket } from '@/lib/socket-client'
 import type { ConversationId, UserId } from '@me-me-en/domain'
+import { Linkify } from '../../_components/linkify'
 import { SheepAvatar } from '../../profile/_components/sheep-avatar'
-import {
-  currentHourBranch,
-  formatJapaneseDate,
-  toKanji,
-} from '../../_components/kanji'
+import { currentHourBranch, formatJapaneseDate, toKanji } from '../../_components/kanji'
 
 // design HTML (docs/design/extracted-dm.jsx, line 151-) の ThreadPanel に追随。
 //   - Header: avatar + nickname + status + 3 action icon buttons
@@ -55,6 +52,8 @@ export function ThreadView({
   const [pending, startTransition] = useTransition()
   const [typingUsers, setTypingUsers] = useState<readonly UserId[]>([])
   const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  // 末尾アンカー。新着・送信のたびにここへスクロールし、自然に最新が見える。
+  const bottomRef = useRef<HTMLDivElement | null>(null)
   // 現在時刻 (date divider の時辰計算用、1 分ごとに更新で十分)
   const [now, setNow] = useState<Date | null>(null)
   useEffect(() => {
@@ -69,9 +68,7 @@ export function ThreadView({
 
     const onMessageNew = (msg: MessageDto) => {
       if (msg.conversationId !== conversationId) return
-      setMessages((prev) =>
-        prev.some((m) => m.id === msg.id) ? prev : [...prev, msg],
-      )
+      setMessages((prev) => (prev.some((m) => m.id === msg.id) ? prev : [...prev, msg]))
     }
     const onTypingUpdate = (event: TypingEvent) => {
       if (event.conversationId !== conversationId) return
@@ -91,6 +88,13 @@ export function ThreadView({
       socket.off('typing:update', onTypingUpdate)
     }
   }, [conversationId, myUserId])
+
+  // 新着・送信・相手の入力中表示が変わるたびに末尾へスクロール。
+  // 手で送った直後は smooth、初期表示や受信は瞬時に最新へ。
+  const messageCount = messages.length
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ block: 'end' })
+  }, [messageCount, typingUsers.length])
 
   const handleDraftChange = (value: string) => {
     setDraft(value)
@@ -118,9 +122,7 @@ export function ThreadView({
       const result = await sendMessageAction({ conversationId, body })
       if (result.ok) {
         setMessages((prev) =>
-          prev.some((m) => m.id === result.message.id)
-            ? prev
-            : [...prev, result.message],
+          prev.some((m) => m.id === result.message.id) ? prev : [...prev, result.message],
         )
         setDraft('')
         const socket = getSocket(myUserId)
@@ -134,12 +136,9 @@ export function ThreadView({
   const partnerNickname = partner?.nickname ?? '名なし'
   const partnerTone = partner?.tone ?? '#E8E2D2'
   const partnerLit = partner?.presenceVisible ?? false
-  const statusLabel = partnerLit ? '灯る · 起きています' : '灯 秘匿 もしくは 不在'
+  const statusLabel = partnerLit ? '在席' : '不在'
 
-  const dateDivider =
-    now === null
-      ? ''
-      : `${currentHourBranch(now)} · ${formatJapaneseDate(now)}`
+  const dateDivider = now === null ? '' : `${currentHourBranch(now)} · ${formatJapaneseDate(now)}`
 
   return (
     <div
@@ -215,50 +214,6 @@ export function ThreadView({
             {statusLabel}
           </div>
         </div>
-        {/* 3 action icons (装飾): 時計 / 虫眼鏡 / 3-dot more。SP では省略。 */}
-        <div className="hidden md:flex items-center" style={{ gap: 8 }}>
-          {[
-            <g key="clock">
-              <circle cx="12" cy="12" r="9" />
-              <path d="M12 7v5l3 2" />
-            </g>,
-            <g key="search">
-              <circle cx="11" cy="11" r="7" />
-              <line x1="21" y1="21" x2="16" y2="16" />
-            </g>,
-            <g key="more">
-              <circle cx="12" cy="5" r="1.4" fill="currentColor" />
-              <circle cx="12" cy="12" r="1.4" fill="currentColor" />
-              <circle cx="12" cy="19" r="1.4" fill="currentColor" />
-            </g>,
-          ].map((g, i) => (
-            <button
-              key={i}
-              type="button"
-              className="hover:bg-[#161B27] transition-colors flex items-center justify-center"
-              style={{
-                width: 34,
-                height: 34,
-                border: '1px solid #1F2533',
-                background: 'transparent',
-                color: '#9A9484',
-              }}
-              aria-label={['履歴', '検索', 'その他'][i]}
-            >
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-              >
-                {g}
-              </svg>
-            </button>
-          ))}
-        </div>
       </div>
 
       {/* ── Sub-banner ─────────────────────────────────────────────── */}
@@ -275,7 +230,7 @@ export function ThreadView({
             gap: 14,
           }}
         >
-          <span>夜を跨いでも、文字は残ります。</span>
+          <span>夜を跨いでも、手紙は残ります。</span>
         </div>
         <div
           style={{
@@ -333,24 +288,23 @@ export function ThreadView({
         {messages.map((m, i) => {
           const mine = m.senderId === myUserId
           const prevSame = i > 0 && messages[i - 1]?.senderId === m.senderId
-          const nextSame =
-            i < messages.length - 1 && messages[i + 1]?.senderId === m.senderId
+          const nextSame = i < messages.length - 1 && messages[i + 1]?.senderId === m.senderId
 
           const radius = mine
             ? prevSame && nextSame
               ? '12px 4px 4px 12px'
               : prevSame
-              ? '12px 4px 12px 12px'
-              : nextSame
-              ? '12px 12px 4px 12px'
-              : '12px 12px 4px 12px'
+                ? '12px 4px 12px 12px'
+                : nextSame
+                  ? '12px 12px 4px 12px'
+                  : '12px 12px 4px 12px'
             : prevSame && nextSame
-            ? '4px 12px 12px 4px'
-            : prevSame
-            ? '4px 12px 12px 12px'
-            : nextSame
-            ? '12px 12px 12px 4px'
-            : '12px 12px 12px 4px'
+              ? '4px 12px 12px 4px'
+              : prevSame
+                ? '4px 12px 12px 12px'
+                : nextSame
+                  ? '12px 12px 12px 4px'
+                  : '12px 12px 12px 4px'
 
           return (
             <div
@@ -376,9 +330,7 @@ export function ThreadView({
                   <SheepAvatar tone={partnerTone} size={30} />
                 </div>
               )}
-              {!mine && prevSame && (
-                <div className="shrink-0" style={{ width: 34 }} />
-              )}
+              {!mine && prevSame && <div className="shrink-0" style={{ width: 34 }} />}
 
               <div
                 className="flex flex-col max-w-[80%] md:max-w-[60%]"
@@ -399,7 +351,7 @@ export function ThreadView({
                     borderRadius: radius,
                   }}
                 >
-                  {m.body}
+                  <Linkify text={m.body} />
                 </div>
                 {!nextSame && (
                   <div
@@ -426,10 +378,7 @@ export function ThreadView({
 
         {/* Typing indicator */}
         {typingUsers.length > 0 && (
-          <div
-            className="flex items-center"
-            style={{ marginTop: 14, gap: 12 }}
-          >
+          <div className="flex items-center" style={{ marginTop: 14, gap: 12 }}>
             <div
               className="rounded-full overflow-hidden flex items-center justify-center"
               style={{
@@ -475,6 +424,9 @@ export function ThreadView({
             </span>
           </div>
         )}
+
+        {/* 末尾アンカー (自動スクロール先) */}
+        <div ref={bottomRef} aria-hidden />
       </div>
 
       {/* ── Composer ───────────────────────────────────────────────── */}
@@ -502,9 +454,16 @@ export function ThreadView({
               <textarea
                 value={draft}
                 onChange={(e) => handleDraftChange(e.target.value)}
+                onKeyDown={(e) => {
+                  // Enter は改行のまま。⌘/Ctrl + Enter で送信 (ブラウザ標準作法)。
+                  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                    e.preventDefault()
+                    send()
+                  }
+                }}
                 maxLength={280}
                 rows={2}
-                placeholder="そっと、文字を置く…"
+                placeholder="返事を書く"
                 className="w-full bg-transparent text-[#ECE6D4] resize-none focus:outline-none placeholder:text-[#5E5A4F]"
                 style={{
                   fontSize: 16,
@@ -513,36 +472,16 @@ export function ThreadView({
                   paddingTop: 6,
                 }}
               />
-              <div
-                className="flex items-center"
-                style={{ gap: 10, marginTop: 12 }}
-              >
-                {/* tiny icon row (装飾) */}
-                {['☽', '◌', '⌗', '✦'].map((ic, i) => (
-                  <span
-                    key={i}
-                    className="flex items-center justify-center"
-                    style={{
-                      width: 24,
-                      height: 24,
-                      color: '#5E5A4F',
-                      fontSize: 16,
-                    }}
-                    aria-hidden
-                  >
-                    {ic}
-                  </span>
-                ))}
+              <div className="flex items-center" style={{ marginTop: 12 }}>
                 <span
                   className="hidden md:inline"
                   style={{
-                    marginLeft: 8,
                     fontSize: 12,
                     color: '#5E5A4F',
                     letterSpacing: '0.15em',
                   }}
                 >
-                  夜を跨いで、ふたりだけの記憶になります
+                  ⌘ / Ctrl + Enter で送る
                 </span>
               </div>
             </div>

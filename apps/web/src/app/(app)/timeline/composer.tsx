@@ -50,12 +50,10 @@ export function Composer() {
             disabled={pending || body.trim().length === 0}
             className="h-9 px-6 bg-[#ECE6D4] text-[#080B12] tracking-[0.4em] text-sm font-medium disabled:opacity-40 hover:bg-[#D8D2C0] transition-colors"
           >
-            筆を取る
+            文を置く
           </button>
         </div>
-        {error !== null && (
-          <p className="mt-3 text-sm text-[#A85040] tracking-wider">{error}</p>
-        )}
+        {error !== null && <p className="mt-3 text-sm text-[#A85040] tracking-wider">{error}</p>}
       </form>
     </div>
   )

@@ -16,14 +16,12 @@ import { SheepAvatar } from '../../profile/_components/sheep-avatar'
 const SIGN_TO_MOOD: Record<SignTag, string> = {
   sleepless: '眠れない夜です',
   reading: '本を読み返しています',
-  having_tea: 'お茶を、一杯',
+  having_tea: '一服しています',
+  nightcap: '晩酌のお供に',
   moon_gazing: '月を眺めています',
   nothing: 'なんとなく',
-  wanting_to_hear: '声を聞きたくて',
-  shiritori: 'しりとり、募集中',
   staying_up_late: '夜更かしの口です',
 }
-
 
 export async function RightRail({ viewerId }: { viewerId: UserId }) {
   const phase = getMoonPhase(new Date())
@@ -46,9 +44,7 @@ export async function RightRail({ viewerId }: { viewerId: UserId }) {
       }
     }),
   )
-  const visible = enriched.filter(
-    (u): u is NonNullable<typeof u> => u !== null,
-  )
+  const visible = enriched.filter((u): u is NonNullable<typeof u> => u !== null)
   const litCount = visible.length
 
   return (
@@ -107,10 +103,7 @@ export async function RightRail({ viewerId }: { viewerId: UserId }) {
 
       {/* ── 灯ともる羊 ─────────────────────────────────────────── */}
       <div style={{ padding: '22px 28px 16px' }}>
-        <div
-          className="flex items-baseline justify-between"
-          style={{ marginBottom: 14 }}
-        >
+        <div className="flex items-baseline justify-between" style={{ marginBottom: 14 }}>
           <div
             style={{
               fontSize: 12,
@@ -118,7 +111,7 @@ export async function RightRail({ viewerId }: { viewerId: UserId }) {
               letterSpacing: '0.3em',
             }}
           >
-            灯 る 羊
+            在 席 の 羊
           </div>
           <div
             style={{
@@ -139,7 +132,7 @@ export async function RightRail({ viewerId }: { viewerId: UserId }) {
               lineHeight: 1.9,
             }}
           >
-            まだ 誰も 灯っていない。
+            まだ 誰も いない。
           </p>
         ) : (
           <div className="flex flex-col gap-3">
