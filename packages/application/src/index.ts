@@ -20,10 +20,12 @@ export type {
 } from './use-cases/user/update-profile'
 export { createUpdateProfile } from './use-cases/user/update-profile'
 export type {
-  ListUsers,
-  ListUsersInput,
-  ListUsersDeps,
-} from './use-cases/user/list-users'
+  DeleteAccount,
+  DeleteAccountInput,
+  DeleteAccountDeps,
+} from './use-cases/user/delete-account'
+export { createDeleteAccount } from './use-cases/user/delete-account'
+export type { ListUsers, ListUsersInput, ListUsersDeps } from './use-cases/user/list-users'
 export { createListUsers } from './use-cases/user/list-users'
 
 // Use cases — Conversation
@@ -53,11 +55,7 @@ export type {
   SendMessageDeps,
 } from './use-cases/message/send-message'
 export { createSendMessage } from './use-cases/message/send-message'
-export type {
-  MarkAsRead,
-  MarkAsReadInput,
-  MarkAsReadDeps,
-} from './use-cases/message/mark-as-read'
+export type { MarkAsRead, MarkAsReadInput, MarkAsReadDeps } from './use-cases/message/mark-as-read'
 export { createMarkAsRead } from './use-cases/message/mark-as-read'
 export type {
   ListMessages,
@@ -67,17 +65,9 @@ export type {
 export { createListMessages } from './use-cases/message/list-messages'
 
 // Use cases — Post
-export type {
-  CreatePost,
-  CreatePostInput,
-  CreatePostDeps,
-} from './use-cases/post/create-post'
+export type { CreatePost, CreatePostInput, CreatePostDeps } from './use-cases/post/create-post'
 export { createCreatePost } from './use-cases/post/create-post'
-export type {
-  DeletePost,
-  DeletePostInput,
-  DeletePostDeps,
-} from './use-cases/post/delete-post'
+export type { DeletePost, DeletePostInput, DeletePostDeps } from './use-cases/post/delete-post'
 export { createDeletePost } from './use-cases/post/delete-post'
 export type {
   ListTimeline,
@@ -93,32 +83,22 @@ export type {
 export { createListOwnPosts } from './use-cases/post/list-own-posts'
 
 // Use cases — Like
-export type {
-  LikePost,
-  LikePostInput,
-  LikePostDeps,
-} from './use-cases/like/like-post'
+export type { LikePost, LikePostInput, LikePostDeps } from './use-cases/like/like-post'
 export { createLikePost } from './use-cases/like/like-post'
-export type {
-  UnlikePost,
-  UnlikePostInput,
-  UnlikePostDeps,
-} from './use-cases/like/unlike-post'
+export type { UnlikePost, UnlikePostInput, UnlikePostDeps } from './use-cases/like/unlike-post'
 export { createUnlikePost } from './use-cases/like/unlike-post'
 
 // Use cases — Block
-export type {
-  BlockUser,
-  BlockUserInput,
-  BlockUserDeps,
-} from './use-cases/block/block-user'
+export type { BlockUser, BlockUserInput, BlockUserDeps } from './use-cases/block/block-user'
 export { createBlockUser } from './use-cases/block/block-user'
-export type {
-  UnblockUser,
-  UnblockUserInput,
-  UnblockUserDeps,
-} from './use-cases/block/unblock-user'
+export type { UnblockUser, UnblockUserInput, UnblockUserDeps } from './use-cases/block/unblock-user'
 export { createUnblockUser } from './use-cases/block/unblock-user'
+export type {
+  ListBlockedUsers,
+  ListBlockedUsersInput,
+  ListBlockedUsersDeps,
+} from './use-cases/block/list-blocked-users'
+export { createListBlockedUsers } from './use-cases/block/list-blocked-users'
 
 // Use cases — Presence
 export type {

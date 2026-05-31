@@ -16,14 +16,8 @@ import type { Clock } from '../ports/clock'
 import type { IdGenerator } from '../ports/id-generator'
 
 // Build a Date representing the given JST wall clock (no DST).
-export const jst = (
-  y: number,
-  m: number,
-  d: number,
-  h: number,
-  min = 0,
-  s = 0,
-): Date => new Date(Date.UTC(y, m - 1, d, h - 9, min, s))
+export const jst = (y: number, m: number, d: number, h: number, min = 0, s = 0): Date =>
+  new Date(Date.UTC(y, m - 1, d, h - 9, min, s))
 
 export const fixedClock = (date: Date): Clock => ({ now: () => date })
 
@@ -65,6 +59,37 @@ export const inMemoryUserRepo = (): {
       else state.push(user)
     },
     list: async () => state,
+    delete: async (id) => {
+      const idx = state.findIndex((u) => u.id === id)
+      if (idx >= 0) state.splice(idx, 1)
+    },
+  }
+  return { repo, state }
+}
+
+// In-memory AuthIdentityRepository — minimal, for delete-account tests.
+export const inMemoryAuthIdentityRepo = (): {
+  repo: import('@me-me-en/domain').AuthIdentityRepository
+  state: import('@me-me-en/domain').AuthIdentity[]
+} => {
+  type AI = import('@me-me-en/domain').AuthIdentity
+  const state: AI[] = []
+  const repo: import('@me-me-en/domain').AuthIdentityRepository = {
+    findByProviderId: async (provider, providerId) =>
+      state.find((i) => i.provider === provider && i.providerId === providerId) ?? null,
+    findByEmail: async (email) => state.find((i) => i.email === email) ?? null,
+    upsert: async (identity) => {
+      const idx = state.findIndex(
+        (i) => i.provider === identity.provider && i.providerId === identity.providerId,
+      )
+      if (idx >= 0) state[idx] = identity
+      else state.push(identity)
+    },
+    deleteByUser: async (userId) => {
+      for (let i = state.length - 1; i >= 0; i--) {
+        if (state[i]!.userId === userId) state.splice(i, 1)
+      }
+    },
   }
   return { repo, state }
 }
@@ -152,9 +177,7 @@ export const inMemoryMessageRepo = (): {
         ? byConv.filter((m) => m.sentAt.getTime() < q.before!.getTime())
         : byConv
       // ascending by sentAt (chat convention)
-      const sorted = [...beforeFiltered].sort(
-        (a, b) => a.sentAt.getTime() - b.sentAt.getTime(),
-      )
+      const sorted = [...beforeFiltered].sort((a, b) => a.sentAt.getTime() - b.sentAt.getTime())
       return q.limit ? sorted.slice(0, q.limit) : sorted
     },
     countByConversationsInWindow: async (ids, from, to) => {
@@ -226,9 +249,7 @@ export const inMemoryBlockRepo = (): {
     },
     existsBetween: async (a, b) =>
       state.some(
-        (x) =>
-          (x.blockerId === a && x.blockedId === b) ||
-          (x.blockerId === b && x.blockedId === a),
+        (x) => (x.blockerId === a && x.blockedId === b) || (x.blockerId === b && x.blockedId === a),
       ),
     listBlockedBy: async (blockerId) =>
       state.filter((b) => b.blockerId === blockerId).map((b) => b.blockedId),
@@ -243,17 +264,13 @@ export const inMemoryPresenceRepo = (): {
   repo: import('@me-me-en/domain').PresenceRepository
   state: Map<import('@me-me-en/domain').UserId, import('@me-me-en/domain').Presence>
 } => {
-  const state = new Map<
-    import('@me-me-en/domain').UserId,
-    import('@me-me-en/domain').Presence
-  >()
+  const state = new Map<import('@me-me-en/domain').UserId, import('@me-me-en/domain').Presence>()
   const repo: import('@me-me-en/domain').PresenceRepository = {
     findByUser: async (userId) => state.get(userId) ?? null,
     set: async (presence) => {
       state.set(presence.userId, presence)
     },
-    listOnline: async () =>
-      Array.from(state.values()).filter((p) => p.status === 'online'),
+    listOnline: async () => Array.from(state.values()).filter((p) => p.status === 'online'),
   }
   return { repo, state }
 }
@@ -290,10 +307,7 @@ export const inMemoryLoginHistoryRepo = (): {
   repo: import('@me-me-en/domain').LoginHistoryRepository
   state: Map<UserId, Map<import('@me-me-en/domain').NightId, Date>>
 } => {
-  const state = new Map<
-    UserId,
-    Map<import('@me-me-en/domain').NightId, Date>
-  >()
+  const state = new Map<UserId, Map<import('@me-me-en/domain').NightId, Date>>()
   const repo: import('@me-me-en/domain').LoginHistoryRepository = {
     recordIfFirstOfNight: async (userId, nightId, at) => {
       let nights = state.get(userId)

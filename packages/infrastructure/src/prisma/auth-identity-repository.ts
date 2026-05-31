@@ -1,8 +1,4 @@
-import type {
-  AuthIdentity,
-  AuthIdentityRepository,
-  UserId,
-} from '@me-me-en/domain'
+import type { AuthIdentity, AuthIdentityRepository, UserId } from '@me-me-en/domain'
 import type { PrismaClient } from './client'
 
 type Row = {
@@ -52,5 +48,8 @@ export const createPrismaAuthIdentityRepository = (
         userId: identity.userId,
       },
     })
+  },
+  deleteByUser: async (userId) => {
+    await prisma.userAuthIdentity.deleteMany({ where: { userId } })
   },
 })

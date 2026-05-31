@@ -1,11 +1,6 @@
 import { notFound } from 'next/navigation'
 import { auth } from '@/auth'
-import {
-  getCloseSheep,
-  getHourlyPresenceChart,
-  getProfileStats,
-  userRepository,
-} from '@/server/di'
+import { getCloseSheep, getHourlyPresenceChart, getProfileStats, userRepository } from '@/server/di'
 import { CloseSheepList } from './_components/close-sheep-list'
 import { VisitRecordRail } from './_components/visit-record-rail'
 import { ProfileEditor, type ProfileEditorDto } from './profile-editor'
@@ -40,11 +35,8 @@ export default async function MyProfilePage() {
   // 実装は flex で main flex-1 + rail 固定 340。
   return (
     <div className="flex flex-col md:flex-row min-h-[calc(100vh-64px)]">
-      <div className="flex-1 min-w-0 overflow-hidden px-4 py-6 md:px-14 md:py-10">
-        <ProfileEditor
-          user={dto}
-          closeSheepList={<CloseSheepList sheep={closeSheep} />}
-        />
+      <div className="flex-1 min-w-0 overflow-hidden px-4 py-6 md:p-10">
+        <ProfileEditor user={dto} closeSheepList={<CloseSheepList sheep={closeSheep} />} />
       </div>
       <VisitRecordRail stats={stats} hourly={hourly} />
     </div>

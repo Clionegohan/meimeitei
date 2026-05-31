@@ -15,5 +15,8 @@ export const createInMemoryUserRepository = (): UserRepository => {
       store.set(user.id, user)
     },
     list: async () => Array.from(store.values()),
+    delete: async (id) => {
+      store.delete(id)
+    },
   }
 }

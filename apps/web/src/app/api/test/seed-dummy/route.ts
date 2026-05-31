@@ -40,13 +40,8 @@ const isAllowed = (): boolean =>
 const SESSION_COOKIE_NAME = 'authjs.session-token'
 
 // JST 22:00 - 翌 05:00 内の Date を返す。日付ベース + 時刻 (h, m)。
-const jst = (
-  y: number,
-  mon: number,
-  d: number,
-  h: number,
-  min: number,
-): Date => new Date(Date.UTC(y, mon - 1, d, h - 9, min, 0))
+const jst = (y: number, mon: number, d: number, h: number, min: number): Date =>
+  new Date(Date.UTC(y, mon - 1, d, h - 9, min, 0))
 
 type SeedUser = {
   id: UserId
@@ -77,7 +72,7 @@ const USERS: readonly SeedUser[] = [
   {
     id: 'u_dev_bob' as UserId,
     nickname: '月見羊',
-    tone: '#E8E2D2' as Tone,
+    tone: '#B8DFF2' as Tone,
     bio: '月を眺めるのが好きです。',
     signs: ['moon_gazing'] as readonly SignTag[],
     favoriteMoon: '十三夜',
@@ -89,7 +84,7 @@ const USERS: readonly SeedUser[] = [
   {
     id: 'u_dev_carol' as UserId,
     nickname: '茶の羊',
-    tone: '#D8B890' as Tone,
+    tone: '#DED2A2' as Tone,
     bio: 'ほうじ茶を、一杯。',
     signs: ['having_tea'] as readonly SignTag[],
     favoriteMoon: '小望月',
@@ -101,7 +96,7 @@ const USERS: readonly SeedUser[] = [
   {
     id: 'u_dev_dave' as UserId,
     nickname: '読書羊',
-    tone: '#B8A480' as Tone,
+    tone: '#C8A8E9' as Tone,
     bio: '本を読み返しています。',
     signs: ['reading'] as readonly SignTag[],
     favoriteMoon: '下弦の月',
@@ -113,7 +108,7 @@ const USERS: readonly SeedUser[] = [
   {
     id: 'u_dev_eve' as UserId,
     nickname: '星見羊',
-    tone: '#E8D2B8' as Tone,
+    tone: '#5EC3C5' as Tone,
     bio: '星を見ています。',
     signs: ['nothing'] as readonly SignTag[],
     favoriteMoon: '望月',
@@ -126,8 +121,7 @@ const USERS: readonly SeedUser[] = [
 
 // 直近の「営業時間入り」の Date を返す。JST 22:00 / 23:00 / 24:00 / ... / 翌 04:00 を時刻として
 // past から逆算した夜の中の一点を作る。
-const aFewMinutesAgo = (mins: number): Date =>
-  new Date(Date.now() - mins * 60_000)
+const aFewMinutesAgo = (mins: number): Date => new Date(Date.now() - mins * 60_000)
 
 export async function GET(req: Request): Promise<NextResponse> {
   if (!isAllowed()) {
@@ -197,10 +191,10 @@ export async function GET(req: Request): Promise<NextResponse> {
         i === 0
           ? '眠れない夜が、続いていますね。'
           : i === 1
-          ? 'ええ、今夜もまた、ここに来てしまいました。'
-          : i === pair.messages - 1
-          ? 'お休みなさい。'
-          : `${i + 1} 通目のひとこと。\n夜は更けるばかりです。`
+            ? 'ええ、今夜もまた、ここに来てしまいました。'
+            : i === pair.messages - 1
+              ? 'お休みなさい。'
+              : `${i + 1} 通目のひとこと。\n夜は更けるばかりです。`
       const m = createMessage({
         id: `m_${pair.convId}_${i}` as MessageId,
         conversationId: conv.id,
@@ -279,11 +273,7 @@ export async function GET(req: Request): Promise<NextResponse> {
       )
       try {
         const nightId = nightIdOf(ts2200Jst)
-        void loginHistoryRepository.recordIfFirstOfNight(
-          userId,
-          nightId,
-          ts2200Jst,
-        )
+        void loginHistoryRepository.recordIfFirstOfNight(userId, nightId, ts2200Jst)
         recorded++
       } catch {
         // nightIdOf が business hours 外で throw する場合 → skip

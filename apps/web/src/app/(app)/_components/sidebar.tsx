@@ -2,14 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import {
-  FudaIcon,
-  FumiIcon,
-  MoonIcon,
-  NorenIcon,
-  SheepIcon,
-} from './icons'
-import { SumiDivider } from './sumi-divider'
+import { FumiIcon, MoonIcon, NorenIcon, SheepIcon } from './icons'
 
 // design HTML (docs/design/extracted-timeline.jsx, line 114-) の Sidebar 構造を踏襲。
 // item: アイコン + 主ラベル(明朝 16px, letterSpacing 0.18em) + 補助テキスト(10px muted)。
@@ -30,9 +23,11 @@ const items: readonly MenuItem[] = [
   { href: '/profile', label: '己', sub: 'あなたの席', Icon: MoonIcon },
 ]
 
-const lowerItems: readonly MenuItem[] = [
-  { href: '/settings', label: 'お品書き', sub: '設定と規則', Icon: FudaIcon },
-]
+// お品書き（設定と規則）は出来がイマイチなため一旦ナビから非表示。
+// 復活させるときは下の lowerItems と render ブロックのコメントを戻す。
+// const lowerItems: readonly MenuItem[] = [
+//   { href: '/settings', label: 'お品書き', sub: '設定と規則', Icon: FudaIcon },
+// ]
 
 const isItemActive = (pathname: string | null, href: string): boolean => {
   if (pathname === null) return false
@@ -42,13 +37,7 @@ const isItemActive = (pathname: string | null, href: string): boolean => {
   return pathname === href
 }
 
-const ItemRow = ({
-  item,
-  active,
-}: {
-  item: MenuItem
-  active: boolean
-}) => {
+const ItemRow = ({ item, active }: { item: MenuItem; active: boolean }) => {
   const Icon = item.Icon
   const labelColor = active ? '#ECE6D4' : '#D8D2C0'
   const iconColor = active ? '#ECE6D4' : '#9A9484'
@@ -107,43 +96,23 @@ const ItemRow = ({
 export function Sidebar() {
   const pathname = usePathname()
   return (
-    <aside aria-label="サイドバー" className="hidden md:flex w-60 shrink-0 sticky top-16 h-[calc(100vh-64px)] overflow-y-auto border-r border-[#1F2533] bg-[#0C1018] flex-col">
-      {/* Compose CTA — 「筆を取る」 */}
-      <div className="px-[22px] pt-6 pb-[18px]">
-        <button
-          type="button"
-          className="w-full h-[46px] border border-[#ECE6D4] bg-transparent text-[#ECE6D4] flex items-center justify-center gap-2.5 hover:bg-[#161B27] transition-colors"
-          style={{ fontSize: 14, letterSpacing: '0.4em', fontWeight: 400 }}
-        >
-          <span style={{ fontSize: 18 }}>筆</span>
-          筆を取る
-        </button>
-      </div>
-
-      {/* SumiDivider — compose CTA 直下 */}
-      <div className="mx-[22px] mb-[18px]" style={{ marginTop: 4 }}>
-        <SumiDivider width={196} opacity={0.5} />
-      </div>
-
-      <nav className="flex-1">
+    <aside
+      aria-label="サイドバー"
+      className="hidden md:flex w-60 shrink-0 sticky top-16 h-[calc(100vh-64px)] overflow-y-auto border-r border-[#1F2533] bg-[#0C1018] flex-col"
+    >
+      <nav className="flex-1 pt-4">
         {items.map((it) => (
-          <ItemRow
-            key={it.href}
-            item={it}
-            active={isItemActive(pathname, it.href)}
-          />
+          <ItemRow key={it.href} item={it} active={isItemActive(pathname, it.href)} />
         ))}
       </nav>
 
+      {/* お品書き（設定）導線は一旦非表示。
       <div className="border-t border-[#1F2533] py-3">
         {lowerItems.map((it) => (
-          <ItemRow
-            key={it.href}
-            item={it}
-            active={isItemActive(pathname, it.href)}
-          />
+          <ItemRow key={it.href} item={it} active={isItemActive(pathname, it.href)} />
         ))}
       </div>
+      */}
 
       {/* 底部の日付ラベル */}
       <div

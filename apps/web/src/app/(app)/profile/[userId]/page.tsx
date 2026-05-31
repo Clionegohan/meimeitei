@@ -1,6 +1,6 @@
 import { notFound, redirect } from 'next/navigation'
 import { auth } from '@/auth'
-import { presenceRepository, userRepository } from '@/server/di'
+import { blockRepository, presenceRepository, userRepository } from '@/server/di'
 import { visibleStatusTo, type UserId } from '@me-me-en/domain'
 import { OtherProfile, type OtherUserDto } from './other-profile'
 
@@ -19,6 +19,8 @@ export default async function OtherProfilePage({
 
   const user = await userRepository.findById(targetUserId)
   if (!user) notFound()
+
+  const isBlocked = await blockRepository.findBy(session.userId, targetUserId)
 
   // Presence: asymmetric stealth — invisible owners look offline.
   const presence = await presenceRepository.findByUser(user.id)
@@ -45,7 +47,7 @@ export default async function OtherProfilePage({
   // そもそも取得も DTO 化もしない (BE レベルで秘匿)。
   return (
     <div className="px-4 py-6 md:px-14 md:py-10 max-w-3xl">
-      <OtherProfile user={dto} />
+      <OtherProfile user={dto} isBlocked={isBlocked !== null} />
     </div>
   )
 }

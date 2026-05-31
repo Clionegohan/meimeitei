@@ -5,11 +5,12 @@ import {
   blockRepository,
   createPost,
   likePost,
+  sendMessage,
   startConversationByPost,
   unlikePost,
   userRepository,
 } from '@/server/di'
-import { broadcastToAllExcept } from '@/server/realtime/io-bridge'
+import { broadcastToAllExcept, broadcastToConversation } from '@/server/realtime/io-bridge'
 import type { PostId } from '@me-me-en/domain'
 
 export type PostDto = {
@@ -23,13 +24,9 @@ export type PostDto = {
   iLiked: boolean
 }
 
-export type CreatePostResult =
-  | { ok: true; post: PostDto }
-  | { ok: false; error: string }
+export type CreatePostResult = { ok: true; post: PostDto } | { ok: false; error: string }
 
-export const createPostAction = async (input: {
-  body: string
-}): Promise<CreatePostResult> => {
+export const createPostAction = async (input: { body: string }): Promise<CreatePostResult> => {
   const session = await auth()
   if (session === null || session.userId === undefined) {
     return { ok: false, error: 'ログインが必要です' }
@@ -63,9 +60,7 @@ export const createPostAction = async (input: {
 
 export type LikeResult = { ok: true } | { ok: false; error: string }
 
-export const likePostAction = async (input: {
-  postId: string
-}): Promise<LikeResult> => {
+export const likePostAction = async (input: { postId: string }): Promise<LikeResult> => {
   const session = await auth()
   if (session === null || session.userId === undefined) {
     return { ok: false, error: 'ログインが必要です' }
@@ -78,9 +73,7 @@ export const likePostAction = async (input: {
   }
 }
 
-export const unlikePostAction = async (input: {
-  postId: string
-}): Promise<LikeResult> => {
+export const unlikePostAction = async (input: { postId: string }): Promise<LikeResult> => {
   const session = await auth()
   if (session === null || session.userId === undefined) {
     return { ok: false, error: 'ログインが必要です' }
@@ -93,12 +86,11 @@ export const unlikePostAction = async (input: {
   }
 }
 
-export type ReplyResult =
-  | { ok: true; conversationId: string }
-  | { ok: false; error: string }
+export type ReplyResult = { ok: true; conversationId: string } | { ok: false; error: string }
 
 export const replyToPostAction = async (input: {
   postId: string
+  body?: string
 }): Promise<ReplyResult> => {
   const session = await auth()
   if (session === null || session.userId === undefined) {
@@ -109,6 +101,23 @@ export const replyToPostAction = async (input: {
       initiatorId: session.userId,
       postId: input.postId as PostId,
     })
+    // モーダルで初回の返事を受け取った場合は、その本文を最初の手紙として送る。
+    const body = input.body?.trim() ?? ''
+    if (body.length > 0) {
+      const msg = await sendMessage({
+        senderId: session.userId,
+        conversationId: conv.id,
+        body,
+      })
+      broadcastToConversation(conv.id, 'message:new', {
+        id: msg.id,
+        conversationId: msg.conversationId,
+        senderId: msg.senderId,
+        body: msg.body,
+        sentAt: msg.sentAt.toISOString(),
+        readAt: msg.readAt?.toISOString() ?? null,
+      })
+    }
     return { ok: true, conversationId: conv.id }
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : '不明なエラー' }

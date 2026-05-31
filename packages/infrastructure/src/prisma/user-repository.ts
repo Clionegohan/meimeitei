@@ -1,11 +1,4 @@
-import type {
-  FavoriteMoon,
-  SignTag,
-  Tone,
-  User,
-  UserId,
-  UserRepository,
-} from '@me-me-en/domain'
+import type { FavoriteMoon, SignTag, Tone, User, UserId, UserRepository } from '@me-me-en/domain'
 import type { PrismaClient } from './client'
 
 // row → domain entity の hydration。Prisma の `string` columns に対して
@@ -31,9 +24,7 @@ const toUser = (row: {
   joinedAt: row.joinedAt,
 })
 
-export const createPrismaUserRepository = (
-  prisma: PrismaClient,
-): UserRepository => ({
+export const createPrismaUserRepository = (prisma: PrismaClient): UserRepository => ({
   findById: async (id) => {
     const row = await prisma.user.findUnique({ where: { id } })
     return row === null ? null : toUser(row)
@@ -69,5 +60,10 @@ export const createPrismaUserRepository = (
         joinedAt: user.joinedAt,
       },
     })
+  },
+  delete: async (id) => {
+    // 関連レコード (post / message / like / block 等) の cascade は
+    // Prisma schema 側の onDelete に委ねる。存在しない id は no-op。
+    await prisma.user.deleteMany({ where: { id } })
   },
 })

@@ -1,7 +1,4 @@
-import type {
-  AuthIdentity,
-  AuthIdentityRepository,
-} from '@me-me-en/domain'
+import type { AuthIdentity, AuthIdentityRepository } from '@me-me-en/domain'
 
 // In-memory AuthIdentityRepository.
 // MVPα 互換: 既存の session-bridge.ts と同じ Map<email, UserId> + Map<(provider:providerId), AuthIdentity>。
@@ -20,6 +17,14 @@ export const createInMemoryAuthIdentityRepository = (): AuthIdentityRepository =
     upsert: async (identity) => {
       byProviderKey.set(providerKey(identity.provider, identity.providerId), identity)
       if (identity.email !== null) byEmail.set(identity.email, identity)
+    },
+    deleteByUser: async (userId) => {
+      for (const [key, identity] of byProviderKey) {
+        if (identity.userId === userId) byProviderKey.delete(key)
+      }
+      for (const [key, identity] of byEmail) {
+        if (identity.userId === userId) byEmail.delete(key)
+      }
     },
   }
 }

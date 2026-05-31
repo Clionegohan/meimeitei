@@ -1,14 +1,8 @@
 'use server'
 
 import { auth } from '@/auth'
-import { startConversationDirect, updateProfile } from '@/server/di'
-import type {
-  FavoriteMoon,
-  PresenceVisibility,
-  SignTag,
-  Tone,
-  UserId,
-} from '@me-me-en/domain'
+import { blockUser, startConversationDirect, unblockUser, updateProfile } from '@/server/di'
+import type { FavoriteMoon, PresenceVisibility, SignTag, Tone, UserId } from '@me-me-en/domain'
 
 export type UpdateProfileResult = { ok: true } | { ok: false; error: string }
 
@@ -37,11 +31,46 @@ export const updateProfileAction = async (input: {
     if (input.nickname !== undefined) patch.nickname = input.nickname
     if (input.bio !== undefined) patch.bio = input.bio
     if (input.tone !== undefined) patch.tone = input.tone
-    if (input.presenceVisibility !== undefined)
-      patch.presenceVisibility = input.presenceVisibility
+    if (input.presenceVisibility !== undefined) patch.presenceVisibility = input.presenceVisibility
     if (input.currentSigns !== undefined) patch.currentSigns = input.currentSigns
     if (input.favoriteMoon !== undefined) patch.favoriteMoon = input.favoriteMoon
     await updateProfile({ userId: session.userId, patch })
+    return { ok: true }
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : '不明なエラー' }
+  }
+}
+
+export type BlockResult = { ok: true } | { ok: false; error: string }
+
+// 他者プロフから羊を遮断する。以後その羊とは軒先・手紙・客帳で相互に見えなくなる。
+export const blockUserAction = async (input: { targetId: string }): Promise<BlockResult> => {
+  const session = await auth()
+  if (session === null || session.userId === undefined) {
+    return { ok: false, error: 'ログインが必要です' }
+  }
+  try {
+    await blockUser({
+      blockerId: session.userId,
+      blockedId: input.targetId as UserId,
+    })
+    return { ok: true }
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : '不明なエラー' }
+  }
+}
+
+// 遮断を解除する。
+export const unblockUserAction = async (input: { targetId: string }): Promise<BlockResult> => {
+  const session = await auth()
+  if (session === null || session.userId === undefined) {
+    return { ok: false, error: 'ログインが必要です' }
+  }
+  try {
+    await unblockUser({
+      blockerId: session.userId,
+      blockedId: input.targetId as UserId,
+    })
     return { ok: true }
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : '不明なエラー' }

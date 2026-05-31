@@ -42,6 +42,9 @@ lerna-debug.log*
 *.swp
 *.swo
 
+# Claude Code (開発者ローカルの設定・エージェント状態)
+.claude/
+
 # Misc
 .cache/
 .eslintcache
