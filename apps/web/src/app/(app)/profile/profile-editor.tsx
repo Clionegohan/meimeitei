@@ -20,11 +20,10 @@ import { SheepAvatar } from './_components/sheep-avatar'
 const SIGN_LABEL: Record<SignTag, string> = {
   sleepless: '眠れない',
   reading: '読書中',
-  having_tea: 'お茶を一杯',
+  having_tea: '一服',
+  nightcap: '晩酌',
   moon_gazing: '月を眺める',
   nothing: '何でもない',
-  wanting_to_hear: '声を聞きたい',
-  shiritori: 'しりとり',
   staying_up_late: '夜更かし',
 }
 
@@ -54,19 +53,16 @@ export function ProfileEditor({
   const [nickname, setNickname] = useState(user.nickname)
   const [bio, setBio] = useState(user.bio)
   const [tone, setTone] = useState<Tone>(user.tone)
-  const [presenceVisibility, setPresenceVisibility] =
-    useState<'visible' | 'invisible'>(user.presenceVisibility)
-  const [signs, setSigns] = useState<readonly SignTag[]>(user.currentSigns)
-  const [favoriteMoon, setFavoriteMoon] = useState<FavoriteMoon | null>(
-    user.favoriteMoon,
+  const [presenceVisibility, setPresenceVisibility] = useState<'visible' | 'invisible'>(
+    user.presenceVisibility,
   )
+  const [signs, setSigns] = useState<readonly SignTag[]>(user.currentSigns)
+  const [favoriteMoon, setFavoriteMoon] = useState<FavoriteMoon | null>(user.favoriteMoon)
   const [error, setError] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
 
   const toggleSign = (s: SignTag) => {
-    setSigns((prev) =>
-      prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s],
-    )
+    setSigns((prev) => (prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]))
   }
 
   const save = () => {
@@ -125,11 +121,7 @@ export function ProfileEditor({
   }
 
   return (
-    <ProfileDisplay
-      user={user}
-      closeSheepList={closeSheepList}
-      onEdit={() => setEditing(true)}
-    />
+    <ProfileDisplay user={user} closeSheepList={closeSheepList} onEdit={() => setEditing(true)} />
   )
 }
 
@@ -145,8 +137,8 @@ function ProfileDisplay({
   onEdit: () => void
 }) {
   const joinedAtJa = formatJapaneseDate(new Date(user.joinedAt))
-  const statusLabel =
-    user.presenceVisibility === 'visible' ? '灯る · 今宵 在席' : '灯 秘匿'
+  const isVisible = user.presenceVisibility === 'visible'
+  const statusLabel = isVisible ? '在席' : '不在'
   // profile card の装飾月。「好きな月」が未設定なら 居待月 (phase 0.58) を fallback。
   const favoriteMoonPhase = phaseOfFavoriteMoon(user.favoriteMoon)
   const moonPhaseForCard = favoriteMoonPhase ?? 17 / 29.5305882
@@ -191,7 +183,7 @@ function ProfileDisplay({
             letterSpacing: '0.3em',
           }}
         >
-          整える
+          書き換える
         </button>
       </div>
 
@@ -209,11 +201,7 @@ function ProfileDisplay({
       >
         {/* 装飾月: panel 内に完全に収まる右上配置。淡さ (opacity 0.4) は維持。
             user.favoriteMoon が設定されていればその月相、未設定なら居待月 fallback。 */}
-        <div
-          className="absolute"
-          style={{ top: 18, right: 22, opacity: 0.4 }}
-          aria-hidden
-        >
+        <div className="absolute" style={{ top: 18, right: 22, opacity: 0.4 }} aria-hidden>
           <MoonSvg size={140} phase={moonPhaseForCard} glow={true} glowSize={1.3} />
         </div>
 
@@ -251,7 +239,7 @@ function ProfileDisplay({
             className="flex items-center"
             style={{
               fontSize: 14,
-              color: '#B89B6E',
+              color: isVisible ? '#B89B6E' : '#5E5A4F',
               letterSpacing: '0.3em',
               marginBottom: 18,
               gap: 8,
@@ -263,8 +251,8 @@ function ProfileDisplay({
               style={{
                 width: 6,
                 height: 6,
-                background: '#B89B6E',
-                boxShadow: '0 0 6px #B89B6E',
+                background: isVisible ? '#B89B6E' : '#3A382F',
+                boxShadow: isVisible ? '0 0 6px #B89B6E' : 'none',
               }}
             />
             {statusLabel}
@@ -288,10 +276,7 @@ function ProfileDisplay({
           {/* 3 列 meta — SP は折り返し */}
           <div className="flex flex-wrap mt-6 pt-[18px] gap-x-9 gap-y-4 border-t border-[#1F2533]">
             <MetaCell label="入店初日" value={joinedAtJa} />
-            <MetaCell
-              label="好きな月"
-              value={user.favoriteMoon ?? 'まだ'}
-            />
+            <MetaCell label="好きな月" value={user.favoriteMoon ?? 'まだ'} />
             <MetaCell label="よく置く文" value="独り言" />
           </div>
         </div>
@@ -303,24 +288,33 @@ function ProfileDisplay({
           <SectionTitle title="今 宵 の し る し" />
           <SectionSub>同じしるしを掲げる羊と、ふと出会えます。</SectionSub>
           <div className="flex flex-wrap" style={{ gap: 10 }}>
-            {SIGN_TAGS.map((s) => {
-              const active = user.currentSigns.includes(s)
-              return (
+            {user.currentSigns.length === 0 ? (
+              <span
+                style={{
+                  fontSize: 15,
+                  color: '#5E5A4F',
+                  letterSpacing: '0.15em',
+                }}
+              >
+                まだ掲げていません。
+              </span>
+            ) : (
+              user.currentSigns.map((s) => (
                 <span
                   key={s}
                   style={{
                     padding: '9px 20px',
-                    border: `1px solid ${active ? '#B89B6E' : '#2A3142'}`,
-                    background: active ? 'rgba(184,155,110,0.08)' : 'transparent',
-                    color: active ? '#ECE6D4' : '#9A9484',
+                    border: '1px solid #B89B6E',
+                    background: 'rgba(184,155,110,0.08)',
+                    color: '#ECE6D4',
                     fontSize: 16,
                     letterSpacing: '0.2em',
                   }}
                 >
                   {SIGN_LABEL[s]}
                 </span>
-              )
-            })}
+              ))
+            )}
           </div>
         </div>
 
@@ -448,29 +442,31 @@ function EditForm(props: EditFormProps) {
       </div>
 
       <fieldset>
-        <legend className="text-[14px] text-[#5E5A4F] tracking-[0.3em] mb-3">
-          毛色（tone）
-        </legend>
-        <div className="flex gap-3">
-          {TONES.map((t) => (
-            <button
-              key={t}
-              type="button"
-              onClick={() => props.onChangeTone(t)}
-              className={`w-10 h-10 rounded-full border-2 ${
-                props.tone === t ? 'border-[#ECE6D4]' : 'border-transparent'
-              }`}
-              style={{ backgroundColor: t }}
-              aria-label={t}
-            />
+        <legend className="text-[14px] text-[#5E5A4F] tracking-[0.3em] mb-3">毛色（tone）</legend>
+        {/* 1 行 = 1 色相 (左ほど鮮やか → 右ほど淡い)。5 色相ずつの 2 ブロックを並べる。 */}
+        <div className="flex flex-wrap gap-x-5 gap-y-2">
+          {[TONES.slice(0, 25), TONES.slice(25)].map((group, gi) => (
+            <div key={gi} className="grid grid-cols-5 gap-2 w-max">
+              {group.map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => props.onChangeTone(t)}
+                  className={`w-8 h-8 rounded-full border-2 shrink-0 transition-transform hover:scale-110 ${
+                    props.tone === t ? 'border-[#ECE6D4] scale-110' : 'border-[#2A3142]'
+                  }`}
+                  style={{ backgroundColor: t }}
+                  aria-label={t}
+                  aria-pressed={props.tone === t}
+                />
+              ))}
+            </div>
           ))}
         </div>
       </fieldset>
 
       <fieldset>
-        <legend className="text-[14px] text-[#5E5A4F] tracking-[0.3em] mb-3">
-          今宵のしるし
-        </legend>
+        <legend className="text-[14px] text-[#5E5A4F] tracking-[0.3em] mb-3">今宵のしるし</legend>
         <div className="flex flex-wrap gap-2">
           {SIGN_TAGS.map((s) => {
             const on = props.signs.includes(s)
@@ -493,9 +489,7 @@ function EditForm(props: EditFormProps) {
       </fieldset>
 
       <fieldset>
-        <legend className="text-[14px] text-[#5E5A4F] tracking-[0.3em] mb-3">
-          好きな月
-        </legend>
+        <legend className="text-[14px] text-[#5E5A4F] tracking-[0.3em] mb-3">好きな月</legend>
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
@@ -529,29 +523,13 @@ function EditForm(props: EditFormProps) {
       </fieldset>
 
       <fieldset>
-        <legend className="text-[14px] text-[#5E5A4F] tracking-[0.3em] mb-3">
-          灯る の見え方
-        </legend>
-        <div className="flex gap-3">
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="radio"
-              name="presence"
-              checked={props.presenceVisibility === 'visible'}
-              onChange={() => props.onChangePresence('visible')}
-            />
-            <span className="text-sm tracking-wider">皆に見える</span>
-          </label>
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="radio"
-              name="presence"
-              checked={props.presenceVisibility === 'invisible'}
-              onChange={() => props.onChangePresence('invisible')}
-            />
-            <span className="text-sm tracking-wider">隠す（他者からは消えて見える）</span>
-          </label>
-        </div>
+        <legend className="text-[14px] text-[#5E5A4F] tracking-[0.3em] mb-3">在席の見せ方</legend>
+        <PresenceLamp
+          visible={props.presenceVisibility === 'visible'}
+          onToggle={() =>
+            props.onChangePresence(props.presenceVisibility === 'visible' ? 'invisible' : 'visible')
+          }
+        />
       </fieldset>
 
       {props.error !== null && (
@@ -564,7 +542,7 @@ function EditForm(props: EditFormProps) {
           disabled={props.pending}
           className="h-10 px-6 border border-[#ECE6D4] text-[#ECE6D4] tracking-[0.4em] text-sm disabled:opacity-40 hover:bg-[#161B27]"
         >
-          {props.pending ? '整え中…' : '整える'}
+          {props.pending ? '保存中…' : '保存'}
         </button>
         <button
           type="button"
@@ -576,5 +554,48 @@ function EditForm(props: EditFormProps) {
         </button>
       </div>
     </form>
+  )
+}
+
+// 在席の見せ方トグル。チェックボックスではなく「灯」の見立て:
+// 在席=灯がともる(金の glow)、秘匿=灯が消える(暗点)。押すたびに切り替わる。
+function PresenceLamp({ visible, onToggle }: { visible: boolean; onToggle: () => void }) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={visible}
+      aria-label="在席を見せる"
+      onClick={onToggle}
+      className="flex items-center hover:bg-[#161B27] transition-colors"
+      style={{
+        gap: 12,
+        padding: '12px 18px',
+        border: '1px solid #2A3142',
+        background: 'transparent',
+      }}
+    >
+      <span
+        aria-hidden
+        className="rounded-full shrink-0"
+        style={{
+          width: 14,
+          height: 14,
+          background: visible ? '#B89B6E' : '#2A2A24',
+          border: visible ? 'none' : '1px solid #3A382F',
+          boxShadow: visible ? '0 0 10px #B89B6E' : 'none',
+          transition: 'background 0.2s, box-shadow 0.2s',
+        }}
+      />
+      <span
+        style={{
+          fontSize: 15,
+          letterSpacing: '0.25em',
+          color: visible ? '#ECE6D4' : '#9A9484',
+        }}
+      >
+        {visible ? '在席' : '秘匿'}
+      </span>
+    </button>
   )
 }

@@ -6,12 +6,7 @@ import {
   ValidationError,
   type UserId,
 } from '@me-me-en/domain'
-import {
-  closedGuard,
-  inMemoryUserRepo,
-  jst,
-  openGuard,
-} from '../../__test-helpers__/fakes'
+import { closedGuard, inMemoryUserRepo, jst, openGuard } from '../../__test-helpers__/fakes'
 import { createUpdateProfile } from './update-profile'
 
 const seedUser = (id: string, nickname: string) =>
@@ -44,10 +39,10 @@ describe('updateProfile', () => {
 
     const u = await update({
       userId: 'u1' as UserId,
-      patch: { tone: '#D8B890', presenceVisibility: 'invisible' },
+      patch: { tone: '#50B7F0', presenceVisibility: 'invisible' },
     })
 
-    expect(u.tone).toBe('#D8B890')
+    expect(u.tone).toBe('#50B7F0')
     expect(u.presenceVisibility).toBe('invisible')
   })
 
@@ -55,9 +50,9 @@ describe('updateProfile', () => {
     const { repo } = inMemoryUserRepo()
     const update = createUpdateProfile({ userRepository: repo, businessHoursGuard: openGuard })
 
-    await expect(
-      update({ userId: 'ghost' as UserId, patch: { bio: 'x' } }),
-    ).rejects.toThrow(NotFoundError)
+    await expect(update({ userId: 'ghost' as UserId, patch: { bio: 'x' } })).rejects.toThrow(
+      NotFoundError,
+    )
   })
 
   it('throws ForbiddenError outside business hours', async () => {
@@ -65,9 +60,9 @@ describe('updateProfile', () => {
     state.push(seedUser('u1', '月見羊'))
     const update = createUpdateProfile({ userRepository: repo, businessHoursGuard: closedGuard })
 
-    await expect(
-      update({ userId: 'u1' as UserId, patch: { bio: 'x' } }),
-    ).rejects.toThrow(ForbiddenError)
+    await expect(update({ userId: 'u1' as UserId, patch: { bio: 'x' } })).rejects.toThrow(
+      ForbiddenError,
+    )
   })
 
   it('allows keeping the same nickname (no false unique conflict against self)', async () => {
@@ -90,9 +85,9 @@ describe('updateProfile', () => {
     state.push(seedUser('u2', '茶の羊'))
     const update = createUpdateProfile({ userRepository: repo, businessHoursGuard: openGuard })
 
-    await expect(
-      update({ userId: 'u1' as UserId, patch: { nickname: '茶の羊' } }),
-    ).rejects.toThrow(ValidationError)
+    await expect(update({ userId: 'u1' as UserId, patch: { nickname: '茶の羊' } })).rejects.toThrow(
+      ValidationError,
+    )
   })
 
   it('propagates createUser validation on patch (bio too long)', async () => {
@@ -101,8 +96,8 @@ describe('updateProfile', () => {
     const update = createUpdateProfile({ userRepository: repo, businessHoursGuard: openGuard })
 
     const long = 'あ'.repeat(201)
-    await expect(
-      update({ userId: 'u1' as UserId, patch: { bio: long } }),
-    ).rejects.toThrow(ValidationError)
+    await expect(update({ userId: 'u1' as UserId, patch: { bio: long } })).rejects.toThrow(
+      ValidationError,
+    )
   })
 })
