@@ -1,3 +1,4 @@
+import type { UserId } from '../shared/id'
 import type { AuthIdentity } from './auth-identity'
 
 // AuthIdentityRepository — provider × providerId / email から UserId を引く port。
@@ -14,4 +15,6 @@ export interface AuthIdentityRepository {
   ): Promise<AuthIdentity | null>
   findByEmail(email: string): Promise<AuthIdentity | null>
   upsert(identity: AuthIdentity): Promise<void>
+  // 退苑時に、その user に紐づく全 identity を削除し sign-in を断つ。
+  deleteByUser(userId: UserId): Promise<void>
 }

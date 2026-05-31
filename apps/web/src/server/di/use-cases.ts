@@ -3,11 +3,13 @@ import {
   createBusinessHoursGuard,
   createClearTyping,
   createCreatePost,
+  createDeleteAccount,
   createDeletePost,
   createGetCloseSheep,
   createGetHourlyPresenceChart,
   createGetProfileStats,
   createLikePost,
+  createListBlockedUsers,
   createListConversations,
   createListMessages,
   createListOnlineUsers,
@@ -30,6 +32,7 @@ import {
   systemIdGenerator,
 } from '@me-me-en/application'
 import {
+  authIdentityRepository,
   blockRepository,
   conversationRepository,
   likeRepository,
@@ -61,6 +64,11 @@ export const updateProfile = createUpdateProfile({
 export const listUsers = createListUsers({
   userRepository,
   blockRepository,
+  businessHoursGuard,
+})
+export const deleteAccount = createDeleteAccount({
+  userRepository,
+  authIdentityRepository,
   businessHoursGuard,
 })
 
@@ -154,6 +162,11 @@ export const blockUser = createBlockUser({
 })
 export const unblockUser = createUnblockUser({
   blockRepository,
+  businessHoursGuard,
+})
+export const listBlockedUsers = createListBlockedUsers({
+  blockRepository,
+  userRepository,
   businessHoursGuard,
 })
 

@@ -1,15 +1,6 @@
 export type { Result } from './shared/result'
 export { ok, err } from './shared/result'
-export type {
-  Brand,
-  UserId,
-  ConversationId,
-  MessageId,
-  PostId,
-  ReplyId,
-  LikeId,
-  BlockId,
-} from './shared/id'
+export type { Brand, UserId, ConversationId, MessageId, PostId, LikeId, BlockId } from './shared/id'
 export {
   DomainError,
   NotFoundError,
@@ -59,11 +50,7 @@ export type { LikeRepository } from './like/repository'
 export type { Block, CreateBlockInput } from './block/block'
 export { createBlock } from './block/block'
 export type { BlockRepository } from './block/repository'
-export type {
-  Presence,
-  PresenceStatus,
-  CreatePresenceInput,
-} from './presence/presence'
+export type { Presence, PresenceStatus, CreatePresenceInput } from './presence/presence'
 export { createPresence, visibleStatusTo } from './presence/presence'
 export type { PresenceRepository } from './presence/repository'
 export type { Typing, CreateTypingInput } from './typing/typing'
